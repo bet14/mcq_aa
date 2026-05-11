@@ -267,47 +267,92 @@
 
     <tr class="row-meta">
       <td>Pseudo code</td>
-      <td><div class="pseudo">for i = 0 to n-1:
-if arr[i] == target:
-  return i
-return -1</div></td>
-      <td><div class="pseudo">lo=0, hi=n-1
-while lo <= hi:
-mid=(lo+hi)//2
-if arr[mid]==target:
-  return mid
-elif arr[mid]<target:
-  lo=mid+1
-else: hi=mid-1
-return -1</div></td>
-      <td><div class="pseudo">for i = 0 to n-1:
-swapped = false
-for j = 0 to n-i-2:
-  if arr[j] > arr[j+1]:
-    swap(arr[j], arr[j+1])
-    swapped = true
-if not swapped: break</div></td>
-      <td><div class="pseudo">mergeSort(arr):
-if len(arr)<=1: return arr
-mid = len(arr)//2
-L = mergeSort(arr[:mid])
-R = mergeSort(arr[mid:])
-return merge(L, R)
+     
 
-merge(L, R):
-result=[]
-while L and R:
-  if L[0]<=R[0]: result+=L.pop(0)
-  else: result+=R.pop(0)
-return result+L+R</div></td>
-      <td><div class="pseudo">for i = 1 to n-1:
-key = arr[i]
-j = i - 1
-while j>=0 and arr[j]>key:
-  arr[j+1] = arr[j]
-  j -= 1
-arr[j+1] = key</div></td>
-    </tr>
+
+<td>
+  <div class="pseudo"> linearSearch(arr, target):
+  n = length(arr)
+
+  for i = 0 to n - 1:
+    if arr[i] == target:
+      return i
+
+  return -1</div>
+</td>
+<td>
+  <div class="pseudo">BinarySearch(arr, target):
+  lo = 0
+  hi = length(arr) - 1
+
+  while lo <= hi:
+    mid = (lo + hi) // 2
+
+    if arr[mid] == target:
+      return mid
+    elif arr[mid] < target:
+      lo = mid + 1
+    else:
+      hi = mid - 1
+
+  return -1</div>
+</td>
+
+<td>
+  <div class="pseudo">BubbleSort(arr):
+  n = length(arr)
+
+  for i = 0 to n - 2:
+    swapped = false
+
+    for j = 0 to n - i - 2:
+      if arr[j] > arr[j + 1]:
+        swap(arr[j], arr[j + 1])
+        swapped = true
+
+    if not swapped:
+      break
+
+  return arr</div>
+</td>
+
+      
+<td>
+  <div class="pseudo">def merge_sort(arr):
+  if len(arr) <= 1:
+    return arr
+  mid = len(arr) // 2
+  LA = merge_sort(arr[:mid])
+  RA = merge_sort(arr[mid:])
+  return merge(LA, RA)
+
+def merge(LA, RA):
+  result = []
+  while LA and RA:
+    if LA[0] <= RA[0]:
+      result.append(LA.pop(0))
+    else:
+      result.append(RA.pop(0))
+  return result + LA + RA</div>
+</td>
+
+
+<td>
+  <div class="pseudo"> insertionSort(arr):
+  n = length(arr)
+
+  for i = 1 to n - 1:
+    key = arr[i]
+    j = i - 1
+
+    while j >= 0 and arr[j] > key:
+      arr[j + 1] = arr[j]
+      j = j - 1
+
+    arr[j + 1] = key
+
+  return arr</div>
+</td>    </tr>
 
     <!-- ══════════════════ TIME COMPLEXITY GROUP ══════════════════ -->
     <tr class="group-header group-time">
