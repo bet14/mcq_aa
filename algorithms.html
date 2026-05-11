@@ -20,16 +20,18 @@
     }
 
     .table-container {
-      overflow-x: auto;
+      overflow: auto;
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      padding: 16px;
+      padding: 0;
+      max-height: 80vh;
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       min-width: 1400px;
     }
 
@@ -39,23 +41,56 @@
       vertical-align: top;
       text-align: left;
       line-height: 1.5;
+      background-clip: padding-box;
     }
 
-    th {
+    thead th {
       background-color: #1f2937;
       color: white;
       font-weight: bold;
       text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 30;
     }
 
+    th:first-child,
     td:first-child {
-      background-color: #e5e7eb;
+      position: sticky;
+      left: 0;
+      z-index: 20;
       font-weight: bold;
       width: 220px;
+      min-width: 220px;
+    }
+
+    thead th:first-child {
+      z-index: 40;
+      background-color: #111827;
+    }
+
+    tbody td:first-child {
+      background-color: #e5e7eb;
     }
 
     tr:nth-child(even) td:not(:first-child) {
       background-color: #f9fafb;
+    }
+
+    .group-time td {
+      background-color: #eef6ff !important;
+    }
+
+    .group-time td:first-child {
+      background-color: #dbeafe !important;
+    }
+
+    .group-space td {
+      background-color: #f5f3ff !important;
+    }
+
+    .group-space td:first-child {
+      background-color: #e9d5ff !important;
     }
 
     code, pre {
@@ -70,6 +105,7 @@
       overflow-x: auto;
       font-size: 13px;
       line-height: 1.4;
+      margin: 0;
     }
 
     ul {
@@ -97,7 +133,8 @@
   <h1>Algorithm Summary Table</h1>
 
   <div class="note">
-    <strong>Note:</strong> “Intersection” is interpreted as finding common elements between two arrays or lists.
+    
+    <a class="brand-pill" href="index.html" title="Back to Quizz">Back to Quizz</a>
   </div>
 
   <div class="table-container">
@@ -109,7 +146,7 @@
           <th>Binary Search</th>
           <th>Bubble Sort</th>
           <th>Merge Sort</th>
-          <th>Intersection</th>
+          <th>Insertion Sort</th>
         </tr>
       </thead>
 
@@ -129,7 +166,7 @@
             Sorts an array by dividing it into halves, sorting each half, and then merging them.
           </td>
           <td>
-            Finds elements that appear in both collections. It can be implemented using nested loops, sorting, or a hash set.
+            Sorts an array by building a sorted prefix one element at a time and inserting each new element into its correct position.
           </td>
         </tr>
 
@@ -202,22 +239,18 @@ Merge(left, right):
     return result</pre>
           </td>
           <td>
-            <pre>Intersection(arr1, arr2):
-    set1 = empty set
-    result = empty list
-
-    for x in arr1:
-        add x to set1
-
-    for y in arr2:
-        if y in set1:
-            add y to result
-
-    return result</pre>
+            <pre>InsertionSort(a):
+    for i = 1 to n - 1:
+        key = a[i]
+        j = i - 1
+        while j >= 0 and a[j] > key:
+            a[j + 1] = a[j]
+            j -= 1
+        a[j + 1] = key</pre>
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-time">
           <td>Best case time complexity</td>
           <td>
             <span class="complexity">O(1)</span><br />
@@ -236,12 +269,12 @@ Merge(left, right):
             Merge Sort always divides the array and merges all elements, even if the array is already sorted.
           </td>
           <td>
-            <span class="complexity">O(n + m)</span><br />
-            Using a hash set, the algorithm inserts all elements of the first array and checks all elements of the second array.
+            <span class="complexity">O(n)</span><br />
+            If the array is already sorted, each element needs only one comparison and no shifting.
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-time">
           <td>Worst case time complexity</td>
           <td>
             <span class="complexity">O(n)</span><br />
@@ -260,16 +293,16 @@ Merge(left, right):
             The array is divided into log n levels, and each level requires O(n) merging work.
           </td>
           <td>
-            <span class="complexity">O(n + m)</span><br />
-            Using a hash set, every element of both arrays is still processed once.
+            <span class="complexity">O(n²)</span><br />
+            Reverse-sorted array makes each new element shift through the entire sorted portion.
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-time">
           <td>Average case time complexity</td>
           <td>
             <span class="complexity">O(n)</span><br />
-            On average, the target may be somewhere in the middle, so about half of the elements are checked. Constants are ignored, so it is still O(n).
+            On average, the target may be somewhere in the middle, so about half of the elements are checked.
           </td>
           <td>
             <span class="complexity">O(log n)</span><br />
@@ -284,12 +317,12 @@ Merge(left, right):
             Merge Sort always follows the same divide-and-merge structure regardless of input order.
           </td>
           <td>
-            <span class="complexity">O(n + m)</span><br />
-            Using a hash set, insertion and lookup are average O(1), so each element is processed once.
+            <span class="complexity">O(n²)</span><br />
+            Average elements often need shifting inside the sorted prefix.
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-space">
           <td>Best case space complexity</td>
           <td>
             <span class="complexity">O(1)</span><br />
@@ -308,12 +341,12 @@ Merge(left, right):
             Merge Sort needs extra arrays or lists for merging. Even in the best case, extra memory is required.
           </td>
           <td>
-            <span class="complexity">O(n)</span><br />
-            A hash set is created to store elements of the first array.
+            <span class="complexity">O(1)</span><br />
+            Only temporary variables like key and index are used.
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-space">
           <td>Worst case space complexity</td>
           <td>
             <span class="complexity">O(1)</span><br />
@@ -332,12 +365,12 @@ Merge(left, right):
             Extra memory is needed to store temporary subarrays during merging. Recursive calls also add stack space.
           </td>
           <td>
-            <span class="complexity">O(n + k)</span><br />
-            The hash set stores elements of the first array, and the result list stores k common elements. If output is counted, it may be simplified as O(n + m).
+            <span class="complexity">O(1)</span><br />
+            In-place insertion uses constant memory.
           </td>
         </tr>
 
-        <tr>
+        <tr class="group-space">
           <td>Average case space complexity</td>
           <td>
             <span class="complexity">O(1)</span><br />
@@ -356,8 +389,8 @@ Merge(left, right):
             Temporary arrays are needed during the merge process.
           </td>
           <td>
-            <span class="complexity">O(n + k)</span><br />
-            The hash set requires space for elements of the first array, and the result list stores common elements.
+            <span class="complexity">O(1)</span><br />
+            In-place insertion uses constant memory.
           </td>
         </tr>
 
@@ -397,10 +430,10 @@ Merge(left, right):
           </td>
           <td>
             <ul>
-              <li>Finding common users, tags, IDs, products, or records.</li>
-              <li>Data analysis and database-style operations.</li>
-              <li>Recommendation systems.</li>
-              <li>Comparing two datasets.</li>
+              <li>Small or nearly sorted datasets.</li>
+              <li>Online sorting, when data arrives gradually.</li>
+              <li>Useful in practice for short arrays.</li>
+              <li>Often used when simplicity and in-place sorting are important.</li>
             </ul>
           </td>
         </tr>
