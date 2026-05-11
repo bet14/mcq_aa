@@ -1,386 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Algorithm Comparison Table</title>
-  <style>
-    :root {
-      --bg: #f4f6f8;
-      --text: #1f2937;
-      --border: #d1d5db;
-      --header-bg: #111827;
-      --header-text: #ffffff;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithm Comparison Table</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    color: #f8fafc;
+    letter-spacing: 1px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
 
-      --time-row: #eef6ff;
-      --time-row-first: #dbeafe;
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: #cbd5e1;
+  }
+  .legend-box {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
 
-      --space-row: #f5f3ff;
-      --space-row-first: #e9d5ff;
+  /* Best badge */
+  .best-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #1a1a1a;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
 
-      --other-row: #f8fafc;
-      --other-row-first: #e5e7eb;
+  /* Wrapper */
+  .table-wrapper {
+    overflow: auto;
+    max-height: 78vh;
+    border-radius: 12px;
+    border: 1px solid #2d3748;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
 
-      --best-bg: #dcfce7;
-      --best-text: #166534;
-      --best-border: #22c55e;
+  table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: max-content;
+    min-width: 100%;
+  }
 
-      --summary-bg: #eff6ff;
-      --summary-border: #3b82f6;
-    }
+  /* ── Sticky header row ── */
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: #1e2433;
+    color: #93c5fd;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 12px 14px;
+    border-bottom: 2px solid #3b4a6b;
+    white-space: nowrap;
+  }
 
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 24px;
-      background: var(--bg);
-      color: var(--text);
-    }
+  /* ── Sticky first column ── */
+  td:first-child, th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+  }
+  thead th:first-child {
+    z-index: 40;
+    background: #1e2433;
+  }
+  td:first-child {
+    background: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    min-width: 160px;
+    border-right: 2px solid #3b4a6b;
+  }
 
-    h1 {
-      text-align: center;
-      margin: 0 0 18px 0;
-      color: #111827;
-    }
+  /* ── Group header rows ── */
+  .group-header td {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-top: 2px solid rgba(255,255,255,0.08);
+  }
 
-    .note {
-      max-width: 1400px;
-      margin: 0 auto 20px auto;
-      background: var(--summary-bg);
-      border-left: 5px solid var(--summary-border);
-      padding: 12px 16px;
-      border-radius: 8px;
-      line-height: 1.6;
-    }
+  /* ── Data cells ── */
+  td {
+    padding: 11px 14px;
+    font-size: 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+    line-height: 1.5;
+    min-width: 160px;
+    max-width: 260px;
+  }
 
-    .table-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      overflow: auto;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      max-height: 80vh;
-    }
+  /* ── Complexity badge ── */
+  .badge {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .badge-o1    { background:#064e3b; color:#6ee7b7; border:1px solid #059669; }
+  .badge-ologn { background:#1e3a5f; color:#93c5fd; border:1px solid #3b82f6; }
+  .badge-on    { background:#3b2f00; color:#fcd34d; border:1px solid #d97706; }
+  .badge-onlogn{ background:#2d1b69; color:#c4b5fd; border:1px solid #7c3aed; }
+  .badge-on2   { background:#4c0519; color:#fca5a5; border:1px solid #dc2626; }
 
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      min-width: 1400px;
-    }
+  .why-text {
+    font-size: 0.73rem;
+    color: #94a3b8;
+    margin-top: 3px;
+    font-style: italic;
+  }
 
-    th, td {
-      border: 1px solid var(--border);
-      padding: 14px;
-      vertical-align: top;
-      text-align: left;
-      line-height: 1.5;
-      background-clip: padding-box;
-    }
+  /* ── Color groups ── */
+  /* TIME COMPLEXITY GROUP */
+  .row-time-best  { background: #0d2137; }
+  .row-time-worst { background: #0d2137; }
+  .row-time-avg   { background: #0d2137; }
+  .group-time     { background: #0a1929; color: #60a5fa; }
 
-    thead th {
-      background: var(--header-bg);
-      color: var(--header-text);
-      text-align: center;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-    }
+  /* SPACE COMPLEXITY GROUP */
+  .row-space-best  { background: #0d1f0d; }
+  .row-space-worst { background: #0d1f0d; }
+  .row-space-avg   { background: #0d1f0d; }
+  .group-space     { background: #091a09; color: #4ade80; }
 
-    th:first-child,
-    td:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 20;
-      font-weight: bold;
-      width: 220px;
-      min-width: 220px;
-    }
+  /* META GROUP (what, pseudo, use cases, etc.) */
+  .row-meta  { background: #1a1225; }
+  .group-meta{ background: #120d1c; color: #c084fc; }
 
-    thead th:first-child {
-      z-index: 40;
-      background: #000000;
-    }
+  /* DECISION GROUP */
+  .row-decision { background: #1a1208; }
+  .group-decision{ background: #120e04; color: #fb923c; }
 
-    tbody td:first-child {
-      background: var(--other-row-first);
-    }
+  /* Hover */
+  tbody tr:hover td { filter: brightness(1.18); transition: filter 0.15s; }
 
-    tbody tr:nth-child(even) td:not(:first-child) {
-      background: #f9fafb;
-    }
+  /* Pseudocode */
+  .pseudo {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 8px 10px;
+    white-space: pre;
+    line-height: 1.6;
+    color: #a5f3fc;
+    min-width: 220px;
+  }
 
-    .group-time td {
-      background: var(--time-row) !important;
-    }
+  /* Scrollbar */
+  .table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+  .table-wrapper::-webkit-scrollbar-track { background: #1a1f2e; }
+  .table-wrapper::-webkit-scrollbar-thumb { background: #3b4a6b; border-radius: 4px; }
+  .table-wrapper::-webkit-scrollbar-thumb:hover { background: #4a5a8a; }
 
-    .group-time td:first-child {
-      background: var(--time-row-first) !important;
-    }
+  .tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 0.72rem;
+    margin: 2px 2px 2px 0;
+    color: #e2e8f0;
+  }
 
-    .group-space td {
-      background: var(--space-row) !important;
-    }
+  .tradeoff { color: #fca5a5; font-size: 0.78rem; }
+  .why-choose { color: #86efac; font-size: 0.78rem; }
 
-    .group-space td:first-child {
-      background: var(--space-row-first) !important;
-    }
-
-    .group-general td {
-      background: var(--other-row) !important;
-    }
-
-    .group-general td:first-child {
-      background: var(--other-row-first) !important;
-    }
-
-    .complexity {
-      font-weight: bold;
-      color: #2563eb;
-    }
-
-    .best {
-      background: var(--best-bg);
-      color: var(--best-text);
-      border: 1px solid var(--best-border);
-      padding: 2px 8px;
-      border-radius: 999px;
-      display: inline-block;
-      font-weight: 700;
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 20px;
-    }
-
-    pre {
-      background: #111827;
-      color: #f9fafb;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-size: 13px;
-      line-height: 1.4;
-      margin: 0;
-      white-space: pre-wrap;
-    }
-
-    .summary {
-      max-width: 1400px;
-      margin: 20px auto 0 auto;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      padding: 18px 20px;
-      line-height: 1.7;
-    }
-
-    .summary h2 {
-      margin-top: 0;
-      color: #111827;
-    }
-
-    .summary strong {
-      color: #111827;
-    }
-  </style>
+  .col-algo { min-width: 160px; }
+</style>
 </head>
 <body>
-  <h1>Algorithm Comparison Table</h1>
 
-  <div class="note">
-    <strong>How to use:</strong> choose the algorithm based on whether the data is sorted, how large the dataset is, how much memory you can use, and whether you need fast searching or stable sorting.
-  </div>
+<h1>⚡ Algorithm Comparison Table</h1>
+<p class="subtitle">Linear Search · Binary Search · Bubble Sort · Merge Sort · Insertion Sort</p>
 
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Criteria</th>
-          <th>Linear Search</th>
-          <th>Binary Search</th>
-          <th>Bubble Sort</th>
-          <th>Merge Sort</th>
-          <th>Insertion Sort</th>
-        </tr>
-      </thead>
+<div class="legend">
+  <div class="legend-item"><div class="legend-box" style="background:#064e3b;border-color:#059669"></div> O(1) — Constant</div>
+  <div class="legend-item"><div class="legend-box" style="background:#1e3a5f;border-color:#3b82f6"></div> O(log n) — Logarithmic</div>
+  <div class="legend-item"><div class="legend-box" style="background:#3b2f00;border-color:#d97706"></div> O(n) — Linear</div>
+  <div class="legend-item"><div class="legend-box" style="background:#2d1b69;border-color:#7c3aed"></div> O(n log n) — Linearithmic</div>
+  <div class="legend-item"><div class="legend-box" style="background:#4c0519;border-color:#dc2626"></div> O(n²) — Quadratic</div>
+  <div class="legend-item"><div class="legend-box" style="background:#0a1929;border-color:#60a5fa"></div> Time Complexity Group</div>
+  <div class="legend-item"><div class="legend-box" style="background:#091a09;border-color:#4ade80"></div> Space Complexity Group</div>
+  <div class="legend-item"><div class="legend-box" style="background:#120d1c;border-color:#c084fc"></div> Algorithm Info Group</div>
+  <div class="legend-item"><div class="legend-box" style="background:#120e04;border-color:#fb923c"></div> Decision Group</div>
+  <div class="legend-item"><div class="legend-box" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);border-color:#f59e0b"></div> ★ Best in category</div>
+</div>
 
-      <tbody>
-        <tr class="group-general">
-          <td>What it does</td>
-          <td>Checks elements one by one from the beginning to the end until the target is found or the list ends.</td>
-          <td>Searches for a target in a <strong>sorted</strong> array by repeatedly dividing the search range in half.</td>
-          <td>Sorts an array by repeatedly comparing adjacent elements and swapping them if they are in the wrong order.</td>
-          <td>Sorts an array by dividing it into halves, sorting each half, and then merging the sorted halves.</td>
-          <td>Sorts an array by building a sorted prefix one element at a time and inserting each new element into its correct position.</td>
-        </tr>
+<div class="table-wrapper">
+<table>
+  <thead>
+    <tr>
+      <th class="col-algo">Category / Metric</th>
+      <th>Linear Search</th>
+      <th>Binary Search</th>
+      <th>Bubble Sort</th>
+      <th>Merge Sort</th>
+      <th>Insertion Sort</th>
+    </tr>
+  </thead>
+  <tbody>
 
-        <tr class="group-general">
-          <td>Pseudo code</td>
-          <td><pre>LinearSearch(arr, target):
-  for i from 0 to length(arr) - 1:
-      if arr[i] == target:
-          return i
-  return -1</pre></td>
-          <td><pre>BinarySearch(arr, target):
-  left = 0
-  right = length(arr) - 1
+    <!-- ══════════════════ META GROUP ══════════════════ -->
+    <tr class="group-header group-meta">
+      <td colspan="6">📋 Algorithm Information</td>
+    </tr>
 
-  while left <= right:
-      mid = (left + right) // 2
+    <tr class="row-meta">
+      <td>What it does</td>
+      <td>Scans each element one by one from start to end until the target is found or the list is exhausted.</td>
+      <td>Repeatedly halves a <em>sorted</em> array to locate the target by comparing with the midpoint.</td>
+      <td>Repeatedly swaps adjacent elements that are out of order, "bubbling" the largest to the end each pass.</td>
+      <td>Divides the array into halves recursively, then merges them back in sorted order.</td>
+      <td>Builds a sorted portion one element at a time by inserting each new element into its correct position.</td>
+    </tr>
 
-      if arr[mid] == target:
-          return mid
-      else if arr[mid] < target:
-          left = mid + 1
-      else:
-          right = mid - 1
+    <tr class="row-meta">
+      <td>Pseudo code</td>
+      <td><div class="pseudo">for i = 0 to n-1:
+if arr[i] == target:
+  return i
+return -1</div></td>
+      <td><div class="pseudo">lo=0, hi=n-1
+while lo <= hi:
+mid=(lo+hi)//2
+if arr[mid]==target:
+  return mid
+elif arr[mid]<target:
+  lo=mid+1
+else: hi=mid-1
+return -1</div></td>
+      <td><div class="pseudo">for i = 0 to n-1:
+swapped = false
+for j = 0 to n-i-2:
+  if arr[j] > arr[j+1]:
+    swap(arr[j], arr[j+1])
+    swapped = true
+if not swapped: break</div></td>
+      <td><div class="pseudo">mergeSort(arr):
+if len(arr)<=1: return arr
+mid = len(arr)//2
+L = mergeSort(arr[:mid])
+R = mergeSort(arr[mid:])
+return merge(L, R)
 
-  return -1</pre></td>
-          <td><pre>BubbleSort(arr):
-  n = length(arr)
+merge(L, R):
+result=[]
+while L and R:
+  if L[0]<=R[0]: result+=L.pop(0)
+  else: result+=R.pop(0)
+return result+L+R</div></td>
+      <td><div class="pseudo">for i = 1 to n-1:
+key = arr[i]
+j = i - 1
+while j>=0 and arr[j]>key:
+  arr[j+1] = arr[j]
+  j -= 1
+arr[j+1] = key</div></td>
+    </tr>
 
-  for i from 0 to n - 1:
-      swapped = false
+    <!-- ══════════════════ TIME COMPLEXITY GROUP ══════════════════ -->
+    <tr class="group-header group-time">
+      <td colspan="6">⏱️ Time Complexity</td>
+    </tr>
 
-      for j from 0 to n - i - 2:
-          if arr[j] > arr[j + 1]:
-              swap arr[j], arr[j + 1]
-              swapped = true
+    <!-- BEST CASE TIME -->
+    <tr class="row-time-best">
+      <td>Best Case Time</td>
+      <td>
+        <span class="badge badge-o1">O(1)</span>
+        <div class="why-text">Target is the very first element — found immediately in 1 comparison.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Target is exactly at the midpoint on the first check — 1 comparison.</div>
+      </td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Array is already sorted; with the "swapped" flag optimization, one pass confirms no swaps needed.</div>
+      </td>
+      <td>
+        <span class="badge badge-onlogn">O(n log n)</span>
+        <div class="why-text">Merge sort always divides and merges regardless of input order — no shortcut possible.</div>
+      </td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Array is already sorted; each element just compares once with its predecessor — no shifts needed.</div>
+      </td>
+    </tr>
 
-      if swapped == false:
-          break
+    <!-- WORST CASE TIME -->
+    <tr class="row-time-worst">
+      <td>Worst Case Time</td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Target is the last element or not present — must check all n elements.</div>
+      </td>
+      <td>
+        <span class="badge badge-ologn">O(log n)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Each step halves the search space; after log₂(n) steps, only 1 element remains.</div>
+      </td>
+      <td>
+        <span class="badge badge-on2">O(n²)</span>
+        <div class="why-text">Array is reverse-sorted; every pair must be swapped — n(n-1)/2 comparisons.</div>
+      </td>
+      <td>
+        <span class="badge badge-onlogn">O(n log n)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Always splits into log n levels; each level does O(n) work during merge — guaranteed.</div>
+      </td>
+      <td>
+        <span class="badge badge-on2">O(n²)</span>
+        <div class="why-text">Array is reverse-sorted; each new element must shift past all previous elements — n(n-1)/2 shifts.</div>
+      </td>
+    </tr>
 
-  return arr</pre></td>
-          <td><pre>MergeSort(arr):
-  if length(arr) <= 1:
-      return arr
+    <!-- AVERAGE CASE TIME -->
+    <tr class="row-time-avg">
+      <td>Average Case Time</td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">On average, target is in the middle — still must scan ~n/2 elements, which is O(n).</div>
+      </td>
+      <td>
+        <span class="badge badge-ologn">O(log n)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Random target position still requires ~log₂(n) halvings to locate it.</div>
+      </td>
+      <td>
+        <span class="badge badge-on2">O(n²)</span>
+        <div class="why-text">Random order still causes ~n²/4 comparisons and swaps on average.</div>
+      </td>
+      <td>
+        <span class="badge badge-onlogn">O(n log n)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Consistent log n depth × n merge work regardless of input distribution.</div>
+      </td>
+      <td>
+        <span class="badge badge-on2">O(n²)</span>
+        <div class="why-text">Random order requires ~n²/4 comparisons and shifts on average.</div>
+      </td>
+    </tr>
 
-  mid = length(arr) // 2
-  left = MergeSort(arr[0:mid])
-  right = MergeSort(arr[mid:end])
+    <!-- ══════════════════ SPACE COMPLEXITY GROUP ══════════════════ -->
+    <tr class="group-header group-space">
+      <td colspan="6">💾 Space Complexity</td>
+    </tr>
 
-  return Merge(left, right)
+    <!-- BEST CASE SPACE -->
+    <tr class="row-space-best">
+      <td>Best Case Space</td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Only needs a loop index variable — no extra memory regardless of input.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Iterative version uses only lo, hi, mid pointers — constant extra space.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place swaps; only needs a temp variable. No auxiliary array needed.</div>
+      </td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Even in the best case, merge requires an auxiliary array of size n to hold merged results.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place insertion; only the key variable is needed as extra storage.</div>
+      </td>
+    </tr>
 
-Merge(left, right):
-  result = []
+    <!-- WORST CASE SPACE -->
+    <tr class="row-space-worst">
+      <td>Worst Case Space</td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Always O(1) — no extra memory used regardless of array size.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Iterative: O(1). Recursive: O(log n) call stack — but iterative is standard.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place algorithm — only a constant number of variables used.</div>
+      </td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Always needs O(n) auxiliary space for the temporary arrays during merging.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place — only one extra variable (key) regardless of input size.</div>
+      </td>
+    </tr>
 
-  while left and right are not empty:
-      if left[0] <= right[0]:
-          append left[0] to result
-          remove left[0]
-      else:
-          append right[0] to result
-          remove right[0]
+    <!-- AVERAGE CASE SPACE -->
+    <tr class="row-space-avg">
+      <td>Average Case Space</td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Constant space always — just a pointer/index variable.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">Iterative approach is O(1); recursive adds O(log n) stack frames.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place swapping — constant auxiliary space always.</div>
+      </td>
+      <td>
+        <span class="badge badge-on">O(n)</span>
+        <div class="why-text">Auxiliary arrays during merge always total O(n) space.</div>
+      </td>
+      <td>
+        <span class="badge badge-o1">O(1)</span><span class="best-badge">★ BEST</span>
+        <div class="why-text">In-place — no extra array needed, just one key variable.</div>
+      </td>
+    </tr>
 
-  append remaining elements
-  return result</pre></td>
-          <td><pre>InsertionSort(a):
-  for i = 1 to n - 1:
-      key = a[i]
-      j = i - 1
-      while j >= 0 and a[j] > key:
-          a[j + 1] = a[j]
-          j -= 1
-      a[j + 1] = key</pre></td>
-        </tr>
+    <!-- ══════════════════ DECISION GROUP ══════════════════ -->
+    <tr class="group-header group-decision">
+      <td colspan="6">🎯 Decision Guide</td>
+    </tr>
 
-        <tr class="group-time">
-          <td>Best case time complexity</td>
-          <td><span class="complexity">O(1)</span> — target is the first element.</td>
-          <td><span class="complexity">O(1)</span> — target is exactly the middle element.</td>
-          <td><span class="complexity">O(n)</span> <span class="best">Best among comparison sorts</span> — one pass if already sorted.</td>
-          <td><span class="complexity">O(n log n)</span> <span class="best">Best among all listed sorting algorithms for worst/average consistency</span> — always divides and merges.</td>
-          <td><span class="complexity">O(n)</span> <span class="best">Best among adaptive sorts</span> — already sorted input needs minimal work.</td>
-        </tr>
+    <tr class="row-decision">
+      <td>Best Use Cases</td>
+      <td>
+        <span class="tag">Unsorted data</span>
+        <span class="tag">Small arrays</span>
+        <span class="tag">One-time search</span>
+        <span class="tag">Linked lists</span>
+        <span class="tag">Unknown structure</span>
+      </td>
+      <td>
+        <span class="tag">Sorted arrays</span>
+        <span class="tag">Large datasets</span>
+        <span class="tag">Repeated searches</span>
+        <span class="tag">Databases</span>
+        <span class="tag">Dictionary lookup</span>
+      </td>
+      <td>
+        <span class="tag">Educational purposes</span>
+        <span class="tag">Very small arrays</span>
+        <span class="tag">Nearly sorted data</span>
+        <span class="tag">Detecting if sorted</span>
+      </td>
+      <td>
+        <span class="tag">Large unsorted data</span>
+        <span class="tag">Stable sort needed</span>
+        <span class="tag">External sorting</span>
+        <span class="tag">Linked lists</span>
+        <span class="tag">Guaranteed performance</span>
+      </td>
+      <td>
+        <span class="tag">Nearly sorted data</span>
+        <span class="tag">Small arrays</span>
+        <span class="tag">Online sorting</span>
+        <span class="tag">Real-time insertion</span>
+        <span class="tag">Low memory</span>
+      </td>
+    </tr>
 
-        <tr class="group-time">
-          <td>Worst case time complexity</td>
-          <td><span class="complexity">O(n)</span> <span class="best">Highest for search</span> — target is last or not present.</td>
-          <td><span class="complexity">O(log n)</span> <span class="best">Lowest for search</span> — each step halves the range.</td>
-          <td><span class="complexity">O(n²)</span> <span class="best">Highest among the three simple sorts</span> — reverse-sorted input causes many swaps.</td>
-          <td><span class="complexity">O(n log n)</span> <span class="best">Best worst-case among listed sorts</span> — guaranteed divide-and-merge performance.</td>
-          <td><span class="complexity">O(n²)</span> <span class="best">Highest among adaptive/simple sorts</span> — reverse-sorted input causes maximum shifting.</td>
-        </tr>
+    <tr class="row-decision">
+      <td>Why Choose It</td>
+      <td class="why-choose">Simple to implement, works on any data structure, no preprocessing required. The only option when data is unsorted and you search only once.</td>
+      <td class="why-choose">Extremely fast for large sorted arrays. O(log n) means searching 1 billion items takes only ~30 comparisons. Best search algorithm for sorted data.</td>
+      <td class="why-choose">Easiest sorting algorithm to understand and implement. Useful for teaching. With optimization, can detect already-sorted arrays in O(n).</td>
+      <td class="why-choose">Guaranteed O(n log n) in all cases — no bad inputs. Stable sort preserves equal element order. Best choice when predictability matters.</td>
+      <td class="why-choose">Excellent for nearly-sorted data and small arrays. Low overhead, in-place, stable. Often faster than Merge Sort in practice for small n.</td>
+    </tr>
 
-        <tr class="group-time">
-          <td>Average case time complexity</td>
-          <td><span class="complexity">O(n)</span></td>
-          <td><span class="complexity">O(log n)</span></td>
-          <td><span class="complexity">O(n²)</span></td>
-          <td><span class="complexity">O(n log n)</span></td>
-          <td><span class="complexity">O(n²)</span></td>
-        </tr>
+    <tr class="row-decision">
+      <td>Main Trade-off</td>
+      <td class="tradeoff">⚠️ Slow on large datasets (O(n) per search). If you search repeatedly, sorting first + Binary Search is far better.</td>
+      <td class="tradeoff">⚠️ Requires data to be <strong>sorted first</strong>. Sorting cost must be amortized over many searches to justify it. Not for linked lists.</td>
+      <td class="tradeoff">⚠️ O(n²) time makes it impractical for large datasets. Never use in production for n &gt; 1000.</td>
+      <td class="tradeoff">⚠️ Requires O(n) extra memory. Not in-place. Slower than Insertion Sort for small arrays due to recursion overhead.</td>
+      <td class="tradeoff">⚠️ O(n²) worst case on reverse-sorted data. Degrades badly on large, random datasets. Not suitable for large n.</td>
+    </tr>
 
-        <tr class="group-space">
-          <td>Best case space complexity</td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(n)</span> <span class="best">Highest memory use</span> — extra arrays are required even in the best case.</td>
-          <td><span class="complexity">O(1)</span></td>
-        </tr>
+  </tbody>
+</table>
+</div>
 
-        <tr class="group-space">
-          <td>Worst case space complexity</td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(1)</span> for iterative implementation; <span class="complexity">O(log n)</span> if recursive.</td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(n)</span> <span class="best">Highest memory use</span> — temporary subarrays and stack space are required.</td>
-          <td><span class="complexity">O(1)</span></td>
-        </tr>
+<p style="text-align:center;color:#475569;font-size:0.72rem;margin-top:14px;">
+  ★ BEST = best algorithm in that specific metric category &nbsp;|&nbsp; Scroll horizontally and vertically — first row &amp; column are frozen
+</p>
 
-        <tr class="group-space">
-          <td>Average case space complexity</td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(1)</span></td>
-          <td><span class="complexity">O(n)</span> <span class="best">Highest memory use</span></td>
-          <td><span class="complexity">O(1)</span></td>
-        </tr>
-
-        <tr class="group-general">
-          <td>Best use cases</td>
-          <td>Unsorted or very small lists, linked lists, or simple one-time lookup.</td>
-          <td>Sorted arrays, fast lookup in ordered data, databases, dictionaries, or index-based search.</td>
-          <td>Teaching sorting basics, tiny datasets, or checking whether a list is already sorted.</td>
-          <td>Large datasets, stable sorting, linked lists, and external sorting for files too large for memory.</td>
-          <td>Small or nearly sorted datasets, online sorting, or when data arrives gradually.</td>
-        </tr>
-
-        <tr class="group-general">
-          <td>Why choose it</td>
-          <td>Works on any data without preprocessing and uses constant memory.</td>
-          <td>Very fast lookup when the data is already ordered.</td>
-          <td>Simple and in-place, but mainly useful for learning or tiny inputs.</td>
-          <td>Fast, stable, and predictable on large data.</td>
-          <td>Efficient when the data is already close to sorted and memory is limited.</td>
-        </tr>
-
-        <tr class="group-general">
-          <td>Main trade-off</td>
-          <td>Simple and memory-efficient, but slow on large data.</td>
-          <td>Fast search, but requires sorted data and random access.</td>
-          <td>Easy and in-place, but inefficient on large datasets.</td>
-          <td>Fast and stable, but uses extra memory.</td>
-          <td>In-place and good for near-sorted data, but quadratic on random or reversed input.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="summary">
-    <h2>Summary of How to Use</h2>
-    <ul>
-      <li><strong>Linear Search:</strong> use for unsorted or very small data when simplicity matters.</li>
-      <li><strong>Binary Search:</strong> use when the data is already sorted and you need fast lookup.</li>
-      <li><strong>Bubble Sort:</strong> use mainly for learning or very small datasets.</li>
-      <li><strong>Merge Sort:</strong> use for large datasets when stable sorting and reliable performance are important.</li>
-      <li><strong>Insertion Sort:</strong> use for small or nearly sorted data, especially when the data arrives gradually.</li>
-    </ul>
-  </div>
 </body>
 </html>
