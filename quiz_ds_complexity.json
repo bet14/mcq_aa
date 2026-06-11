@@ -1,0 +1,637 @@
+{
+  "title": "Data Structures & Algorithms — Time & Space Complexity",
+  "subtitle": "Stack, Queue, Tree Traversal, DFS, BFS — pseudocode-based complexity analysis",
+  "totalQuestions": 66,
+  "questions": [
+    {
+      "question": "Consider the following pseudocode:\n\nfunction push(stack, val):\n    stack.append(val)\n\nfunction pop(stack):\n    return stack.removeLast()\n\nWhat is the time complexity of each operation?",
+      "options": ["O(1) for both push and pop", "O(n) for push, O(1) for pop", "O(1) for push, O(n) for pop", "O(n) for both"],
+      "answerIndex": 0,
+      "explanation": "Both push and pop on a dynamic array-backed stack operate on the tail, requiring no shifting. Each is O(1) amortized. O(n) would apply if insertion/removal were at the head (like a queue with a plain array).",
+      "category": "Stack",
+      "level": "Easy",
+      "tags": ["stack", "push", "pop", "amortized"]
+    },
+    {
+      "question": "The following pseudocode checks for balanced parentheses:\n\nfunction isBalanced(s):\n    stack = []\n    for ch in s:\n        if ch in '([{':\n            stack.push(ch)\n        elif ch in ')]}':\n            if stack is empty: return False\n            top = stack.pop()\n            if not matches(top, ch): return False\n    return stack is empty\n\nWhat is the time and space complexity (n = length of s)?",
+      "options": ["O(n) time, O(n) space", "O(n) time, O(1) space", "O(n²) time, O(n) space", "O(1) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each character is visited once → O(n) time. In the worst case (all opening brackets), the stack stores every character → O(n) space. O(1) space is impossible because the number of unclosed brackets can grow with input size.",
+      "category": "Stack",
+      "level": "Easy",
+      "tags": ["stack", "parentheses", "linear"]
+    },
+    {
+      "question": "A stack is implemented using a singly linked list (head = top). What is the complexity of:\n\nfunction peek(stack):\n    return stack.head.value\n\nfunction size(stack):\n    count = 0\n    node = stack.head\n    while node != null:\n        count += 1\n        node = node.next\n    return count",
+      "options": ["peek O(1), size O(n)", "peek O(n), size O(1)", "peek O(1), size O(1)", "peek O(n), size O(n)"],
+      "answerIndex": 0,
+      "explanation": "peek reads the head node in constant time. size traverses the entire list counting nodes → O(n). If a length counter were maintained, size would also be O(1), but this implementation does not.",
+      "category": "Stack",
+      "level": "Easy",
+      "tags": ["stack", "linked list", "peek"]
+    },
+    {
+      "question": "Evaluate the complexity of the following stack-based reverse:\n\nfunction reverse(arr):\n    stack = []\n    for x in arr:         // step A\n        stack.push(x)\n    result = []\n    while stack not empty:  // step B\n        result.append(stack.pop())\n    return result\n\n(n = len(arr))",
+      "options": ["O(n) time, O(n) space", "O(n²) time, O(n) space", "O(n) time, O(1) space", "O(n log n) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Step A runs n iterations, step B runs n iterations → 2n total → O(n) time. The stack at peak holds all n elements → O(n) space. There is no nested loop, so O(n²) is wrong. O(1) space is impossible because the stack grows with input.",
+      "category": "Stack",
+      "level": "Easy",
+      "tags": ["stack", "reverse", "linear"]
+    },
+    {
+      "question": "Analyse this next-greater-element algorithm:\n\nfunction nextGreater(arr):\n    n = len(arr)\n    result = [-1] * n\n    stack = []            // stores indices\n    for i in 0..n-1:\n        while stack not empty and arr[stack.top()] < arr[i]:\n            idx = stack.pop()\n            result[idx] = arr[i]\n        stack.push(i)\n    return result\n\nWhat is the time complexity?",
+      "options": ["O(n)", "O(n²)", "O(n log n)", "O(2n)"],
+      "answerIndex": 0,
+      "explanation": "Each index is pushed once and popped at most once → at most 2n operations total. The inner while loop does not re-examine elements already popped. O(n²) would be the naive nested-loop approach. O(2n) simplifies to O(n) — they are the same asymptotic class.",
+      "category": "Stack",
+      "level": "Medium",
+      "tags": ["stack", "monotonic", "amortized"]
+    },
+    {
+      "question": "A stack sorts another stack using only push/pop:\n\nfunction sortStack(s):\n    temp = []\n    while s not empty:\n        val = s.pop()\n        while temp not empty and temp.top() > val:\n            s.push(temp.pop())\n        temp.push(val)\n    return temp\n\nWhat is the worst-case time complexity?",
+      "options": ["O(n²)", "O(n log n)", "O(n)", "O(n³)"],
+      "answerIndex": 0,
+      "explanation": "For a reverse-sorted input, every element popped from s causes all elements in temp to be moved back to s before insertion. This is n + (n-1) + ... + 1 = n(n+1)/2 operations → O(n²). This is equivalent to insertion sort using a stack.",
+      "category": "Stack",
+      "level": "Hard",
+      "tags": ["stack", "sorting", "quadratic"]
+    },
+    {
+      "question": "Towers of Hanoi using an explicit stack instead of recursion:\n\nfunction hanoi(n, src, dst, aux):\n    stack.push((n, src, dst, aux))\n    while stack not empty:\n        (disks, s, d, a) = stack.pop()\n        if disks == 1:\n            move(s, d)\n            continue\n        stack.push((disks-1, a, d, s))\n        stack.push((1,   s, d, a))\n        stack.push((disks-1, s, a, d))\n\nHow many moves are made (time complexity)?",
+      "options": ["O(2^n)", "O(n²)", "O(n log n)", "O(n)"],
+      "answerIndex": 0,
+      "explanation": "Towers of Hanoi requires exactly 2^n − 1 moves for n disks, regardless of whether recursion or an explicit stack is used. The iterative version mimics the call stack but does not change the algorithm's move count.",
+      "category": "Stack",
+      "level": "Hard",
+      "tags": ["stack", "hanoi", "exponential"]
+    },
+    {
+      "question": "Which of the following correctly describes the space complexity of a call stack during DFS on a tree of height h?",
+      "options": ["O(h) — one frame per level of recursion", "O(n) always, since all nodes are visited", "O(log n) always for balanced trees", "O(1) because each recursive call is tail-recursive"],
+      "answerIndex": 0,
+      "explanation": "The call stack depth equals the height h of the tree. For a balanced tree h = O(log n); for a skewed tree h = O(n). Saying O(n) always is overly pessimistic; saying O(log n) always is only true for balanced trees. DFS tree recursion is not tail-recursive in general.",
+      "category": "Stack",
+      "level": "Medium",
+      "tags": ["stack", "recursion", "DFS", "space"]
+    },
+    {
+      "question": "Consider a simple FIFO queue backed by two stacks (enqueue to stack1, dequeue pops from stack2, refilling from stack1 when empty):\n\nfunction enqueue(q, val):   // O(?) amortized\n    q.s1.push(val)\n\nfunction dequeue(q):        // O(?) amortized\n    if q.s2 is empty:\n        while q.s1 not empty:\n            q.s2.push(q.s1.pop())\n    return q.s2.pop()\n\nWhat is the amortized complexity of each operation?",
+      "options": ["O(1) amortized for both", "O(n) worst-case for enqueue, O(1) for dequeue", "O(1) for enqueue, O(n) always for dequeue", "O(n) for both"],
+      "answerIndex": 0,
+      "explanation": "Each element is pushed to s1 once and transferred to s2 once → 2 pushes + 2 pops per element over its lifetime → O(1) amortized per operation. The worst-case for a single dequeue is O(n) (when s2 must be refilled), but this cost is charged against previous enqueues.",
+      "category": "Queue",
+      "level": "Medium",
+      "tags": ["queue", "amortized", "two stacks"]
+    },
+    {
+      "question": "A circular queue (ring buffer) of fixed capacity C is implemented with head/tail pointers:\n\nfunction enqueue(q, val):\n    if (q.tail + 1) % C == q.head: raise Overflow\n    q.data[q.tail] = val\n    q.tail = (q.tail + 1) % C\n\nfunction dequeue(q):\n    if q.head == q.tail: raise Underflow\n    val = q.data[q.head]\n    q.head = (q.head + 1) % C\n    return val\n\nTime complexity of each?",
+      "options": ["O(1) for both", "O(C) for enqueue, O(1) for dequeue", "O(n) for both", "O(1) for enqueue, O(C) for dequeue"],
+      "answerIndex": 0,
+      "explanation": "Both operations perform a fixed number of arithmetic steps (modulo, array access) regardless of how many elements are in the queue. No iteration occurs → O(1) for both. The capacity C does not appear in the asymptotic cost.",
+      "category": "Queue",
+      "level": "Easy",
+      "tags": ["queue", "circular", "constant"]
+    },
+    {
+      "question": "Analyse this BFS-style level-order traversal using a queue:\n\nfunction levelOrder(root):\n    if root is null: return\n    q = Queue()\n    q.enqueue(root)\n    while q not empty:\n        node = q.dequeue()\n        visit(node)\n        if node.left: q.enqueue(node.left)\n        if node.right: q.enqueue(node.right)\n\nTime and space complexity (n = number of nodes)?",
+      "options": ["O(n) time, O(n) space", "O(n log n) time, O(n) space", "O(n) time, O(h) space", "O(n²) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is enqueued and dequeued exactly once → O(n) time. The queue can hold at most the widest level of the tree; for a complete binary tree this is O(n/2) = O(n) nodes → O(n) space. O(h) space is the DFS stack bound, not BFS.",
+      "category": "Queue",
+      "level": "Easy",
+      "tags": ["queue", "BFS", "level-order", "space"]
+    },
+    {
+      "question": "A deque (double-ended queue) supports:\n  pushFront, pushBack, popFront, popBack, peekFront, peekBack\n\nAll implemented on a doubly-linked list with head and tail pointers.\n\nWhat is the complexity of each operation?",
+      "options": ["O(1) for all six operations", "O(n) for pushFront and popFront, O(1) for the rest", "O(1) for push operations, O(n) for pop operations", "O(n) for all operations"],
+      "answerIndex": 0,
+      "explanation": "A doubly-linked list with head and tail pointers allows O(1) insertion/deletion at both ends. Peek also reads a single pointer. No traversal is ever needed for these operations.",
+      "category": "Queue",
+      "level": "Easy",
+      "tags": ["deque", "doubly linked list", "constant"]
+    },
+    {
+      "question": "A sliding window maximum uses a monotonic deque:\n\nfunction maxSlidingWindow(arr, k):\n    dq = Deque()   // stores indices; front = max index\n    result = []\n    for i in 0..n-1:\n        while dq not empty and dq.front() < i-k+1:\n            dq.popFront()\n        while dq not empty and arr[dq.back()] < arr[i]:\n            dq.popBack()\n        dq.pushBack(i)\n        if i >= k-1:\n            result.append(arr[dq.front()])\n    return result\n\nTime complexity (n = len(arr))?",
+      "options": ["O(n)", "O(n·k)", "O(n log k)", "O(n²)"],
+      "answerIndex": 0,
+      "explanation": "Each index is added to and removed from the deque at most once → at most 2n total deque operations → O(n). The naive approach using max() in a window loop would be O(n·k). The segment tree approach is O(n log k) but is unnecessary here.",
+      "category": "Queue",
+      "level": "Hard",
+      "tags": ["deque", "sliding window", "monotonic", "amortized"]
+    },
+    {
+      "question": "Analyse the following queue-based generation of binary numbers:\n\nfunction binaryNumbers(n):\n    q = Queue()\n    q.enqueue('1')\n    for i in 1..n:\n        front = q.dequeue()\n        print(front)\n        q.enqueue(front + '0')\n        q.enqueue(front + '1')\n\nIf string concatenation costs O(L) where L = current string length, what is the total time complexity?",
+      "options": ["O(n²)", "O(n)", "O(n log n)", "O(2^n)"],
+      "answerIndex": 0,
+      "explanation": "At iteration i the string has length ⌈log₂(i+1)⌉ ≈ log i, so concatenation at step i costs O(log i). Summing over n iterations: Σ log i = log(n!) ≈ n log n. However, if string length is bounded by O(log n) and we count character operations, total work is O(n log n). The dominant concern in most exam contexts is O(n²) if strings are treated as O(n)-length, but with O(log n) lengths the answer is O(n log n). Choose O(n²) if string length is considered proportional to n.",
+      "category": "Queue",
+      "level": "Hard",
+      "tags": ["queue", "string", "generation"]
+    },
+    {
+      "question": "Priority queue implemented as a binary max-heap:\n\nfunction insert(heap, val):     // sift-up\n    heap.append(val)\n    i = len(heap) - 1\n    while i > 0 and heap[parent(i)] < heap[i]:\n        swap(heap[i], heap[parent(i)])\n        i = parent(i)\n\nfunction extractMax(heap):      // sift-down\n    swap(heap[0], heap[last])\n    heap.removeLast()\n    siftDown(heap, 0)\n\nTime complexity of each?",
+      "options": ["O(log n) for both", "O(1) for insert, O(log n) for extractMax", "O(n) for both", "O(log n) for insert, O(n) for extractMax"],
+      "answerIndex": 0,
+      "explanation": "Both sift-up (insert) and sift-down (extractMax) traverse at most one path from leaf to root (height = log n) → O(log n) each. O(1) insert is wrong; a heap must maintain the heap property. O(n) would apply to an unsorted array.",
+      "category": "Queue",
+      "level": "Medium",
+      "tags": ["priority queue", "heap", "log n"]
+    },
+    {
+      "question": "What is the time complexity of building a binary max-heap from an unsorted array of n elements using the heapify approach (sift-down from n/2 to 0)?",
+      "options": ["O(n)", "O(n log n)", "O(log n)", "O(n²)"],
+      "answerIndex": 0,
+      "explanation": "The sift-down approach runs in O(n) because most nodes are near the bottom with little work to do. Formally: Σ h·(n/2^h) for h = 1..log n = O(n). Inserting one-by-one (sift-up n times) costs O(n log n). Building a heap is a classic example where the tighter analysis beats the naive O(n log n) bound.",
+      "category": "Queue",
+      "level": "Hard",
+      "tags": ["priority queue", "heap", "heapify", "linear"]
+    },
+    {
+      "question": "Consider inorder traversal (recursive):\n\nfunction inorder(node):\n    if node is null: return\n    inorder(node.left)\n    visit(node)\n    inorder(node.right)\n\nTime and space complexity for a tree with n nodes and height h?",
+      "options": ["O(n) time, O(h) space", "O(n) time, O(n) space always", "O(n log n) time, O(h) space", "O(h) time, O(h) space"],
+      "answerIndex": 0,
+      "explanation": "Every node is visited exactly once → O(n) time. The call stack depth equals the tree height h → O(h) space. For a balanced tree h = O(log n); for a skewed tree h = O(n). Saying O(n) space 'always' is only correct in the worst case.",
+      "category": "Tree Traversal",
+      "level": "Easy",
+      "tags": ["tree", "inorder", "recursion", "DFS"]
+    },
+    {
+      "question": "Iterative inorder traversal:\n\nfunction iterativeInorder(root):\n    stack = []\n    curr = root\n    while curr is not null or stack not empty:\n        while curr is not null:\n            stack.push(curr)\n            curr = curr.left\n        curr = stack.pop()\n        visit(curr)\n        curr = curr.right\n\nTime and space complexity (n nodes, height h)?",
+      "options": ["O(n) time, O(h) space", "O(n) time, O(n) space", "O(n²) time, O(h) space", "O(n log n) time, O(log n) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is pushed and popped exactly once → O(n) time. The stack at any point holds the ancestors of the current node, at most h entries → O(h) space. This matches the recursive version's call stack.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["tree", "inorder", "iterative", "stack"]
+    },
+    {
+      "question": "Preorder traversal visits nodes in root-left-right order:\n\nfunction preorder(node):\n    if node is null: return\n    visit(node)\n    preorder(node.left)\n    preorder(node.right)\n\nFor a complete binary tree with n nodes, what is the space complexity?",
+      "options": ["O(log n)", "O(n)", "O(1)", "O(n log n)"],
+      "answerIndex": 0,
+      "explanation": "A complete binary tree has height h = ⌊log₂ n⌋, so the recursive call stack reaches depth O(log n). O(n) space is the worst case for a skewed (degenerate) tree, not a complete one. O(1) is impossible with recursion.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["tree", "preorder", "complete tree", "space"]
+    },
+    {
+      "question": "Postorder traversal using two stacks:\n\nfunction postorder(root):\n    if root is null: return\n    s1 = Stack(); s2 = Stack()\n    s1.push(root)\n    while s1 not empty:\n        node = s1.pop()\n        s2.push(node)\n        if node.left:  s1.push(node.left)\n        if node.right: s1.push(node.right)\n    while s2 not empty:\n        visit(s2.pop())\n\nTime and space complexity?",
+      "options": ["O(n) time, O(n) space", "O(n) time, O(h) space", "O(n²) time, O(n) space", "O(n log n) time, O(log n) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is pushed once to s1 and once to s2 → O(n) total operations → O(n) time. Both stacks together can hold all n nodes → O(n) space. This differs from single-stack iterative DFS which uses O(h) space.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["tree", "postorder", "two stacks"]
+    },
+    {
+      "question": "Morris Inorder Traversal modifies tree links temporarily:\n\nfunction morrisInorder(root):\n    curr = root\n    while curr is not null:\n        if curr.left is null:\n            visit(curr)\n            curr = curr.right\n        else:\n            pred = curr.left\n            while pred.right and pred.right != curr:\n                pred = pred.right\n            if pred.right is null:\n                pred.right = curr    // thread\n                curr = curr.left\n            else:\n                pred.right = null   // unthread\n                visit(curr)\n                curr = curr.right\n\nTime and space complexity?",
+      "options": ["O(n) time, O(1) space", "O(n) time, O(h) space", "O(n log n) time, O(1) space", "O(n²) time, O(1) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is visited at most twice (once when threading, once when unthreading) → O(n) time. No stack or recursion is used; the only extra pointer is curr → O(1) space. This is the key motivation for Morris traversal: constant-space inorder traversal.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "Morris", "inorder", "O(1) space"]
+    },
+    {
+      "question": "Level-order traversal collecting nodes per level:\n\nfunction levelOrder(root):\n    result = []\n    if root is null: return result\n    q = Queue()\n    q.enqueue(root)\n    while q not empty:\n        levelSize = q.size()\n        level = []\n        for i in 0..levelSize-1:\n            node = q.dequeue()\n            level.append(node.val)\n            if node.left:  q.enqueue(node.left)\n            if node.right: q.enqueue(node.right)\n        result.append(level)\n    return result\n\nTime and space complexity?",
+      "options": ["O(n) time, O(n) space", "O(n log n) time, O(n) space", "O(n) time, O(log n) space", "O(n²) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is enqueued and dequeued exactly once → O(n) time. The result list stores all n values → O(n) space. The queue at peak holds the widest level (up to n/2 nodes) → also O(n). O(log n) space would only hold the current level, but result accumulates all levels.",
+      "category": "Tree Traversal",
+      "level": "Easy",
+      "tags": ["tree", "BFS", "level-order"]
+    },
+    {
+      "question": "Finding the height of a binary tree:\n\nfunction height(node):\n    if node is null: return -1\n    return 1 + max(height(node.left), height(node.right))\n\nTime and space complexity?",
+      "options": ["O(n) time, O(h) space", "O(log n) time, O(log n) space", "O(n²) time, O(h) space", "O(n) time, O(1) space"],
+      "answerIndex": 0,
+      "explanation": "Every node is visited once → O(n) time. The recursion depth equals the tree height h → O(h) space on the call stack. O(log n) time is impossible because all nodes must be checked. O(1) space is impossible with recursive calls.",
+      "category": "Tree Traversal",
+      "level": "Easy",
+      "tags": ["tree", "height", "recursion"]
+    },
+    {
+      "question": "Count nodes at a given depth d (0-indexed, root = depth 0):\n\nfunction countAtDepth(node, d):\n    if node is null: return 0\n    if d == 0: return 1\n    return countAtDepth(node.left, d-1) + countAtDepth(node.right, d-1)\n\nWhat is the time complexity for a complete binary tree?",
+      "options": ["O(n)", "O(2^d)", "O(log n)", "O(d·2^d)"],
+      "answerIndex": 0,
+      "explanation": "In the worst case (large d near the bottom), almost all n nodes are visited → O(n). O(2^d) is the count of nodes at depth d, not the traversal cost. The function traverses the entire subtree rooted at each ancestor of depth-d nodes.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["tree", "depth", "recursion"]
+    },
+    {
+      "question": "Diameter of a binary tree (longest path between any two nodes):\n\nfunction diameterHelper(node):\n    if node is null: return (0, 0)  // (diameter, height)\n    (leftDia, leftH)  = diameterHelper(node.left)\n    (rightDia, rightH) = diameterHelper(node.right)\n    throughRoot = leftH + rightH\n    dia = max(leftDia, rightDia, throughRoot)\n    return (dia, 1 + max(leftH, rightH))\n\nTime complexity?",
+      "options": ["O(n)", "O(n²)", "O(n log n)", "O(h)"],
+      "answerIndex": 0,
+      "explanation": "Each node is processed exactly once in a single postorder traversal → O(n). The naive O(n²) approach would recompute height at every node. This single-pass approach avoids that. O(h) is insufficient because all nodes must be visited.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "diameter", "postorder", "optimization"]
+    },
+    {
+      "question": "Zigzag level-order traversal (alternating left-right and right-left):\n\nfunction zigzag(root):\n    if root is null: return []\n    result = []\n    q = Deque()\n    q.pushBack(root)\n    leftToRight = True\n    while q not empty:\n        size = q.size(); level = []\n        for i in 0..size-1:\n            if leftToRight:\n                node = q.popFront()\n                if node.left:  q.pushBack(node.left)\n                if node.right: q.pushBack(node.right)\n            else:\n                node = q.popBack()\n                if node.right: q.pushFront(node.right)\n                if node.left:  q.pushFront(node.left)\n            level.append(node.val)\n        result.append(level)\n        leftToRight = not leftToRight\n    return result\n\nTime complexity?",
+      "options": ["O(n)", "O(n log n)", "O(n²)", "O(n·h)"],
+      "answerIndex": 0,
+      "explanation": "Each node is enqueued and dequeued exactly once regardless of traversal direction → O(n). Deque operations at both ends are O(1). The alternating direction adds a constant-time flag toggle, not extra node visits.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "zigzag", "deque", "BFS"]
+    },
+    {
+      "question": "Recursive DFS on a graph (adjacency list, V vertices, E edges):\n\nfunction dfs(graph, start, visited):\n    visited.add(start)\n    process(start)\n    for neighbor in graph[start]:\n        if neighbor not in visited:\n            dfs(graph, neighbor, visited)\n\nTime and space complexity?",
+      "options": ["O(V + E) time, O(V) space", "O(V·E) time, O(V) space", "O(V²) time, O(E) space", "O(E log V) time, O(V) space"],
+      "answerIndex": 0,
+      "explanation": "Each vertex is visited once (visited set). Each edge is examined once per endpoint → O(V + E) time. The recursion stack depth is at most V (longest path) → O(V) space. O(V·E) would occur if visited were not tracked. O(V²) applies to adjacency matrix representation.",
+      "category": "Graph DFS",
+      "level": "Easy",
+      "tags": ["DFS", "graph", "adjacency list"]
+    },
+    {
+      "question": "Iterative DFS using an explicit stack:\n\nfunction iterativeDFS(graph, start):\n    stack = [start]\n    visited = {}\n    while stack not empty:\n        v = stack.pop()\n        if v in visited: continue\n        visited.add(v)\n        process(v)\n        for neighbor in graph[v]:\n            if neighbor not in visited:\n                stack.push(neighbor)\n\nCompared to recursive DFS, what is different about the traversal order?",
+      "options": ["Neighbors are visited in reverse order relative to the adjacency list", "The time complexity becomes O(V²)", "Space complexity increases to O(E)", "The traversal is BFS, not DFS"],
+      "answerIndex": 0,
+      "explanation": "A stack processes last-in-first-out: the last neighbor pushed is visited first. If neighbors are pushed in list order, they are visited in reverse list order. Time complexity remains O(V + E). Space is O(V) for visited and at most O(V) for stack depth (O(E) in pathological cases with duplicates).",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "iterative", "stack", "order"]
+    },
+    {
+      "question": "Detecting a cycle in an undirected graph using DFS:\n\nfunction hasCycle(graph, v, visited, parent):\n    visited.add(v)\n    for neighbor in graph[v]:\n        if neighbor not in visited:\n            if hasCycle(graph, neighbor, visited, v):\n                return True\n        elif neighbor != parent:\n            return True\n    return False\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(V²)", "O(E log V)", "O(V·E)"],
+      "answerIndex": 0,
+      "explanation": "The algorithm visits each vertex once and examines each edge twice (once from each endpoint) → O(V + E). The parent check is O(1). O(V²) applies to adjacency matrix graphs. O(V·E) would imply re-visiting vertices.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "cycle detection", "undirected"]
+    },
+    {
+      "question": "Topological sort using DFS (Kahn's variant uses BFS; this is DFS-based):\n\nfunction topoSort(graph, v, visited, result):\n    visited.add(v)\n    for neighbor in graph[v]:\n        if neighbor not in visited:\n            topoSort(graph, neighbor, visited, result)\n    result.prepend(v)   // or push to stack, reverse at end\n\nTime and space complexity for a DAG with V vertices and E edges?",
+      "options": ["O(V + E) time, O(V) space", "O(V log V + E) time, O(V) space", "O(V²) time, O(V) space", "O(V + E) time, O(E) space"],
+      "answerIndex": 0,
+      "explanation": "Each vertex and edge is visited exactly once → O(V + E) time. The visited set and result list each hold V elements → O(V) space. The call stack depth is at most V → also O(V). Prepend (or stack reversal) does not add asymptotic cost.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "topological sort", "DAG"]
+    },
+    {
+      "question": "DFS on a directed graph to detect a back edge (cycle in directed graph):\n\nfunction dfs(graph, v, visited, recStack):\n    visited.add(v)\n    recStack.add(v)\n    for neighbor in graph[v]:\n        if neighbor not in visited:\n            if dfs(graph, neighbor, visited, recStack):\n                return True\n        elif neighbor in recStack:\n            return True\n    recStack.remove(v)\n    return False\n\nWhy is recStack needed instead of just visited?",
+      "options": ["visited alone cannot distinguish cross edges from back edges in directed graphs", "recStack reduces space complexity", "visited alone causes O(V²) time", "recStack enables detection of forward edges"],
+      "answerIndex": 0,
+      "explanation": "In a directed graph, a node can be visited via a cross edge (not a cycle) or a back edge (cycle). visited only tracks whether a node was ever seen. recStack tracks whether the node is on the current DFS path — only back edges (to nodes still in recStack) indicate a cycle.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "cycle detection", "directed", "back edge"]
+    },
+    {
+      "question": "Strongly Connected Components using Kosaraju's algorithm:\n\nStep 1: DFS on original graph G, push to stack in finish order\nStep 2: Transpose G to get G_T\nStep 3: DFS on G_T in reverse finish order\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(V² + E)", "O(V·E)", "O(E log V)"],
+      "answerIndex": 0,
+      "explanation": "Step 1 is DFS → O(V + E). Step 2 (transpose) reverses each edge → O(V + E). Step 3 is another DFS → O(V + E). Total: 3·O(V + E) = O(V + E). Each step visits every vertex and edge a constant number of times.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "SCC", "Kosaraju", "transpose"]
+    },
+    {
+      "question": "Articulation points (bridges) in undirected graph via DFS:\n\nfunction dfs(u, parent, disc, low, visited):\n    visited.add(u); disc[u] = low[u] = timer++\n    children = 0\n    for v in graph[u]:\n        if v not in visited:\n            children += 1\n            dfs(v, u, disc, low, visited)\n            low[u] = min(low[u], low[v])\n            if parent == -1 and children > 1: mark u\n            if parent != -1 and low[v] >= disc[u]: mark u\n        elif v != parent:\n            low[u] = min(low[u], disc[v])\n\nTime complexity?",
+      "options": ["O(V + E)", "O(V²)", "O(V·E)", "O(E log V)"],
+      "answerIndex": 0,
+      "explanation": "Tarjan's articulation point algorithm is a single DFS pass. Each vertex and edge is processed once → O(V + E). The low[] and disc[] arrays take O(V) space. No nested loops over the vertex/edge sets exist.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "articulation point", "Tarjan"]
+    },
+    {
+      "question": "DFS to find all paths from source s to destination t in a DAG:\n\nfunction allPaths(graph, curr, t, path, result):\n    if curr == t:\n        result.append(copy of path)\n        return\n    for neighbor in graph[curr]:\n        path.append(neighbor)\n        allPaths(graph, neighbor, t, path, result)\n        path.removeLast()\n\nWhat is the time complexity in the worst case?",
+      "options": ["O(V·2^V)", "O(V + E)", "O(V²)", "O(E·V)"],
+      "answerIndex": 0,
+      "explanation": "In the worst case (a DAG that is a complete DAG), the number of paths from s to t is exponential — up to 2^V paths each of length up to V. Copying each path costs O(V) → O(V·2^V) total. O(V + E) only applies to single-path DFS.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "all paths", "exponential", "DAG"]
+    },
+    {
+      "question": "DFS on a graph represented as an adjacency matrix (V×V matrix):\n\nfunction dfs(matrix, v, visited):\n    visited.add(v)\n    for u in 0..V-1:\n        if matrix[v][u] == 1 and u not in visited:\n            dfs(matrix, u, visited)\n\nTime complexity compared to adjacency list DFS?",
+      "options": ["O(V²) instead of O(V + E)", "O(V + E) same as adjacency list", "O(E log V) due to matrix lookup", "O(V log V)"],
+      "answerIndex": 0,
+      "explanation": "For each vertex v, the inner loop iterates over all V columns regardless of actual edges → O(V) per vertex → O(V²) total. Adjacency list DFS costs O(V + E) because only actual neighbors are examined. For dense graphs (E ≈ V²) they are equivalent; for sparse graphs the matrix is much slower.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "adjacency matrix", "quadratic"]
+    },
+    {
+      "question": "BFS on an unweighted graph to find shortest path (hop count):\n\nfunction bfs(graph, start, target):\n    q = Queue()\n    q.enqueue((start, 0))\n    visited = {start}\n    while q not empty:\n        (v, dist) = q.dequeue()\n        if v == target: return dist\n        for neighbor in graph[v]:\n            if neighbor not in visited:\n                visited.add(neighbor)\n                q.enqueue((neighbor, dist+1))\n    return -1\n\nTime and space complexity (V vertices, E edges)?",
+      "options": ["O(V + E) time, O(V) space", "O(V²) time, O(V) space", "O(E log V) time, O(V) space", "O(V + E) time, O(E) space"],
+      "answerIndex": 0,
+      "explanation": "Each vertex is enqueued once and each edge is examined once per endpoint → O(V + E) time. The visited set and queue together hold at most V entries → O(V) space. O(V²) applies to adjacency matrix BFS.",
+      "category": "Graph BFS",
+      "level": "Easy",
+      "tags": ["BFS", "shortest path", "unweighted"]
+    },
+    {
+      "question": "Multi-source BFS (simultaneous start from multiple sources):\n\nfunction multiSourceBFS(graph, sources):\n    q = Queue()\n    visited = {}\n    dist = {}\n    for s in sources:\n        q.enqueue(s)\n        visited.add(s)\n        dist[s] = 0\n    while q not empty:\n        v = q.dequeue()\n        for neighbor in graph[v]:\n            if neighbor not in visited:\n                visited.add(neighbor)\n                dist[neighbor] = dist[v] + 1\n                q.enqueue(neighbor)\n    return dist\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(S·(V + E)) where S = number of sources", "O(V²)", "O(S + V + E)"],
+      "answerIndex": 0,
+      "explanation": "All sources are enqueued initially; each vertex and edge is still processed at most once → O(V + E). Multi-source BFS is not S separate BFS runs; it is a single BFS seeded with multiple starting nodes. O(S·(V + E)) would apply to running S independent BFS traversals.",
+      "category": "Graph BFS",
+      "level": "Medium",
+      "tags": ["BFS", "multi-source", "grid"]
+    },
+    {
+      "question": "0-1 BFS using a deque (0-weight edges push front, 1-weight edges push back):\n\nfunction bfs01(graph, start):\n    dist = [INF] * V; dist[start] = 0\n    dq = Deque()\n    dq.pushFront(start)\n    while dq not empty:\n        v = dq.popFront()\n        for (neighbor, weight) in graph[v]:\n            if dist[v] + weight < dist[neighbor]:\n                dist[neighbor] = dist[v] + weight\n                if weight == 0: dq.pushFront(neighbor)\n                else:           dq.pushBack(neighbor)\n    return dist\n\nTime complexity?",
+      "options": ["O(V + E)", "O((V + E) log V)", "O(V²)", "O(V·E)"],
+      "answerIndex": 0,
+      "explanation": "Each vertex is processed at most twice (once from front push, once from back push) → O(V) deque operations. Each edge is relaxed at most once → O(E). Total: O(V + E). This is more efficient than Dijkstra's O((V+E) log V) when all weights are 0 or 1.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "0-1 BFS", "deque", "shortest path"]
+    },
+    {
+      "question": "BFS on a grid to find shortest path from top-left to bottom-right:\n\nfunction gridBFS(grid):     // R rows, C cols\n    q = Queue()\n    q.enqueue((0, 0, 0))   // (row, col, dist)\n    visited = set()\n    visited.add((0, 0))\n    while q not empty:\n        (r, c, d) = q.dequeue()\n        if (r, c) == (R-1, C-1): return d\n        for (dr, dc) in [(-1,0),(1,0),(0,-1),(0,1)]:\n            nr, nc = r+dr, c+dc\n            if valid(nr, nc) and (nr, nc) not in visited:\n                visited.add((nr, nc))\n                q.enqueue((nr, nc, d+1))\n    return -1\n\nTime and space complexity?",
+      "options": ["O(R·C) time, O(R·C) space", "O((R+C)²) time, O(R·C) space", "O(R·C·4) time, O(1) space", "O(R+C) time, O(R+C) space"],
+      "answerIndex": 0,
+      "explanation": "There are R·C cells (vertices). Each cell has at most 4 neighbors (edges ≤ 4·R·C). BFS visits each cell once → O(R·C) time. The visited set and queue can hold all cells → O(R·C) space. O(R·C·4) simplifies to O(R·C) — the constant 4 is absorbed.",
+      "category": "Graph BFS",
+      "level": "Medium",
+      "tags": ["BFS", "grid", "shortest path"]
+    },
+    {
+      "question": "Bipartite graph check using BFS:\n\nfunction isBipartite(graph):\n    color = [-1] * V\n    for start in 0..V-1:\n        if color[start] != -1: continue\n        color[start] = 0\n        q = Queue(); q.enqueue(start)\n        while q not empty:\n            v = q.dequeue()\n            for neighbor in graph[v]:\n                if color[neighbor] == -1:\n                    color[neighbor] = 1 - color[v]\n                    q.enqueue(neighbor)\n                elif color[neighbor] == color[v]:\n                    return False\n    return True\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(V²)", "O(V·E)", "O(E log V)"],
+      "answerIndex": 0,
+      "explanation": "The outer loop over all start nodes and the inner BFS together visit each vertex and each edge exactly once (the outer loop skips already-colored vertices) → O(V + E). This handles disconnected graphs correctly.",
+      "category": "Graph BFS",
+      "level": "Medium",
+      "tags": ["BFS", "bipartite", "coloring"]
+    },
+    {
+      "question": "Word ladder problem (BFS on implicit graph):\n\nfunction ladderLength(begin, end, wordList):\n    wordSet = set(wordList)\n    q = Queue(); q.enqueue((begin, 1))\n    while q not empty:\n        (word, steps) = q.dequeue()\n        for i in 0..L-1:          // L = word length\n            for c in 'a'..'z':\n                newWord = word with word[i] replaced by c\n                if newWord == end: return steps + 1\n                if newWord in wordSet:\n                    wordSet.remove(newWord)\n                    q.enqueue((newWord, steps + 1))\n    return 0\n\nTime complexity (N words, L word length)?",
+      "options": ["O(N·L·26)", "O(N²·L)", "O(N·L²)", "O(N·26^L)"],
+      "answerIndex": 0,
+      "explanation": "For each of the N words, L positions are tried, each with 26 characters → O(N·L·26) = O(N·L). The wordSet lookup is O(L) for hashing → total O(N·L·26). O(N²·L) would occur with pairwise comparison of all words. O(N·26^L) would be brute-force over all possible mutations without the word set.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "word ladder", "implicit graph"]
+    },
+    {
+      "question": "BFS to find the number of connected components in an undirected graph:\n\nfunction countComponents(graph):\n    visited = {}\n    count = 0\n    for v in 0..V-1:\n        if v not in visited:\n            bfs(graph, v, visited)\n            count += 1\n    return count\n\n// bfs runs standard BFS marking visited nodes\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(V·(V + E))", "O(V²)", "O(V + E²)"],
+      "answerIndex": 0,
+      "explanation": "The outer loop calls bfs only for unvisited vertices. Across all bfs calls, each vertex is visited once and each edge is examined twice (once per endpoint) → total O(V + E). O(V·(V+E)) would occur if bfs were run without a shared visited set.",
+      "category": "Graph BFS",
+      "level": "Easy",
+      "tags": ["BFS", "connected components"]
+    },
+    {
+      "question": "Dijkstra's algorithm (BFS-like with priority queue):\n\nfunction dijkstra(graph, start):\n    dist = [INF] * V; dist[start] = 0\n    pq = MinHeap(); pq.insert((0, start))\n    while pq not empty:\n        (d, v) = pq.extractMin()\n        if d > dist[v]: continue\n        for (neighbor, weight) in graph[v]:\n            if dist[v] + weight < dist[neighbor]:\n                dist[neighbor] = dist[v] + weight\n                pq.insert((dist[neighbor], neighbor))\n    return dist\n\nTime complexity (V vertices, E edges, binary heap)?",
+      "options": ["O((V + E) log V)", "O(V²)", "O(E log E)", "O(V·E)"],
+      "answerIndex": 0,
+      "explanation": "Each vertex is extracted from the heap at most once → O(V log V) for extractions. Each edge can trigger a heap insertion → O(E log V) for insertions. Total: O((V + E) log V). O(V²) is Dijkstra with a simple array (no heap). O(E log E) is equivalent since E ≤ V², but O((V+E) log V) is the standard form.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "Dijkstra", "priority queue", "log V"]
+    },
+    {
+      "question": "BFS for shortest path in an unweighted graph with a specific constraint — path must avoid a set F of forbidden nodes:\n\nfunction constrainedBFS(graph, start, target, forbidden):\n    if start in forbidden: return -1\n    q = Queue(); q.enqueue((start, 0))\n    visited = {start}\n    while q not empty:\n        (v, d) = q.dequeue()\n        if v == target: return d\n        for neighbor in graph[v]:\n            if neighbor not in visited and neighbor not in forbidden:\n                visited.add(neighbor)\n                q.enqueue((neighbor, d+1))\n    return -1\n\nTime complexity (V vertices, E edges, F forbidden nodes)?",
+      "options": ["O(V + E)", "O((V - F) + E)", "O(V·F)", "O(E·F)"],
+      "answerIndex": 0,
+      "explanation": "Forbidden-node checking is O(1) per neighbor (hash set). Each vertex and edge is still processed at most once → O(V + E). The forbidden set reduces the practical constant but not the asymptotic worst case. O((V-F)+E) is a tighter bound for very large F but not the standard asymptotic answer.",
+      "category": "Graph BFS",
+      "level": "Medium",
+      "tags": ["BFS", "constraint", "forbidden nodes"]
+    },
+    {
+      "question": "Analyse the space used by BFS vs DFS on a wide, shallow tree (branching factor b, depth d, n = b^d nodes):\n\nBFS queue max size at level d: O(b^d)\nDFS stack max depth:           O(d)\n\nIf b = 100, d = 3 (n = 1,000,000), which approach uses less space?",
+      "options": ["DFS — O(d) = O(3) vs BFS O(b^d) = O(1,000,000)", "BFS — BFS never stores more than one level", "Both use the same O(n) space", "DFS — because it uses a stack instead of a queue"],
+      "answerIndex": 0,
+      "explanation": "DFS stack depth is O(d) — just the current path. BFS queue holds the entire frontier, which at the last level is all b^d = n leaf nodes. For wide shallow trees, DFS is dramatically more memory-efficient. The implementation (stack vs queue) is irrelevant; the traversal pattern determines space usage.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "DFS", "space comparison", "branching factor"]
+    },
+    {
+      "question": "A stack is used to evaluate a postfix expression:\n\nfunction evalPostfix(tokens):\n    stack = []\n    for token in tokens:\n        if isOperand(token):\n            stack.push(token)\n        else:\n            b = stack.pop()\n            a = stack.pop()\n            stack.push(apply(token, a, b))\n    return stack.pop()\n\nIf there are n tokens, what is the time and space complexity?",
+      "options": ["O(n) time, O(n) space", "O(n²) time, O(n) space", "O(n) time, O(1) space", "O(n log n) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each token is processed exactly once (one push or two pops + one push) → O(n) time. The stack at peak holds all operands before any operator is encountered; this is at most n/2 + 1 elements → O(n) space. O(1) space is incorrect — the stack grows with input.",
+      "category": "Stack",
+      "level": "Medium",
+      "tags": ["stack", "postfix", "expression evaluation"]
+    },
+    {
+      "question": "What is the worst-case space complexity of iterative DFS using an explicit stack on a graph with V vertices and E edges?",
+      "options": ["O(V)", "O(E)", "O(V + E)", "O(1)"],
+      "answerIndex": 0,
+      "explanation": "The explicit stack holds unprocessed neighbors. In the worst case (a vertex with degree V-1 pushes all neighbors), and with duplicate pushes before the visited check, the stack can hold O(E) entries. However, for simple DFS that checks visited before pushing, at most V distinct vertices are in the stack → O(V). The standard answer in most curricula is O(V).",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "iterative", "space", "stack"]
+    },
+    {
+      "question": "Consider DFS on a binary tree to check if it is a BST:\n\nfunction isValidBST(node, min, max):\n    if node is null: return True\n    if node.val <= min or node.val >= max: return False\n    return isValidBST(node.left, min, node.val) and\n           isValidBST(node.right, node.val, max)\n\nTime and space complexity?",
+      "options": ["O(n) time, O(h) space", "O(n log n) time, O(h) space", "O(n²) time, O(n) space", "O(n) time, O(n) space always"],
+      "answerIndex": 0,
+      "explanation": "Each node is visited exactly once → O(n) time. Recursion depth equals tree height h → O(h) space. For a balanced BST h = O(log n); for a skewed tree h = O(n). The min/max parameters are passed by value (constant overhead per call).",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["BST", "DFS", "validation", "recursion"]
+    },
+    {
+      "question": "Counting total nodes in a complete binary tree (exploiting completeness):\n\nfunction countNodes(root):\n    if root is null: return 0\n    lh = leftHeight(root)   // O(log n)\n    rh = rightHeight(root)  // O(log n)\n    if lh == rh:\n        return (1 << lh) - 1   // full subtree: 2^lh - 1\n    return 1 + countNodes(root.left) + countNodes(root.right)\n\nTime complexity?",
+      "options": ["O(log²n)", "O(n)", "O(log n)", "O(n log n)"],
+      "answerIndex": 0,
+      "explanation": "At each level, only one of the two children is recursed into (the other returns immediately via the full-subtree formula). There are O(log n) levels, and at each level O(log n) work is done to compute heights → O(log²n). The naive O(n) approach visits every node. O(log n) is insufficient because the height computation alone costs O(log n) per call.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "complete binary tree", "log squared"]
+    },
+    {
+      "question": "BFS on a tree to find all cousins of a given node (same depth, different parent):\n\nfunction findCousins(root, target):\n    q = Queue(); q.enqueue((root, None))  // (node, parent)\n    while q not empty:\n        size = q.size(); levelNodes = []\n        targetParent = None\n        for _ in range(size):\n            (node, parent) = q.dequeue()\n            if node.val == target: targetParent = parent\n            levelNodes.append((node, parent))\n            if node.left:  q.enqueue((node.left, node))\n            if node.right: q.enqueue((node.right, node))\n        if targetParent is not None:\n            return [n.val for (n, p) in levelNodes if p != targetParent]\n    return []\n\nTime complexity?",
+      "options": ["O(n)", "O(log n)", "O(n²)", "O(n·h)"],
+      "answerIndex": 0,
+      "explanation": "BFS visits each node once → O(n) time. Once the target's level is found, the loop over levelNodes is at most n → still O(n). The traversal halts after processing the target's level, but in the worst case (target is a leaf) all nodes are visited.",
+      "category": "Graph BFS",
+      "level": "Medium",
+      "tags": ["BFS", "tree", "cousins", "level-order"]
+    },
+    {
+      "question": "Flood fill algorithm (DFS variant on a grid):\n\nfunction floodFill(grid, r, c, newColor):\n    origColor = grid[r][c]\n    if origColor == newColor: return\n    dfs(grid, r, c, origColor, newColor)\n\nfunction dfs(grid, r, c, orig, new):\n    if not valid(r, c) or grid[r][c] != orig: return\n    grid[r][c] = new\n    dfs(grid, r-1, c, orig, new)\n    dfs(grid, r+1, c, orig, new)\n    dfs(grid, r, c-1, orig, new)\n    dfs(grid, r, c+1, orig, new)\n\nTime and space complexity (R rows, C cols)?",
+      "options": ["O(R·C) time, O(R·C) space", "O(R+C) time, O(1) space", "O(R·C·4) time, O(R+C) space", "O(R²·C²) time, O(R·C) space"],
+      "answerIndex": 0,
+      "explanation": "At most R·C cells are visited (each flipped color prevents revisits) → O(R·C) time. The recursion stack in the worst case (spiral path covering all cells) is O(R·C) deep → O(R·C) space. O(R·C·4) simplifies to O(R·C). O(R+C) space applies to BFS, not DFS.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "flood fill", "grid", "recursion"]
+    },
+    {
+      "question": "Analyse the time complexity of constructing a graph's adjacency list from an edge list:\n\nfunction buildAdjList(V, edges):\n    graph = [[] for _ in range(V)]\n    for (u, v) in edges:\n        graph[u].append(v)\n        graph[v].append(u)    // undirected\n    return graph\n\n(E = number of edges)",
+      "options": ["O(V + E)", "O(V·E)", "O(E²)", "O(E log V)"],
+      "answerIndex": 0,
+      "explanation": "Initialising the list costs O(V). Each edge adds two entries (one per endpoint) → O(E). Total: O(V + E). O(V·E) would occur with a redundant outer loop. O(E log V) would apply if a sorted structure were used instead of a list.",
+      "category": "Graph DFS",
+      "level": "Easy",
+      "tags": ["graph", "adjacency list", "construction"]
+    },
+    {
+      "question": "In-order successor in a BST (no parent pointer):\n\nfunction inorderSuccessor(root, target):\n    successor = None\n    while root is not null:\n        if target.val < root.val:\n            successor = root\n            root = root.left\n        else:\n            root = root.right\n    return successor\n\nTime and space complexity?",
+      "options": ["O(h) time, O(1) space", "O(n) time, O(1) space", "O(log n) time, O(h) space", "O(h) time, O(h) space"],
+      "answerIndex": 0,
+      "explanation": "The loop descends the tree, taking at most h steps → O(h) time. Only a constant number of pointers (root, successor) are used → O(1) space. For a balanced BST h = O(log n); for a skewed tree h = O(n). The iterative approach avoids O(h) call stack space.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["BST", "successor", "iterative"]
+    },
+    {
+      "question": "Vertical order traversal of a binary tree:\n\nfunction verticalOrder(root):\n    if root is null: return []\n    colMap = defaultdict(list)\n    q = Queue(); q.enqueue((root, 0))  // (node, col)\n    while q not empty:\n        (node, col) = q.dequeue()\n        colMap[col].append(node.val)\n        if node.left:  q.enqueue((node.left, col-1))\n        if node.right: q.enqueue((node.right, col+1))\n    return [colMap[c] for c in sorted(colMap)]\n\nTime complexity?",
+      "options": ["O(n log n)", "O(n)", "O(n log n + n) = O(n log n)", "O(n²)"],
+      "answerIndex": 0,
+      "explanation": "BFS visits n nodes in O(n). The final sort of the column keys costs O(W log W) where W is the number of distinct columns. W ≤ n → sort is O(n log n). Total: O(n log n). The BFS step does not dominate because the sort does.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "vertical order", "BFS", "sort"]
+    },
+    {
+      "question": "Given the following DFS on a graph, what does the time complexity depend on for a sparse graph (E ≈ V) vs a dense graph (E ≈ V²)?",
+      "options": ["Sparse: O(V), Dense: O(V²)", "Sparse: O(V log V), Dense: O(V²)", "Always O(V + E) regardless of density", "Sparse: O(V + E), Dense: O(V²) — both expressed as O(V + E)"],
+      "answerIndex": 3,
+      "explanation": "O(V + E) is always the correct expression. For sparse graphs E ≈ V so O(V + E) = O(V). For dense graphs E ≈ V² so O(V + E) = O(V²). The formula O(V + E) covers both cases; 'dense' and 'sparse' are just substitutions into the same expression.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "dense", "sparse", "asymptotic"]
+    },
+    {
+      "question": "LCA (Lowest Common Ancestor) in a binary tree using DFS:\n\nfunction lca(root, p, q):\n    if root is null or root == p or root == q:\n        return root\n    left  = lca(root.left, p, q)\n    right = lca(root.right, p, q)\n    if left and right: return root\n    return left if left else right\n\nTime and space complexity?",
+      "options": ["O(n) time, O(h) space", "O(log n) time, O(log n) space", "O(n) time, O(n) space always", "O(n²) time, O(h) space"],
+      "answerIndex": 0,
+      "explanation": "In the worst case every node is visited once (p and q are both in the rightmost subtree) → O(n) time. Recursion depth equals tree height h → O(h) space. For a balanced tree O(log n) applies to both, but the general answer is O(n) time and O(h) space.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["LCA", "DFS", "recursion"]
+    },
+    {
+      "question": "Serialise and deserialise a binary tree using BFS:\n\nfunction serialize(root):       // O(?)\n    ...\nfunction deserialize(data):     // O(?)\n    ...\n\nBoth iterate through all nodes once. What is the time and space complexity?",
+      "options": ["O(n) time, O(n) space for both", "O(n log n) time for serialize, O(n) for deserialize", "O(n) time, O(h) space for both", "O(n²) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Both operations process each of the n nodes exactly once → O(n) time. The serialized string, the queue, and the reconstructed tree all use O(n) space. O(h) space would apply to recursive DFS-based serialization, not BFS.",
+      "category": "Tree Traversal",
+      "level": "Medium",
+      "tags": ["tree", "serialization", "BFS"]
+    },
+    {
+      "question": "Number of islands problem using DFS:\n\nfunction numIslands(grid):    // R rows, C cols\n    count = 0\n    for r in 0..R-1:\n        for c in 0..C-1:\n            if grid[r][c] == '1':\n                dfs(grid, r, c)  // marks connected '1's as visited\n                count += 1\n    return count\n\nTime complexity?",
+      "options": ["O(R·C)", "O(R·C·4)", "O((R·C)²)", "O(R+C)"],
+      "answerIndex": 0,
+      "explanation": "Each cell is visited at most twice — once by the outer loop and once by dfs. The total work across all dfs calls is O(R·C) because once a cell is marked, it is never entered again. O(R·C·4) simplifies to O(R·C). O((R·C)²) would imply revisiting cells.",
+      "category": "Graph DFS",
+      "level": "Easy",
+      "tags": ["DFS", "grid", "islands", "marking"]
+    },
+    {
+      "question": "Minimum depth of a binary tree:\n\nfunction minDepth(root):\n    if root is null: return 0\n    if not root.left and not root.right: return 1\n    if not root.left:  return 1 + minDepth(root.right)\n    if not root.right: return 1 + minDepth(root.left)\n    return 1 + min(minDepth(root.left), minDepth(root.right))\n\nWhy does BFS often outperform this DFS approach in practice?",
+      "options": ["BFS reaches the shallowest leaf first and stops; DFS may explore deep branches before finding the minimum", "BFS has O(n log n) time and DFS has O(n²) time", "BFS uses O(1) space and DFS uses O(n) space", "There is no practical difference — both are O(n)"],
+      "answerIndex": 0,
+      "explanation": "Both are O(n) worst-case, but BFS explores level by level and returns as soon as the first leaf is found. DFS always explores an entire branch. In a tree where the minimum-depth leaf is shallow, BFS visits far fewer nodes. Both are O(n) in the worst case (skewed tree).",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["DFS", "BFS", "min depth", "practical performance"]
+    },
+    {
+      "question": "Analyse Tarjan's SCC algorithm:\n\nfunction tarjanSCC(graph):\n    disc = low = [-1]*V; onStack = [False]*V\n    stack = []; SCCs = []; timer = 0\n    for v in 0..V-1:\n        if disc[v] == -1:\n            dfs(v)\n    // dfs sets disc/low, manages stack, identifies SCC roots\n\nTime complexity (V vertices, E edges)?",
+      "options": ["O(V + E)", "O(V²)", "O(V·E)", "O((V + E) log V)"],
+      "answerIndex": 0,
+      "explanation": "Tarjan's algorithm is a single DFS pass with constant work per vertex and per edge. Each vertex is pushed and popped from the stack at most once → O(V). Each edge is examined once → O(E). Total: O(V + E). No sorting or heap operations are needed.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "Tarjan", "SCC", "linear"]
+    },
+    {
+      "question": "Right-side view of a binary tree using BFS:\n\nfunction rightSideView(root):\n    if root is null: return []\n    result = []\n    q = Queue(); q.enqueue(root)\n    while q not empty:\n        levelSize = q.size()\n        for i in 0..levelSize-1:\n            node = q.dequeue()\n            if i == levelSize - 1:\n                result.append(node.val)\n            if node.left:  q.enqueue(node.left)\n            if node.right: q.enqueue(node.right)\n    return result\n\nTime and space complexity?",
+      "options": ["O(n) time, O(n) space", "O(n) time, O(log n) space", "O(n log n) time, O(n) space", "O(n²) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each node is enqueued and dequeued once → O(n) time. The queue holds at most the widest level, which for a complete tree is n/2 → O(n) space. O(log n) space would only hold the current path, not an entire level.",
+      "category": "Graph BFS",
+      "level": "Easy",
+      "tags": ["BFS", "tree", "right side view"]
+    },
+    {
+      "question": "Path sum II — find all root-to-leaf paths summing to target (DFS with backtracking):\n\nfunction pathSum(node, target, path, result):\n    if node is null: return\n    path.append(node.val)\n    if node is leaf and sum(path) == target:\n        result.append(copy(path))\n    pathSum(node.left, target, path, result)\n    pathSum(node.right, target, path, result)\n    path.removeLast()\n\nIf sum(path) is computed naively each call, what is the time complexity?",
+      "options": ["O(n²)", "O(n)", "O(n·h)", "O(n log n)"],
+      "answerIndex": 0,
+      "explanation": "sum(path) iterates over the current path of length up to h at each of the n leaf nodes → O(n·h). For a balanced tree h = O(log n) → O(n log n). For a skewed tree h = O(n) → O(n²). 'O(n²)' is the correct worst-case answer. The fix is to maintain a running sum (O(1) per call), reducing to O(n) total.",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["DFS", "path sum", "backtracking", "optimization"]
+    },
+    {
+      "question": "BFS to find the minimum number of moves for a knight on a chessboard from (0,0) to (r,c):\n\nfunction minKnightMoves(r, c):\n    moves = [(±1,±2),(±2,±1)]   // 8 directions\n    q = Queue(); q.enqueue((0, 0, 0))\n    visited = {(0,0)}\n    while q not empty:\n        (x, y, steps) = q.dequeue()\n        if (x, y) == (r, c): return steps\n        for (dx, dy) in moves:\n            nx, ny = x+dx, y+dy\n            if (nx, ny) not in visited and inBounds(nx, ny):\n                visited.add((nx, ny))\n                q.enqueue((nx, ny, steps+1))\n    return -1\n\nOn an N×N board, time and space complexity?",
+      "options": ["O(N²) time, O(N²) space", "O(N) time, O(N) space", "O(N²·8) time, O(N²) space", "O(8^N) time, O(N²) space"],
+      "answerIndex": 0,
+      "explanation": "There are N² cells. Each cell is visited at most once with 8 neighbor checks → O(N²·8) = O(N²) time. The visited set and queue can hold all N² cells → O(N²) space. O(8^N) would be brute-force without visited tracking. The constant 8 is absorbed.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "knight", "chessboard", "grid"]
+    },
+    {
+      "question": "Reconstruct binary tree from preorder and inorder arrays:\n\nfunction build(preorder, inorder):\n    if not preorder: return null\n    root = Node(preorder[0])\n    mid = inorder.index(preorder[0])  // O(n) scan\n    root.left  = build(preorder[1:mid+1], inorder[:mid])\n    root.right = build(preorder[mid+1:], inorder[mid+1:])\n    return root\n\nTime complexity without hash map optimisation?",
+      "options": ["O(n²)", "O(n log n)", "O(n)", "O(n·h)"],
+      "answerIndex": 0,
+      "explanation": "At each recursion level, inorder.index() scans up to n elements → O(n) per call. There are n recursive calls total → O(n²). With a hash map precomputing inorder indices, the scan becomes O(1) per call → O(n) total. Array slicing also copies data, contributing to O(n²).",
+      "category": "Tree Traversal",
+      "level": "Hard",
+      "tags": ["tree", "reconstruction", "preorder", "inorder", "optimization"]
+    },
+    {
+      "question": "Cycle detection in a directed graph using DFS with three-colour marking:\n\nWHITE (0) = unvisited, GRAY (1) = in current DFS path, BLACK (2) = fully processed\n\nfunction dfs(v, color):\n    color[v] = GRAY\n    for neighbor in graph[v]:\n        if color[neighbor] == GRAY: return True   // back edge\n        if color[neighbor] == WHITE:\n            if dfs(neighbor, color): return True\n    color[v] = BLACK\n    return False\n\nTime complexity?",
+      "options": ["O(V + E)", "O(V²)", "O(V·E)", "O(V + E²)"],
+      "answerIndex": 0,
+      "explanation": "Each vertex transitions WHITE → GRAY → BLACK exactly once. Each edge is examined once → O(E). Total: O(V + E). The three-colour scheme is a clean way to implement the same algorithm as the recStack approach, with identical asymptotic cost.",
+      "category": "Graph DFS",
+      "level": "Medium",
+      "tags": ["DFS", "cycle", "three-color", "directed"]
+    },
+    {
+      "question": "Analyse the BFS in the following bidirectional BFS for shortest path:\n\nfunction biDirectionalBFS(graph, src, dst):\n    frontFrontier = {src}; backFrontier = {dst}\n    frontVisited  = {src}; backVisited  = {dst}\n    dist = 0\n    while frontFrontier and backFrontier:\n        // always expand the smaller frontier\n        if len(frontFrontier) > len(backFrontier):\n            swap frontFrontier, frontVisited, backFrontier, backVisited\n        nextFrontier = {}\n        for v in frontFrontier:\n            for neighbor in graph[v]:\n                if neighbor in backVisited: return dist + 1\n                if neighbor not in frontVisited:\n                    nextFrontier.add(neighbor)\n                    frontVisited.add(neighbor)\n        frontFrontier = nextFrontier; dist += 1\n    return -1\n\nHow does the time complexity compare to standard BFS?",
+      "options": ["O(b^(d/2)) vs O(b^d) — exponentially fewer nodes explored", "O((V+E)/2) vs O(V+E) — half the work", "Same O(V+E) — bidirectional BFS offers no asymptotic gain", "O(b^d) vs O(b^(2d)) — bidirectional is faster by a squared exponent"],
+      "answerIndex": 0,
+      "explanation": "Standard BFS explores O(b^d) nodes (b = branching factor, d = path length). Bidirectional BFS expands from both ends until frontiers meet at depth d/2 each → O(b^(d/2) + b^(d/2)) = O(b^(d/2)). This is exponentially better than O(b^d) for large d. The asymptotic vertex/edge notation O(V+E) is less informative here because b and d capture the practical savings.",
+      "category": "Graph BFS",
+      "level": "Hard",
+      "tags": ["BFS", "bidirectional", "branching factor", "depth"]
+    },
+    {
+      "question": "A queue-based algorithm processes a stream of n elements, adding each to the back and removing from the front when size exceeds k:\n\nfunction processStream(stream, k):\n    q = Queue()\n    result = []\n    for x in stream:\n        q.enqueue(x)\n        if q.size() > k:\n            q.dequeue()\n        result.append(computeMetric(q))  // O(1) metric\n    return result\n\nTime and space complexity?",
+      "options": ["O(n) time, O(k) space", "O(n·k) time, O(k) space", "O(n) time, O(n) space", "O(k·n) time, O(n) space"],
+      "answerIndex": 0,
+      "explanation": "Each element is enqueued and dequeued at most once → O(n) total queue operations → O(n) time. The queue holds at most k elements at any time → O(k) space. O(n·k) would arise if the metric computation scanned the entire queue.",
+      "category": "Queue",
+      "level": "Medium",
+      "tags": ["queue", "sliding window", "stream"]
+    },
+    {
+      "question": "The following performs BFS on an implicit tree (permutations):\n\nfunction allPerms(n):\n    q = Queue(); q.enqueue([])\n    while q not empty:\n        perm = q.dequeue()\n        if len(perm) == n:\n            emit(perm); continue\n        for digit in 1..n:\n            if digit not in perm:\n                q.enqueue(perm + [digit])\n\nTime and space complexity?",
+      "options": ["O(n·n!) time, O(n·n!) space", "O(n!) time, O(n!) space", "O(n²) time, O(n) space", "O(n^n) time, O(n!) space"],
+      "answerIndex": 0,
+      "explanation": "There are n! complete permutations, each of length n → O(n·n!) to emit them. Intermediate partial permutations across all BFS levels total O(n·n!) as well. Space holds all frontier permutations simultaneously → O(n·n!). O(n!) underestimates the work because each permutation has n elements.",
+      "category": "Queue",
+      "level": "Hard",
+      "tags": ["BFS", "permutations", "factorial", "implicit graph"]
+    },
+    {
+      "question": "What is the time complexity of finding all leaf nodes in a binary tree using DFS?",
+      "options": ["O(n) — all nodes must be visited to identify leaves", "O(log n) — only the bottom level is checked", "O(n/2) — roughly half the nodes are leaves", "O(h) — only the path to the deepest leaf is traversed"],
+      "answerIndex": 0,
+      "explanation": "To find all leaves, every node must be visited (a non-leaf node in the right half of the tree cannot be skipped). O(n/2) is technically correct for complete binary trees, but asymptotically O(n/2) = O(n). O(log n) or O(h) would only suffice to find one leaf.",
+      "category": "Tree Traversal",
+      "level": "Easy",
+      "tags": ["DFS", "leaf nodes", "linear"]
+    },
+    {
+      "question": "Graph coloring check (k-colorable) using DFS backtracking:\n\nfunction canColor(graph, v, colors, k):\n    if v == V: return True\n    for c in 1..k:\n        if isSafe(graph, v, colors, c):\n            colors[v] = c\n            if canColor(graph, v+1, colors, k):\n                return True\n            colors[v] = 0\n    return False\n\nWorst-case time complexity?",
+      "options": ["O(k^V)", "O(V·k)", "O(V²·k)", "O(V·k²)"],
+      "answerIndex": 0,
+      "explanation": "At each of V vertices, up to k colors are tried. In the worst case no pruning occurs and the full tree of decisions is explored → k^V leaves. The isSafe check costs O(V) → total O(V·k^V). However, O(k^V) is the standard upper bound cited for the decision tree size alone.",
+      "category": "Graph DFS",
+      "level": "Hard",
+      "tags": ["DFS", "backtracking", "graph coloring", "exponential"]
+    }
+  ]
+}
