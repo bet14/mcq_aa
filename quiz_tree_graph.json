@@ -1,0 +1,933 @@
+{
+  "title": "Trees & Graphs — Structures, Traversals, and Reasoning",
+  "subtitle": "80 questions covering tree/graph fundamentals, BST, traversals, BFS/DFS, and why-questions on algorithm choices",
+  "totalQuestions": 80,
+  "questions": [
+    {
+      "question": "What is the maximum number of nodes a binary tree of height h can have?",
+      "options": ["2h", "2h - 1", "2^(h+1) - 1", "h^2"],
+      "answerIndex": 2,
+      "explanation": "A perfect binary tree of height h has 2^0 + 2^1 + ... + 2^h = 2^(h+1) - 1 nodes. Height 0 (root only) gives 1 node = 2^1 - 1. Height h gives 2^(h+1) - 1.",
+      "category": "Tree Fundamentals",
+      "level": "Medium",
+      "tags": ["tree", "height", "nodes"]
+    },
+    {
+      "question": "What is the minimum height of a binary tree containing n nodes?",
+      "options": ["n - 1", "floor(log2(n))", "ceil(log2(n+1)) - 1", "n / 2"],
+      "answerIndex": 1,
+      "explanation": "Height is minimized when the tree is as complete as possible (all levels filled except possibly the last). That gives height = floor(log2(n)). For n=7 nodes, floor(log2(7))=2, which matches a perfect tree of height 2.",
+      "category": "Tree Fundamentals",
+      "level": "Medium",
+      "tags": ["tree", "height", "minimum"]
+    },
+    {
+      "question": "In a tree with n nodes, how many edges does it have?",
+      "options": ["n", "n + 1", "n - 1", "2n - 1"],
+      "answerIndex": 2,
+      "explanation": "Every node except the root has exactly one parent edge, so the number of edges equals the number of non-root nodes = n - 1. This is a fundamental property of trees (acyclic connected graphs).",
+      "category": "Tree Fundamentals",
+      "level": "Easy",
+      "tags": ["tree", "edges", "property"]
+    },
+    {
+      "question": "What distinguishes a full binary tree from a complete binary tree?",
+      "options": [
+        "A full binary tree has every node with exactly 0 or 2 children; a complete binary tree has all levels filled except possibly the last, filled left to right",
+        "A full binary tree has all leaves at the same depth; a complete binary tree has nodes with 0 or 2 children",
+        "A full binary tree is always balanced; a complete binary tree is never balanced",
+        "There is no distinction — both terms describe the same structure"
+      ],
+      "answerIndex": 0,
+      "explanation": "Full binary tree: every node has 0 or 2 children (no node with exactly 1 child). Complete binary tree: all levels are fully filled except possibly the last level, which is filled from left to right. A perfect binary tree satisfies both.",
+      "category": "Tree Fundamentals",
+      "level": "Medium",
+      "tags": ["tree", "full", "complete", "definition"]
+    },
+    {
+      "question": "What is the height of a single-node tree (root only)?",
+      "options": ["-1", "0", "1", "Undefined"],
+      "answerIndex": 1,
+      "explanation": "Height is the number of edges on the longest path from root to a leaf. A single node has no edges below it, so height = 0. Some textbooks define height as the number of nodes on the path (giving 1), but the standard CS convention is 0 for a root-only tree.",
+      "category": "Tree Fundamentals",
+      "level": "Easy",
+      "tags": ["tree", "height", "definition"]
+    },
+    {
+      "question": "Which of the following is NOT a property of a tree?",
+      "options": [
+        "It is connected",
+        "It has exactly n-1 edges for n nodes",
+        "It contains no cycles",
+        "Every pair of nodes is connected by exactly two distinct paths"
+      ],
+      "answerIndex": 3,
+      "explanation": "A tree is connected, acyclic, and has n-1 edges. These three properties are equivalent definitions. Exactly two distinct paths between some pair of nodes would create a cycle, violating the tree property. In a tree, every pair of nodes has exactly one unique path.",
+      "category": "Tree Fundamentals",
+      "level": "Medium",
+      "tags": ["tree", "properties", "NOT"]
+    },
+    {
+      "question": "What is the depth of a node in a tree?",
+      "options": [
+        "The number of nodes in the subtree rooted at that node",
+        "The number of edges from the root to that node",
+        "The number of children that node has",
+        "The height of the subtree rooted at that node"
+      ],
+      "answerIndex": 1,
+      "explanation": "Depth of a node = number of edges from the root to that node. The root has depth 0. Height is measured upward from leaves; depth is measured downward from the root. Subtree size is a separate concept.",
+      "category": "Tree Fundamentals",
+      "level": "Easy",
+      "tags": ["tree", "depth", "definition"]
+    },
+    {
+      "question": "A binary tree has 15 nodes and is perfect (all leaves at the same level). What is its height?",
+      "options": ["2", "3", "4", "7"],
+      "answerIndex": 1,
+      "explanation": "A perfect binary tree of height h has 2^(h+1) - 1 nodes. Setting 2^(h+1) - 1 = 15 gives 2^(h+1) = 16, so h+1 = 4, h = 3.",
+      "category": "Tree Fundamentals",
+      "level": "Medium",
+      "tags": ["tree", "perfect", "height"]
+    },
+    {
+      "question": "In a binary tree, a node with no children is called a:",
+      "options": ["Root", "Internal node", "Leaf", "Sibling"],
+      "answerIndex": 2,
+      "explanation": "A leaf (or external node) has no children. The root is the topmost node. Internal nodes have at least one child. Siblings are nodes sharing the same parent.",
+      "category": "Tree Fundamentals",
+      "level": "Easy",
+      "tags": ["tree", "leaf", "terminology"]
+    },
+    {
+      "question": "What is the maximum number of leaves in a full binary tree with n internal nodes?",
+      "options": ["n", "n + 1", "2n", "2n - 1"],
+      "answerIndex": 1,
+      "explanation": "In a full binary tree, the number of leaves L and internal nodes I satisfy L = I + 1. With n internal nodes, there are n+1 leaves. This can be proved by induction: each internal node contributes 2 children but uses 1 slot, net gain = 1.",
+      "category": "Tree Fundamentals",
+      "level": "Hard",
+      "tags": ["tree", "full", "leaves", "internal nodes"]
+    },
+    {
+      "question": "What is the BST property?",
+      "options": [
+        "For every node, all values in the left subtree are greater, and all in the right subtree are smaller",
+        "For every node, all values in the left subtree are smaller, and all in the right subtree are greater",
+        "All nodes at even depth store even values and odd depth store odd values",
+        "The left and right subtrees of every node must have the same height"
+      ],
+      "answerIndex": 1,
+      "explanation": "BST invariant: for any node N, every value in N's left subtree is strictly less than N's value, and every value in N's right subtree is strictly greater. This enables O(log n) search by halving the search space at each node.",
+      "category": "Binary Search Tree",
+      "level": "Easy",
+      "tags": ["BST", "invariant", "definition"]
+    },
+    {
+      "question": "What is the average-case time complexity of search in a BST with n nodes?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "In a balanced BST, search eliminates half the remaining nodes at each step, giving O(log n). However, in the worst case (a degenerate/skewed tree), search degrades to O(n). The average case assumes a reasonably balanced tree.",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "search", "complexity"]
+    },
+    {
+      "question": "In which order does an inorder traversal of a BST visit nodes?",
+      "options": [
+        "Decreasing order",
+        "Insertion order",
+        "Non-decreasing (sorted ascending) order",
+        "Level by level"
+      ],
+      "answerIndex": 2,
+      "explanation": "Inorder traversal (left → root → right) of a BST visits nodes in non-decreasing order because the BST property guarantees all left descendants are smaller and all right descendants are larger.",
+      "category": "Binary Search Tree",
+      "level": "Easy",
+      "tags": ["BST", "inorder", "sorted"]
+    },
+    {
+      "question": "When deleting a node with two children from a BST, which value typically replaces it?",
+      "options": [
+        "The root of the left subtree",
+        "The inorder predecessor or inorder successor",
+        "The largest value in the tree",
+        "The parent of the deleted node"
+      ],
+      "answerIndex": 1,
+      "explanation": "Replacing with the inorder successor (smallest in right subtree) or inorder predecessor (largest in left subtree) maintains the BST property. Both have at most one child, simplifying their own deletion after the replacement.",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "deletion", "inorder successor"]
+    },
+    {
+      "question": "What is the worst-case time complexity of insert, delete, and search in an unbalanced BST?",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(sqrt(n))"],
+      "answerIndex": 1,
+      "explanation": "If nodes are inserted in sorted order (e.g., 1, 2, 3, ..., n), the BST degenerates into a linked list of height n. Every operation then traverses all n nodes in the worst case: O(n).",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "worst case", "complexity"]
+    },
+    {
+      "question": "Given the BST with root 10, left child 5, right child 15: is inserting 7 correct to the right of 5?",
+      "options": [
+        "Yes, because 7 > 5",
+        "No, because 7 < 10, so it must go left of 10; then 7 > 5, so it goes right of 5 — this is correct",
+        "No, 7 should be inserted as the left child of 10",
+        "No, 7 should be the right child of 15"
+      ],
+      "answerIndex": 1,
+      "explanation": "Starting at root 10: 7 < 10, go left to 5. At 5: 7 > 5, go right. Since 5 has no right child, 7 is placed there. The answer confirms the insertion is correct and explains the traversal path.",
+      "category": "Binary Search Tree",
+      "level": "Easy",
+      "tags": ["BST", "insertion", "trace"]
+    },
+    {
+      "question": "Why does an AVL tree guarantee O(log n) operations while a plain BST does not?",
+      "options": [
+        "AVL trees sort elements before insertion",
+        "AVL trees maintain a balance factor of at most 1 between left and right subtree heights at every node, preventing degeneration",
+        "AVL trees use hash-based indexing for faster access",
+        "AVL trees limit the total number of nodes to log n"
+      ],
+      "answerIndex": 1,
+      "explanation": "A plain BST can degenerate to O(n) height. An AVL tree enforces |height(left) - height(right)| <= 1 at every node after each insert/delete via rotations. This keeps height at O(log n), guaranteeing O(log n) for all operations.",
+      "category": "Binary Search Tree",
+      "level": "Hard",
+      "tags": ["AVL", "BST", "balance", "why"]
+    },
+    {
+      "question": "What does it mean for a BST to be 'degenerate'?",
+      "options": [
+        "Every node has exactly two children",
+        "The tree has become a linear chain (every node has at most one child), resembling a linked list",
+        "The tree has more leaves than internal nodes",
+        "The tree stores duplicate values"
+      ],
+      "answerIndex": 1,
+      "explanation": "A degenerate BST occurs when insertions happen in sorted order (ascending or descending), making every node have only one child. The height becomes n-1 and operations degrade to O(n).",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "degenerate", "skewed"]
+    },
+    {
+      "question": "What is the inorder successor of a node N in a BST?",
+      "options": [
+        "The parent of N",
+        "The smallest node in N's right subtree",
+        "The largest node in N's left subtree",
+        "The rightmost node in the entire tree"
+      ],
+      "answerIndex": 1,
+      "explanation": "The inorder successor is the next node in sorted order. If N has a right subtree, it is the minimum (leftmost node) of that subtree. If N has no right subtree, it is the lowest ancestor for which N is in the left subtree.",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "inorder successor"]
+    },
+    {
+      "question": "Given a BST, what is the time complexity of finding the minimum element?",
+      "options": ["O(1)", "O(log n)", "O(h) where h is the tree height", "O(n)"],
+      "answerIndex": 2,
+      "explanation": "The minimum is found by following left child pointers from the root until reaching a node with no left child. This takes O(h) time. In a balanced tree h = O(log n); in a degenerate tree h = O(n).",
+      "category": "Binary Search Tree",
+      "level": "Medium",
+      "tags": ["BST", "minimum", "complexity"]
+    },
+    {
+      "question": "In inorder traversal of a binary tree, what is the visit order?",
+      "options": [
+        "Root → Left → Right",
+        "Left → Root → Right",
+        "Left → Right → Root",
+        "Right → Root → Left"
+      ],
+      "answerIndex": 1,
+      "explanation": "Inorder: Left subtree first, then root, then right subtree. This produces sorted output for a BST. Preorder is Root→Left→Right; Postorder is Left→Right→Root.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "inorder", "definition"]
+    },
+    {
+      "question": "In preorder traversal, the root is visited at which point?",
+      "options": ["After the left subtree", "After the right subtree", "Before both subtrees", "Between left and right subtrees"],
+      "answerIndex": 2,
+      "explanation": "Preorder: Root → Left → Right. The root is processed first (before any subtree), which is why it is called 'pre'-order. This is useful for copying a tree or serializing its structure.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "preorder", "definition"]
+    },
+    {
+      "question": "Given the tree: root=1, left=2, right=3, 2's left=4, 2's right=5. What is the inorder traversal?",
+      "options": ["1, 2, 3, 4, 5", "4, 2, 5, 1, 3", "4, 5, 2, 3, 1", "1, 2, 4, 5, 3"],
+      "answerIndex": 1,
+      "explanation": "Inorder (L→Root→R): Visit 4, then 2, then 5 (left subtree of 1 complete), then 1 (root), then 3. Result: 4, 2, 5, 1, 3.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "inorder", "trace"]
+    },
+    {
+      "question": "Given the same tree (root=1, left=2, right=3, 2's children=4,5), what is the preorder traversal?",
+      "options": ["4, 2, 5, 1, 3", "1, 2, 4, 5, 3", "4, 5, 2, 3, 1", "1, 2, 3, 4, 5"],
+      "answerIndex": 1,
+      "explanation": "Preorder (Root→L→R): Visit 1, then recurse left: 2, then 4, then 5, then recurse right: 3. Result: 1, 2, 4, 5, 3.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "preorder", "trace"]
+    },
+    {
+      "question": "Given the same tree (root=1, left=2, right=3, 2's children=4,5), what is the postorder traversal?",
+      "options": ["1, 2, 4, 5, 3", "4, 5, 2, 3, 1", "4, 2, 5, 1, 3", "1, 3, 2, 5, 4"],
+      "answerIndex": 1,
+      "explanation": "Postorder (L→R→Root): Visit 4, then 5, then 2 (left subtree done), then 3 (right subtree done), then 1 (root). Result: 4, 5, 2, 3, 1.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "postorder", "trace"]
+    },
+    {
+      "question": "Which traversal visits nodes level by level from top to bottom, left to right?",
+      "options": ["Inorder", "Preorder", "Postorder", "Level-order (BFS)"],
+      "answerIndex": 3,
+      "explanation": "Level-order traversal uses a queue and visits all nodes at depth d before any node at depth d+1, going left to right within each level. It is equivalent to BFS on the tree.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "level-order", "BFS"]
+    },
+    {
+      "question": "Which traversal is used to delete a binary tree node-by-node without violating memory safety?",
+      "options": ["Inorder", "Preorder", "Postorder", "Level-order"],
+      "answerIndex": 2,
+      "explanation": "Postorder deletes children before their parent. If the parent were deleted first (preorder), the children would become orphaned and their memory leaked. Postorder ensures children are freed before the parent.",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "postorder", "deletion", "why"]
+    },
+    {
+      "question": "Which traversal produces a copy of a tree with the same structural order?",
+      "options": ["Postorder", "Inorder", "Preorder", "Level-order"],
+      "answerIndex": 2,
+      "explanation": "Preorder (Root→L→R) creates the root first, then its left subtree, then right — the same order needed to rebuild the tree. If you serialize with preorder and deserialize in the same order, the structure is reproduced. Inorder alone is insufficient to reconstruct a tree uniquely.",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "preorder", "copy", "why"]
+    },
+    {
+      "question": "Given preorder = [3,9,20,15,7] and inorder = [9,3,15,20,7], what is the root's right child?",
+      "options": ["9", "15", "20", "7"],
+      "answerIndex": 2,
+      "explanation": "The first element in preorder is the root: 3. In inorder, 3 splits [9] (left) and [15,20,7] (right). The right subtree's preorder is [20,15,7], so the right child of 3 is 20.",
+      "category": "Tree Traversals",
+      "level": "Hard",
+      "tags": ["traversal", "reconstruction", "preorder", "inorder"]
+    },
+    {
+      "question": "What is the time complexity of any DFS-based tree traversal (inorder, preorder, postorder)?",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(h) where h is height"],
+      "answerIndex": 1,
+      "explanation": "Every node is visited exactly once in any DFS traversal, regardless of tree shape. The total work is O(n). O(h) describes the stack depth (space), not the time to visit all nodes.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "complexity", "time"]
+    },
+    {
+      "question": "What is the space complexity of recursive inorder traversal on a balanced binary tree?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Recursive traversal uses the call stack, which goes as deep as the tree height. For a balanced tree, height = O(log n), so space = O(log n). For a skewed tree it would be O(n).",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "space complexity", "recursion"]
+    },
+    {
+      "question": "Which data structure is used to implement iterative inorder traversal?",
+      "options": ["Queue", "Stack", "Priority Queue", "Hash Map"],
+      "answerIndex": 1,
+      "explanation": "Iterative inorder traversal simulates the recursive call stack explicitly using a stack. The algorithm pushes left children until reaching null, then pops and visits, then moves to the right child.",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "inorder", "iterative", "stack"]
+    },
+    {
+      "question": "In a Morris traversal, what mechanism allows inorder traversal in O(1) extra space?",
+      "options": [
+        "A hash map stores visited nodes",
+        "Temporary right-child pointers (threads) are created to link nodes back to their inorder successors",
+        "The tree is converted to an array before traversal",
+        "A global pointer tracks the current position"
+      ],
+      "answerIndex": 1,
+      "explanation": "Morris traversal temporarily modifies the tree by threading the rightmost node of a left subtree back to its inorder successor. This allows returning from a left subtree without a stack or recursion, then removing the thread before moving right. Space is O(1).",
+      "category": "Tree Traversals",
+      "level": "Hard",
+      "tags": ["traversal", "Morris", "O(1) space"]
+    },
+    {
+      "question": "When reconstructing a binary tree, which pair of traversals is sufficient to uniquely determine the tree?",
+      "options": [
+        "Preorder + Postorder (always sufficient)",
+        "Inorder + either Preorder or Postorder",
+        "Level-order alone",
+        "Preorder alone"
+      ],
+      "answerIndex": 1,
+      "explanation": "Inorder paired with preorder, or inorder paired with postorder, uniquely reconstructs any binary tree (assuming no duplicate values). Preorder + postorder alone is insufficient — multiple trees can share the same preorder and postorder sequences.",
+      "category": "Tree Traversals",
+      "level": "Hard",
+      "tags": ["traversal", "reconstruction", "uniqueness"]
+    },
+    {
+      "question": "What is the output of level-order traversal on a tree with root=5, left=3, right=7, 3's children=2,4, 7's right=9?",
+      "options": ["5,3,7,2,4,9", "2,3,4,5,7,9", "5,7,3,9,4,2", "2,4,3,9,7,5"],
+      "answerIndex": 0,
+      "explanation": "Level 0: 5. Level 1: 3, 7. Level 2: 2, 4 (children of 3), 9 (right child of 7). Result: 5, 3, 7, 2, 4, 9.",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "level-order", "trace"]
+    },
+    {
+      "question": "Why is postorder traversal used for evaluating expression trees?",
+      "options": [
+        "Because operators must be printed before their operands",
+        "Because an operator can only be applied after both operand subtrees have been evaluated",
+        "Because expression trees must be traversed in sorted order",
+        "Because level-order evaluation requires more memory"
+      ],
+      "answerIndex": 1,
+      "explanation": "In an expression tree, internal nodes are operators and leaves are operands. Postorder visits left subtree (evaluates left operand), then right subtree (evaluates right operand), then root (applies the operator). The operator must come last — it cannot be applied before its operands are known.",
+      "category": "Tree Traversals",
+      "level": "Medium",
+      "tags": ["traversal", "postorder", "expression tree", "why"]
+    },
+    {
+      "question": "Which traversal is equivalent to reading a tree's nodes in 'reverse postorder' and is used in topological sort with DFS?",
+      "options": ["Inorder", "Preorder", "Reverse postorder", "Level-order"],
+      "answerIndex": 2,
+      "explanation": "In DFS-based topological sort on a DAG, nodes are pushed onto a stack after all their descendants are fully explored (postorder). Reading the stack in reverse gives a valid topological order — this is reverse postorder.",
+      "category": "Tree Traversals",
+      "level": "Hard",
+      "tags": ["traversal", "postorder", "topological sort"]
+    },
+    {
+      "question": "What is the relationship between inorder traversal of a BST and a sorted array?",
+      "options": [
+        "Inorder traversal produces elements in reverse sorted order",
+        "Inorder traversal produces elements in non-decreasing (sorted ascending) order",
+        "Inorder traversal produces elements in insertion order",
+        "Inorder traversal and sorted order are unrelated"
+      ],
+      "answerIndex": 1,
+      "explanation": "By the BST invariant, inorder (left→root→right) visits smaller elements before larger ones at every node, producing a globally sorted sequence. This property is why BST inorder traversal is used to implement sorted iteration.",
+      "category": "Tree Traversals",
+      "level": "Easy",
+      "tags": ["traversal", "inorder", "BST", "sorted"]
+    },
+    {
+      "question": "What is the difference between a directed and an undirected graph?",
+      "options": [
+        "Directed graphs can have cycles; undirected graphs cannot",
+        "In a directed graph, edges have a direction (from→to); in an undirected graph, edges are bidirectional",
+        "Directed graphs always have more edges than undirected graphs",
+        "Undirected graphs require weighted edges"
+      ],
+      "answerIndex": 1,
+      "explanation": "A directed graph (digraph) has ordered pairs (u,v) as edges: going from u to v does not imply going from v to u. An undirected graph treats (u,v) and (v,u) as the same edge. Both can have cycles.",
+      "category": "Graph Fundamentals",
+      "level": "Easy",
+      "tags": ["graph", "directed", "undirected", "definition"]
+    },
+    {
+      "question": "What is the maximum number of edges in a simple undirected graph with n vertices?",
+      "options": ["n", "n - 1", "n(n-1)/2", "n^2"],
+      "answerIndex": 2,
+      "explanation": "In a simple graph (no self-loops, no parallel edges), each pair of vertices can have at most one edge. The number of pairs of n vertices is C(n,2) = n(n-1)/2. This is achieved by the complete graph K_n.",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "edges", "maximum"]
+    },
+    {
+      "question": "What is the difference between an adjacency matrix and an adjacency list representation?",
+      "options": [
+        "An adjacency matrix stores edge weights; an adjacency list stores only connectivity",
+        "An adjacency matrix uses O(V^2) space; an adjacency list uses O(V + E) space",
+        "An adjacency matrix is for undirected graphs only; adjacency list is for directed graphs",
+        "An adjacency matrix is faster for all operations than an adjacency list"
+      ],
+      "answerIndex": 1,
+      "explanation": "Adjacency matrix: V×V grid, O(V^2) space, O(1) edge lookup. Adjacency list: array of lists, O(V+E) space, O(degree) edge lookup. For sparse graphs (E << V^2), adjacency list is more space-efficient. Both support weighted graphs.",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "adjacency matrix", "adjacency list", "representation"]
+    },
+    {
+      "question": "What is the in-degree of a vertex in a directed graph?",
+      "options": [
+        "The number of edges leaving that vertex",
+        "The number of edges entering that vertex",
+        "The total number of edges incident to that vertex",
+        "The number of vertices reachable from that vertex"
+      ],
+      "answerIndex": 1,
+      "explanation": "In a directed graph, in-degree = number of incoming edges. Out-degree = number of outgoing edges. For undirected graphs, there is only 'degree' (total incident edges). Sum of all in-degrees equals the number of edges.",
+      "category": "Graph Fundamentals",
+      "level": "Easy",
+      "tags": ["graph", "in-degree", "directed"]
+    },
+    {
+      "question": "What is a DAG?",
+      "options": [
+        "A graph where all vertices have the same degree",
+        "A directed graph with no directed cycles",
+        "A graph where every vertex is reachable from every other vertex",
+        "A graph with no parallel edges"
+      ],
+      "answerIndex": 1,
+      "explanation": "DAG = Directed Acyclic Graph. It has directed edges but no directed cycle (no path from a vertex back to itself). DAGs are the foundation for topological sort and model dependencies, task scheduling, and compiler data flow.",
+      "category": "Graph Fundamentals",
+      "level": "Easy",
+      "tags": ["graph", "DAG", "definition"]
+    },
+    {
+      "question": "In a connected undirected graph with V vertices and E edges, what additional constraint makes it a tree?",
+      "options": ["E = V", "E = V - 1", "E = V + 1", "E = 2V"],
+      "answerIndex": 1,
+      "explanation": "A connected acyclic undirected graph (tree) always has exactly E = V - 1 edges. Adding one more edge creates a cycle; removing one disconnects the graph.",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "tree", "edges"]
+    },
+    {
+      "question": "What is a strongly connected component (SCC) in a directed graph?",
+      "options": [
+        "A subgraph where every vertex has the same out-degree",
+        "A maximal subgraph where every vertex is reachable from every other vertex via directed paths",
+        "A subgraph with no directed edges",
+        "The largest clique in the graph"
+      ],
+      "answerIndex": 1,
+      "explanation": "An SCC is a maximal set of vertices such that there is a directed path from every vertex to every other vertex within the set. Kosaraju's and Tarjan's algorithms find all SCCs in O(V+E).",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "SCC", "directed"]
+    },
+    {
+      "question": "Which graph representation is preferred for dense graphs and why?",
+      "options": [
+        "Adjacency list — because it uses less memory for dense graphs",
+        "Adjacency matrix — because O(1) edge lookup pays off when E is close to V^2",
+        "Edge list — because iteration over all edges is fastest",
+        "Adjacency matrix — because it supports negative weights"
+      ],
+      "answerIndex": 1,
+      "explanation": "For dense graphs (E ≈ V^2), an adjacency matrix wastes little relative space and its O(1) edge-existence check is advantageous. An adjacency list's O(degree) lookup becomes expensive when degrees are high. For sparse graphs, the list is better.",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "dense", "adjacency matrix", "why"]
+    },
+    {
+      "question": "What does BFS on an unweighted graph guarantee about the paths it finds?",
+      "options": [
+        "The paths have the minimum total weight",
+        "The paths have the minimum number of edges (shortest path by hop count)",
+        "The paths visit every vertex exactly once",
+        "The paths are found in O(log V) time"
+      ],
+      "answerIndex": 1,
+      "explanation": "BFS explores vertices in order of their distance (number of edges) from the source. The first time a vertex is reached, it is via the shortest path by hop count. This does NOT account for edge weights — for weighted shortest paths, Dijkstra's algorithm is needed.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["BFS", "shortest path", "unweighted"]
+    },
+    {
+      "question": "What is the time complexity of BFS on a graph with V vertices and E edges using an adjacency list?",
+      "options": ["O(V)", "O(E)", "O(V + E)", "O(V * E)"],
+      "answerIndex": 2,
+      "explanation": "BFS visits each vertex once (O(V)) and processes each edge once when scanning adjacency lists (O(E)), giving O(V + E) total. With an adjacency matrix the edge scanning cost is O(V^2).",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Easy",
+      "tags": ["BFS", "complexity", "time"]
+    },
+    {
+      "question": "In BFS, what data structure is used to track the frontier (vertices to be processed next)?",
+      "options": ["Stack", "Priority Queue", "Queue", "Linked List"],
+      "answerIndex": 2,
+      "explanation": "BFS uses a FIFO queue. Discovered vertices are enqueued; the next vertex to process is always dequeued from the front. This ensures vertices are explored in non-decreasing distance order from the source.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Easy",
+      "tags": ["BFS", "queue", "data structure"]
+    },
+    {
+      "question": "In DFS, when is a vertex's discovery time and finish time recorded, and what do they represent?",
+      "options": [
+        "Discovery = when enqueued; finish = when dequeued",
+        "Discovery = when first visited; finish = when all descendants have been fully explored",
+        "Discovery = when added to visited set; finish = when neighbors are scanned",
+        "Both are recorded only in topological sort, not general DFS"
+      ],
+      "answerIndex": 1,
+      "explanation": "In DFS with timestamps: discovery time d[v] is set when v is first encountered (gray); finish time f[v] is set when v's entire subtree has been explored (black). These timestamps reveal parenthesis structure, cycle detection, and SCC membership.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Hard",
+      "tags": ["DFS", "timestamps", "discovery", "finish"]
+    },
+    {
+      "question": "What type of edge in DFS indicates a cycle in a directed graph?",
+      "options": ["Tree edge", "Forward edge", "Cross edge", "Back edge"],
+      "answerIndex": 3,
+      "explanation": "A back edge connects a vertex to one of its ancestors in the DFS tree — meaning there is a path from the ancestor down to the current node, and the back edge completes a cycle. No back edge = no directed cycle = DAG.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["DFS", "back edge", "cycle detection"]
+    },
+    {
+      "question": "Why does DFS use a stack (or recursion) while BFS uses a queue?",
+      "options": [
+        "DFS needs to remember visited nodes; BFS does not",
+        "DFS explores as deep as possible before backtracking (LIFO), while BFS explores all neighbors at the current level before going deeper (FIFO)",
+        "DFS requires random access to vertices; BFS does not",
+        "DFS is faster than BFS, which is why a stack is used"
+      ],
+      "answerIndex": 1,
+      "explanation": "DFS goes deep first: when a neighbor is discovered, it is immediately explored recursively (LIFO — last discovered, first explored). BFS spreads outward level by level: all neighbors of the current node are queued for later (FIFO — first discovered, first explored). The data structure directly encodes the exploration order.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["DFS", "BFS", "stack", "queue", "why"]
+    },
+    {
+      "question": "BFS on a graph starting from vertex A visits: A, B, C, D, E in that order. If the adjacency list of A is [B, C] and B's is [D, E], which vertex is visited 4th?",
+      "options": ["A", "B", "D", "E"],
+      "answerIndex": 2,
+      "explanation": "BFS queue starts with A. Dequeue A, enqueue B and C → queue: [B,C]. Dequeue B (2nd visited), enqueue D and E → queue: [C,D,E]. Dequeue C (3rd visited). Dequeue D — D is visited 4th.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["BFS", "trace", "order"]
+    },
+    {
+      "question": "What is the space complexity of BFS in the worst case?",
+      "options": ["O(1)", "O(log V)", "O(V)", "O(V + E)"],
+      "answerIndex": 2,
+      "explanation": "BFS holds at most one full level of the graph in its queue. In the worst case (a star graph), all V-1 leaves are discovered at once, requiring O(V) queue space. The visited array also uses O(V).",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["BFS", "space complexity"]
+    },
+    {
+      "question": "Which algorithm finds all connected components in an undirected graph by running DFS/BFS from each unvisited vertex?",
+      "options": [
+        "Dijkstra's algorithm",
+        "Kruskal's algorithm",
+        "A modified DFS/BFS that labels each vertex with its component ID",
+        "Topological sort"
+      ],
+      "answerIndex": 2,
+      "explanation": "Running DFS or BFS from every unvisited vertex marks all reachable vertices with the same component label. Each new DFS/BFS start indicates a new component. Total time is O(V+E). Dijkstra and Kruskal solve different problems.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["DFS", "BFS", "connected components"]
+    },
+    {
+      "question": "In DFS of an undirected graph, which type of edge does NOT exist (unlike in directed graphs)?",
+      "options": ["Tree edge", "Back edge", "Forward edge", "Cross edge is impossible but forward/cross edges merge"],
+      "answerIndex": 3,
+      "explanation": "In undirected DFS, every non-tree edge is a back edge (to an ancestor). Forward edges and cross edges do not exist in undirected DFS because an edge to a descendant or to a vertex in a different branch would already have been a tree edge or back edge from the other direction.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Hard",
+      "tags": ["DFS", "undirected", "edge types"]
+    },
+    {
+      "question": "What does DFS on a DAG produce that BFS cannot directly?",
+      "options": [
+        "Shortest paths between all pairs of vertices",
+        "A topological ordering of vertices",
+        "Minimum spanning tree",
+        "Connected components"
+      ],
+      "answerIndex": 1,
+      "explanation": "DFS-based topological sort uses finish times: vertices are added to a result list in decreasing finish time order. BFS does not naturally produce finish times or topological ordering. BFS produces shortest paths; MST uses Prim's/Kruskal's.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["DFS", "topological sort", "DAG"]
+    },
+    {
+      "question": "When is BFS preferred over DFS for pathfinding?",
+      "options": [
+        "When memory is limited",
+        "When the graph has many cycles",
+        "When the shortest path by number of edges is needed in an unweighted graph",
+        "When edge weights are involved"
+      ],
+      "answerIndex": 2,
+      "explanation": "BFS guarantees the shortest path (minimum edges) in unweighted graphs because it explores vertices in non-decreasing hop distance. DFS may find a path but not the shortest one. For weighted shortest paths, Dijkstra's algorithm is used.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Medium",
+      "tags": ["BFS", "DFS", "shortest path", "why"]
+    },
+    {
+      "question": "Why does DFS naturally solve the problem of detecting whether a directed graph is a DAG?",
+      "options": [
+        "Because DFS visits vertices in topological order",
+        "Because the presence of a back edge in DFS is both necessary and sufficient for the existence of a directed cycle",
+        "Because DFS runs in O(V) time, which is fast enough for cycle detection",
+        "Because DFS always terminates before BFS"
+      ],
+      "answerIndex": 1,
+      "explanation": "A directed graph is a DAG if and only if DFS finds no back edges. A back edge (u,v) where v is an ancestor of u implies a cycle v→...→u→v. If there is a cycle, DFS will encounter a gray ancestor and produce a back edge. This equivalence makes DFS the canonical cycle-detection tool.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["DFS", "DAG", "cycle detection", "why"]
+    },
+    {
+      "question": "Given an unweighted graph, if BFS from source S reaches vertex T after processing 3 levels, what is the shortest path length from S to T?",
+      "options": ["1", "2", "3", "Cannot be determined"],
+      "answerIndex": 2,
+      "explanation": "BFS processes level 0 (S itself), level 1 (neighbors of S), level 2, level 3, etc. If T is first reached at level 3, the shortest path is exactly 3 edges. BFS guarantees this is the minimum.",
+      "category": "Graph Traversals — BFS and DFS",
+      "level": "Easy",
+      "tags": ["BFS", "shortest path", "levels"]
+    },
+    {
+      "question": "Why is a queue (not a stack) essential for BFS to guarantee shortest paths?",
+      "options": [
+        "Because a queue is faster than a stack for this workload",
+        "Because FIFO ordering ensures vertices are explored in non-decreasing distance order, so the first time a vertex is reached, it is via the shortest path",
+        "Because a stack would cause infinite loops in cyclic graphs",
+        "Because a queue supports more efficient memory allocation"
+      ],
+      "answerIndex": 1,
+      "explanation": "With a FIFO queue, all vertices at distance d are dequeued before any vertex at distance d+1. The first time vertex T is dequeued, no shorter path can exist — all shorter-path candidates were already processed. A stack (LIFO) would explore a deep path before shallower ones, reaching T via a potentially longer route first.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["BFS", "queue", "shortest path", "why"]
+    },
+    {
+      "question": "Why must topological sort be performed only on DAGs?",
+      "options": [
+        "Because DAGs have fewer vertices than cyclic graphs",
+        "Because a cycle creates a circular dependency — no valid linear ordering exists where every edge points forward",
+        "Because DFS cannot run on graphs with cycles",
+        "Because topological sort requires edge weights, which DAGs always have"
+      ],
+      "answerIndex": 1,
+      "explanation": "Topological ordering requires that for every edge (u,v), u appears before v. A cycle A→B→C→A means A must precede B, B precede C, and C precede A — a contradiction. DAGs, having no cycles, always admit at least one valid topological ordering.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["topological sort", "DAG", "why", "cycle"]
+    },
+    {
+      "question": "Why is Dijkstra's algorithm incorrect when graphs contain negative edge weights?",
+      "options": [
+        "Because Dijkstra's algorithm does not handle weighted graphs",
+        "Because a previously finalized vertex could be reached by a shorter path through a later-discovered negative edge, violating the greedy assumption",
+        "Because negative weights cause integer overflow",
+        "Because Dijkstra's algorithm only works on directed graphs"
+      ],
+      "answerIndex": 1,
+      "explanation": "Dijkstra's greedy assumption: once a vertex is extracted from the priority queue with distance d, d is final. With negative edges, a later path via a negative edge could yield a shorter distance to an already-finalized vertex. Bellman-Ford handles negative weights by relaxing all edges V-1 times.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["Dijkstra", "negative weights", "why"]
+    },
+    {
+      "question": "Why does Kruskal's algorithm sort edges by weight before processing?",
+      "options": [
+        "To process all edges in a fixed time regardless of graph size",
+        "To greedily add the globally cheapest edge that does not form a cycle, guaranteeing a minimum spanning tree",
+        "To ensure edges are added in topological order",
+        "To avoid visiting the same vertex twice"
+      ],
+      "answerIndex": 1,
+      "explanation": "Kruskal's builds an MST by repeatedly picking the minimum-weight edge that connects two different components (does not form a cycle). Sorting ensures the cheapest available edge is always processed next. Skipping any cheaper edge would risk a non-minimum spanning tree.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["Kruskal", "MST", "greedy", "why"]
+    },
+    {
+      "question": "Why is an adjacency list preferred over an adjacency matrix for BFS/DFS on sparse graphs?",
+      "options": [
+        "Because the adjacency list supports O(1) edge lookup",
+        "Because iterating over a vertex's neighbors in an adjacency list takes O(degree) time, whereas in a matrix it takes O(V) — wasteful when degree is small",
+        "Because adjacency lists are simpler to implement",
+        "Because adjacency matrices do not support directed graphs"
+      ],
+      "answerIndex": 1,
+      "explanation": "BFS/DFS visits each edge once. With an adjacency list, scanning all neighbors of a vertex costs O(degree). With a matrix, scanning the entire row costs O(V) even if the vertex has only 2 neighbors. For sparse graphs (E << V^2), this difference compounds to O(V+E) vs O(V^2) total.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["graph", "adjacency list", "sparse", "BFS", "DFS", "why"]
+    },
+    {
+      "question": "Why does Prim's algorithm use a min-priority queue?",
+      "options": [
+        "To sort all edges before processing",
+        "To always extend the current MST by the minimum-weight edge crossing the cut between tree and non-tree vertices",
+        "To detect cycles during MST construction",
+        "To process vertices in BFS order"
+      ],
+      "answerIndex": 1,
+      "explanation": "Prim's maintains the invariant that at each step, the cheapest edge from the current tree to an unvisited vertex is chosen. A min-priority queue (min-heap) allows extracting this minimum-cost edge in O(log V) rather than O(V) by linear scan.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["Prim", "MST", "priority queue", "why"]
+    },
+    {
+      "question": "Why is a binary heap the standard backing structure for a priority queue used in Dijkstra's algorithm?",
+      "options": [
+        "Because a heap provides O(1) insert and O(1) extract-min",
+        "Because a heap provides O(log V) insert and O(log V) extract-min, balancing both operations for the V extractions and E relaxations needed",
+        "Because a heap uses less memory than a sorted array",
+        "Because a heap supports random access in O(1)"
+      ],
+      "answerIndex": 1,
+      "explanation": "Dijkstra performs V extract-min and up to E decrease-key operations. A binary heap gives O(log V) for both, giving total O((V+E) log V). A sorted array would give O(1) extract-min but O(V) insert/decrease-key, which is worse for dense graphs. A Fibonacci heap gives O(log V) extract-min and O(1) amortized decrease-key, optimal for dense graphs.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["Dijkstra", "heap", "priority queue", "why"]
+    },
+    {
+      "question": "What is the time complexity of Dijkstra's algorithm with a binary min-heap on a graph with V vertices and E edges?",
+      "options": ["O(V^2)", "O(E log V)", "O((V + E) log V)", "O(V log E)"],
+      "answerIndex": 2,
+      "explanation": "Each vertex is extracted from the heap once: V × O(log V). Each edge may trigger a decrease-key: E × O(log V). Total: O((V + E) log V). For dense graphs (E ≈ V^2), this simplifies to O(V^2 log V); a plain array gives O(V^2) which is better for dense cases.",
+      "category": "Advanced Topics",
+      "level": "Hard",
+      "tags": ["Dijkstra", "complexity", "heap"]
+    },
+    {
+      "question": "Kahn's algorithm for topological sort uses in-degrees. What is the initial queue contents?",
+      "options": [
+        "All vertices with out-degree 0",
+        "All vertices with in-degree 0",
+        "The vertex with the maximum in-degree",
+        "All vertices in alphabetical order"
+      ],
+      "answerIndex": 1,
+      "explanation": "Kahn's algorithm starts by enqueuing all vertices with in-degree 0 (no prerequisites). Each time a vertex is dequeued and processed, its neighbors' in-degrees are decremented; neighbors reaching in-degree 0 are enqueued. If not all vertices are processed, a cycle exists.",
+      "category": "Advanced Topics",
+      "level": "Medium",
+      "tags": ["topological sort", "Kahn", "in-degree"]
+    },
+    {
+      "question": "What is the time complexity of topological sort (both Kahn's BFS-based and DFS-based)?",
+      "options": ["O(V)", "O(E)", "O(V + E)", "O(V log V)"],
+      "answerIndex": 2,
+      "explanation": "Both approaches visit every vertex once and process every edge once: O(V + E). Kahn's dequeues each vertex and scans its adjacency list; DFS-based finishes each vertex once and adds it to the result.",
+      "category": "Advanced Topics",
+      "level": "Medium",
+      "tags": ["topological sort", "complexity"]
+    },
+    {
+      "question": "What is a minimum spanning tree (MST) of a connected weighted undirected graph?",
+      "options": [
+        "The subgraph with minimum number of vertices connecting all edges",
+        "A spanning tree (connecting all vertices with V-1 edges, no cycles) with minimum total edge weight",
+        "The shortest path tree from a source vertex",
+        "A tree with maximum depth and minimum edge count"
+      ],
+      "answerIndex": 1,
+      "explanation": "An MST spans all V vertices with exactly V-1 edges (tree property), contains no cycles, and minimizes the sum of edge weights. It differs from shortest path trees, which optimize paths from a single source rather than total tree weight.",
+      "category": "Advanced Topics",
+      "level": "Medium",
+      "tags": ["MST", "definition"]
+    },
+    {
+      "question": "In a heap represented as an array with 1-based indexing, what are the indices of the children of node at index i?",
+      "options": ["i-1 and i+1", "2i and 2i+1", "2i-1 and 2i", "i/2 and i/2+1"],
+      "answerIndex": 1,
+      "explanation": "For 1-based array representation of a binary heap: left child of i is at 2i, right child at 2i+1, parent at floor(i/2). For 0-based: left child at 2i+1, right at 2i+2, parent at floor((i-1)/2).",
+      "category": "Advanced Topics",
+      "level": "Medium",
+      "tags": ["heap", "array", "children index"]
+    },
+    {
+      "question": "What property does a max-heap maintain that makes it suitable as a priority queue for maximum-priority extraction?",
+      "options": [
+        "Every node's value is less than its children",
+        "Every node's value is greater than or equal to its children's values",
+        "All leaves are at the same depth",
+        "The left subtree is always larger than the right subtree"
+      ],
+      "answerIndex": 1,
+      "explanation": "Max-heap property: every node ≥ its children. This guarantees the maximum element is always at the root, allowing O(1) extraction of the maximum and O(log n) re-heapification after removal.",
+      "category": "Advanced Topics",
+      "level": "Easy",
+      "tags": ["heap", "max-heap", "property"]
+    },
+    {
+      "question": "Bellman-Ford performs V-1 relaxation passes over all edges. Why V-1 and not V?",
+      "options": [
+        "Because V-1 relaxations match the number of edges in a spanning tree",
+        "Because the shortest path in a graph with V vertices uses at most V-1 edges, so V-1 rounds guarantee convergence for all simple paths",
+        "Because the algorithm terminates early if no changes occur in a round",
+        "Because V relaxations would double-count the source vertex"
+      ],
+      "answerIndex": 1,
+      "explanation": "A shortest path visiting V vertices uses at most V-1 edges (a simple path has no repeated vertex). After k relaxation rounds, Bellman-Ford has found the correct shortest paths using at most k edges. After V-1 rounds, all shortest paths (which are simple in a graph without negative cycles) are found.",
+      "category": "Advanced Topics",
+      "level": "Hard",
+      "tags": ["Bellman-Ford", "relaxation", "why"]
+    },
+    {
+      "question": "How does Bellman-Ford detect negative-weight cycles?",
+      "options": [
+        "By checking if any vertex has negative in-degree",
+        "By running a V-th relaxation pass: if any distance is updated, a negative cycle exists",
+        "By checking if the graph is a DAG",
+        "By comparing edge weights to the average edge weight"
+      ],
+      "answerIndex": 1,
+      "explanation": "After V-1 rounds, all shortest paths without negative cycles are finalized. If a V-th relaxation still reduces some distance, it means there is a path with a negative cycle that keeps decreasing — a negative cycle is detected.",
+      "category": "Advanced Topics",
+      "level": "Hard",
+      "tags": ["Bellman-Ford", "negative cycle", "detection"]
+    },
+    {
+      "question": "Why does a recursive DFS on a very deep graph risk stack overflow?",
+      "options": [
+        "Because DFS allocates a new array for each visited vertex",
+        "Because each recursive call adds a frame to the call stack; a path of length n causes n nested frames, which can exhaust stack memory",
+        "Because DFS visits each vertex multiple times",
+        "Because the recursion depth is bounded by the number of edges, not vertices"
+      ],
+      "answerIndex": 1,
+      "explanation": "Each DFS recursive call for a deeper vertex pushes a new stack frame. For a path graph of n vertices, the recursion depth is n. Most systems have a stack limit of a few thousand to tens of thousands of frames. An iterative DFS with an explicit stack avoids this limitation.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["DFS", "recursion", "stack overflow", "why"]
+    },
+    {
+      "question": "Which graph algorithm would correctly find the shortest path in a graph where all edge weights are equal?",
+      "options": [
+        "Dijkstra's algorithm only",
+        "BFS only",
+        "Both BFS and Dijkstra's algorithm give correct results, but BFS is more efficient",
+        "Bellman-Ford only"
+      ],
+      "answerIndex": 2,
+      "explanation": "When all edge weights are equal, path length by hop count equals path length by weight. BFS finds shortest paths by hop count in O(V+E). Dijkstra also works correctly but uses a priority queue unnecessarily, giving O((V+E) log V). BFS is strictly more efficient here.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["BFS", "Dijkstra", "equal weights", "why"]
+    },
+    {
+      "question": "A graph has 5 vertices and 4 edges and is connected. What kind of graph must it be?",
+      "options": ["A complete graph", "A tree", "A cyclic graph", "A bipartite graph"],
+      "answerIndex": 1,
+      "explanation": "A connected graph with V vertices and exactly V-1 edges has no cycles and is by definition a tree. 5 vertices, 4 edges, connected → tree.",
+      "category": "Graph Fundamentals",
+      "level": "Medium",
+      "tags": ["graph", "tree", "edges", "connected"]
+    },
+    {
+      "question": "Which traversal order correctly reconstructs a binary tree if given alongside the inorder sequence?",
+      "options": [
+        "Level-order alone is sufficient",
+        "Either preorder or postorder, combined with inorder",
+        "Postorder alone is sufficient",
+        "Any two traversals from {inorder, preorder, postorder} are always sufficient"
+      ],
+      "answerIndex": 1,
+      "explanation": "Inorder + preorder or inorder + postorder uniquely reconstruct a binary tree (with distinct values). Preorder + postorder together are insufficient — the inorder sequence is needed to determine left/right split. Level-order alone is also insufficient.",
+      "category": "Tree Traversals",
+      "level": "Hard",
+      "tags": ["traversal", "reconstruction", "inorder", "preorder", "postorder"]
+    }
+  ]
+}
