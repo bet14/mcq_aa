@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Graph Theory — Interactive Reference</title>
+<style>
+:root {
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', monospace;
+  --radius: 10px;
+  --sidebar-w: 260px;
+  --transition: 0.25s ease;
+}
+[data-theme="dark"] {
+  --bg: #050505; --bg2: #121212; --bg3: #1e1e1e;
+  --border: #333333; --text: #fafafa; --text-muted: #a0a0a0;
+  --accent: #4a9eff; --accent2: #9d7eff; --green: #1abc9c;
+  --amber: #f39c12; --red: #e74c3c;
+  --tab-active-bg: #4a9eff; --tab-active-text: #050505;
+  --chart-grid: rgba(255,255,255,0.04);
+}
+[data-theme="light"] {
+  --bg: #f0f2f8; --bg2: #ffffff; --bg3: #e8ecf4;
+  --border: #d0d5e8; --text: #0d1117; --text-muted: #4b5563;
+  --accent: #4361ee; --accent2: #7c3aed; --green: #059669;
+  --amber: #d97706; --red: #dc2626;
+  --tab-active-bg: #4361ee; --tab-active-text: #fff;
+  --chart-grid: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 15px; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+
+/* TOPBAR */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 100;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 16px;
+}
+#toggle-sidebar-btn, #theme-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px;
+  transition: background var(--transition);
+}
+#toggle-sidebar-btn:hover, #theme-btn:hover { background: var(--border); }
+#topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+#topbar-title span { color: var(--accent); }
+#theme-btn { margin-left: auto; }
+
+/* SIDEBAR */
+#sidebar {
+  position: fixed; top: 52px; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; transition: transform var(--transition); z-index: 90;
+  padding: 16px 0;
+}
+#sidebar.hidden { transform: translateX(-260px); }
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--text-muted); padding: 10px 20px 4px; text-transform: uppercase;
+}
+.nav-link {
+  display: block; padding: 8px 20px; color: var(--text-muted); cursor: pointer;
+  font-size: 13px; transition: all var(--transition); border-left: 3px solid transparent;
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; background: var(--bg3); }
+
+/* MAIN */
+#main {
+  margin-left: var(--sidebar-w); margin-top: 52px;
+  transition: margin-left var(--transition); min-height: calc(100vh - 52px);
+}
+#main.expanded { margin-left: 0; }
+.page { display: none; padding: 36px 48px 80px; max-width: 960px; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* TYPOGRAPHY */
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+h2 { font-size: 20px; font-weight: 600; margin: 28px 0 12px; color: var(--accent); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; }
+p { margin-bottom: 12px; color: var(--text); }
+.subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+/* CARDS */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+.card-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.card-row .card { flex: 1; min-width: 160px; }
+.stat-val { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* CALLOUT */
+.callout {
+  border-left: 3px solid var(--accent); background: var(--bg3);
+  border-radius: var(--radius); padding: 14px 18px; margin: 16px 0;
+}
+.callout.green { border-left-color: var(--green); }
+.callout.amber { border-left-color: var(--amber); }
+.callout.red { border-left-color: var(--red); }
+.callout-title { font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* CODE / PSEUDOCODE */
+pre {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 20px; font-family: var(--font-mono); font-size: 13px;
+  overflow-x: auto; line-height: 1.7; margin: 12px 0;
+}
+code { font-family: var(--font-mono); font-size: 13px; color: var(--accent2); }
+.kw { color: var(--accent); font-weight: 600; }
+.cm { color: var(--text-muted); font-style: italic; }
+.fn { color: var(--green); }
+.num { color: var(--amber); }
+
+/* TABLE */
+.compare-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.compare-table th { background: var(--bg3); padding: 10px 14px; text-align: left; font-size: 13px; color: var(--text-muted); border: 1px solid var(--border); }
+.compare-table td { padding: 10px 14px; border: 1px solid var(--border); font-size: 14px; vertical-align: top; }
+.compare-table tr:hover td { background: var(--bg3); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(26,188,156,0.15); color: var(--green); }
+.badge-red { background: rgba(231,76,60,0.15); color: var(--red); }
+.badge-amber { background: rgba(243,156,18,0.15); color: var(--amber); }
+.badge-accent { background: rgba(74,158,255,0.15); color: var(--accent); }
+
+/* SVG CHART WRAP */
+.chart-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; overflow-x: auto; }
+.chart-wrap svg { display: block; }
+
+/* STEPS */
+.steps { display: flex; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+.step {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; flex: 1; min-width: 80px; cursor: pointer;
+}
+.step:not(:last-child)::after {
+  content: ''; position: absolute; top: 16px; left: 60%; right: -40%;
+  height: 2px; background: var(--border); z-index: 0;
+}
+.step.done:not(:last-child)::after { background: var(--accent); }
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
+  background: var(--bg2); display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; z-index: 1; transition: all var(--transition);
+}
+.step.done .step-circle { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.step-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+.step.done .step-label { color: var(--text); }
+
+/* PROGRESS BAR */
+.progress-bar { background: var(--bg3); border-radius: 99px; height: 7px; overflow: hidden; margin: 6px 0; }
+.progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.6s ease; }
+
+/* GRAPH SVG NODES */
+.g-node { fill: var(--bg3); stroke: var(--accent); stroke-width: 2; }
+.g-node-visited { fill: var(--accent); stroke: var(--accent); }
+.g-node-queue { fill: var(--amber); stroke: var(--amber); }
+.g-node-text { fill: var(--text); font-family: var(--font-sans); font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.g-edge { stroke: var(--border); stroke-width: 2; }
+.g-edge-directed { stroke: var(--text-muted); stroke-width: 2; marker-end: url(#arrowhead); }
+.g-edge-weighted { stroke: var(--accent2); stroke-width: 2; }
+.g-weight-label { fill: var(--amber); font-family: var(--font-sans); font-size: 11px; text-anchor: middle; }
+
+/* INTERACTIVE TRACE */
+.trace-controls { display: flex; gap: 8px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+.trace-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 7px 14px; cursor: pointer; font-size: 13px;
+  transition: background var(--transition);
+}
+.trace-btn:hover { background: var(--border); }
+.trace-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.trace-btn.primary:hover { opacity: 0.85; }
+.trace-info { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-family: var(--font-mono); font-size: 13px; margin: 8px 0; min-height: 48px; }
+.stack-queue-display { display: flex; gap: 12px; margin: 8px 0; flex-wrap: wrap; }
+.sq-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 12px; flex: 1; min-width: 140px; }
+.sq-title { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.sq-items { font-family: var(--font-mono); color: var(--accent); }
+
+/* APP CARDS */
+.app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+.app-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+.app-card-title { font-weight: 600; margin-bottom: 6px; color: var(--accent); }
+.app-tag { display: inline-block; background: var(--bg3); border-radius: 4px; padding: 2px 7px; font-size: 11px; color: var(--text-muted); margin-right: 4px; margin-top: 6px; }
+
+/* COMPLEXITY PILL */
+.complexity { display: inline-flex; gap: 4px; align-items: center; font-family: var(--font-mono); font-size: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; }
+
+@media (max-width: 700px) {
+  #sidebar { transform: translateX(-260px); }
+  #sidebar.visible { transform: translateX(0); }
+  #main { margin-left: 0; }
+  .page { padding: 24px 18px 60px; }
+  .card-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="toggle-sidebar-btn" onclick="toggleSidebar()">Menu</button>
+  <div id="topbar-title">Graph Theory — <span>Interactive Reference</span></div>
+  <button id="theme-btn" onclick="toggleTheme()">Light Mode</button>
+</div>
+
+<nav id="sidebar">
+  <div class="sidebar-label">Fundamentals</div>
+  <div class="nav-link active" onclick="showPage('overview')">Overview</div>
+  <div class="nav-link" onclick="showPage('types')">Graph Types</div>
+  <div class="sidebar-label">Structure</div>
+  <div class="nav-link" onclick="showPage('representations')">Representations</div>
+  <div class="sidebar-label">Traversal</div>
+  <div class="nav-link" onclick="showPage('dfs')">Depth-First Search</div>
+  <div class="nav-link" onclick="showPage('bfs')">Breadth-First Search</div>
+  <div class="sidebar-label">Analysis</div>
+  <div class="nav-link" onclick="showPage('comparison')">DFS vs BFS</div>
+  <div class="nav-link" onclick="showPage('applications')">Applications</div>
+</nav>
+
+<div id="main">
+
+<!-- PAGE: OVERVIEW -->
+<div class="page active" id="page-overview">
+  <h1>Graph Theory</h1>
+  <p class="subtitle">A graph G = (V, E) is a mathematical structure consisting of a set of vertices V and a set of edges E connecting pairs of vertices.</p>
+
+  <div class="card-row">
+    <div class="card"><div class="stat-val">V</div><div class="stat-label">Vertices (Nodes)</div></div>
+    <div class="card"><div class="stat-val">E</div><div class="stat-label">Edges (Connections)</div></div>
+    <div class="card"><div class="stat-val">O(V+E)</div><div class="stat-label">Typical traversal cost</div></div>
+    <div class="card"><div class="stat-val">3</div><div class="stat-label">Core graph types</div></div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Formal Definition</div>
+    A graph G = (V, E) where V is a finite non-empty set of vertices and E &sube; V &times; V is a set of edges. In an undirected graph, each edge is an unordered pair {u, v}. In a directed graph, each edge is an ordered pair (u, v).
+  </div>
+
+  <h2>Anatomy of a Graph</h2>
+  <div class="chart-wrap">
+    <svg id="svg-overview" viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" width="100%">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#a0a0a0"/>
+        </marker>
+        <marker id="arrowhead-accent" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon id="arrow-accent-poly" points="0 0, 10 3.5, 0 7" fill="#4a9eff"/>
+        </marker>
+      </defs>
+      <!-- edges -->
+      <line x1="140" y1="130" x2="230" y2="80" class="g-edge" id="ov-e1"/>
+      <line x1="140" y1="130" x2="230" y2="180" class="g-edge" id="ov-e2"/>
+      <line x1="230" y1="80" x2="340" y2="80" class="g-edge" id="ov-e3"/>
+      <line x1="230" y1="180" x2="340" y2="180" class="g-edge" id="ov-e4"/>
+      <line x1="340" y1="80" x2="430" y2="130" class="g-edge" id="ov-e5"/>
+      <line x1="340" y1="180" x2="430" y2="130" class="g-edge" id="ov-e6"/>
+      <line x1="230" y1="80" x2="230" y2="180" class="g-edge" id="ov-e7"/>
+      <!-- nodes -->
+      <circle cx="140" cy="130" r="22" class="g-node" id="ov-n0"/>
+      <circle cx="230" cy="80" r="22" class="g-node" id="ov-n1"/>
+      <circle cx="230" cy="180" r="22" class="g-node" id="ov-n2"/>
+      <circle cx="340" cy="80" r="22" class="g-node" id="ov-n3"/>
+      <circle cx="340" cy="180" r="22" class="g-node" id="ov-n4"/>
+      <circle cx="430" cy="130" r="22" class="g-node" id="ov-n5"/>
+      <text x="140" y="130" class="g-node-text">A</text>
+      <text x="230" y="80" class="g-node-text">B</text>
+      <text x="230" y="180" class="g-node-text">C</text>
+      <text x="340" y="80" class="g-node-text">D</text>
+      <text x="340" y="180" class="g-node-text">E</text>
+      <text x="430" y="130" class="g-node-text">F</text>
+      <!-- labels -->
+      <text x="140" y="165" fill="#a0a0a0" font-size="11" text-anchor="middle" font-family="Segoe UI, sans-serif">Vertex (Node)</text>
+      <text x="185" y="100" fill="#a0a0a0" font-size="11" text-anchor="middle" font-family="Segoe UI, sans-serif">Edge</text>
+      <!-- degree annotation -->
+      <text x="140" y="105" fill="#f39c12" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">deg=2</text>
+      <text x="430" y="105" fill="#f39c12" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">deg=2</text>
+      <text x="230" y="55" fill="#f39c12" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">deg=3</text>
+    </svg>
+  </div>
+
+  <h2>Key Terminology</h2>
+  <table class="compare-table">
+    <tr><th>Term</th><th>Definition</th><th>Example (above graph)</th></tr>
+    <tr><td><strong>Vertex / Node</strong></td><td>A fundamental unit of the graph</td><td>A, B, C, D, E, F</td></tr>
+    <tr><td><strong>Edge</strong></td><td>A connection between two vertices</td><td>(A,B), (B,C), ...</td></tr>
+    <tr><td><strong>Degree</strong></td><td>Number of edges incident to a vertex</td><td>deg(B) = 3</td></tr>
+    <tr><td><strong>Path</strong></td><td>A sequence of vertices connected by edges</td><td>A → B → D → F</td></tr>
+    <tr><td><strong>Cycle</strong></td><td>A path that starts and ends at the same vertex</td><td>B → C → E → D → B</td></tr>
+    <tr><td><strong>Connected</strong></td><td>Every vertex reachable from every other</td><td>This graph is connected</td></tr>
+    <tr><td><strong>Sparse vs Dense</strong></td><td>|E| much less than V&sup2; vs |E| close to V&sup2;</td><td>—</td></tr>
+  </table>
+
+  <div class="callout amber">
+    <div class="callout-title">Handshaking Lemma</div>
+    For any undirected graph, the sum of all vertex degrees equals twice the number of edges: &sum; deg(v) = 2|E|. This means the number of odd-degree vertices is always even.
+  </div>
+</div>
+
+<!-- PAGE: GRAPH TYPES -->
+<div class="page" id="page-types">
+  <h1>Graph Types</h1>
+  <p class="subtitle">Three fundamental variants determine how edges behave — direction, weight, and cyclicity all shape which algorithms apply.</p>
+
+  <h2>Undirected Graph</h2>
+  <p>Edges are symmetric: if (u, v) &isin; E then (v, u) &isin; E. Represents bidirectional relationships.</p>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 400 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <line x1="80" y1="80" x2="170" y2="40" class="g-edge"/>
+      <line x1="80" y1="80" x2="170" y2="120" class="g-edge"/>
+      <line x1="170" y1="40" x2="260" y2="80" class="g-edge"/>
+      <line x1="170" y1="120" x2="260" y2="80" class="g-edge"/>
+      <line x1="260" y1="80" x2="340" y2="80" class="g-edge"/>
+      <circle cx="80" cy="80" r="20" class="g-node"/><text x="80" y="80" class="g-node-text">1</text>
+      <circle cx="170" cy="40" r="20" class="g-node"/><text x="170" y="40" class="g-node-text">2</text>
+      <circle cx="170" cy="120" r="20" class="g-node"/><text x="170" y="120" class="g-node-text">3</text>
+      <circle cx="260" cy="80" r="20" class="g-node"/><text x="260" y="80" class="g-node-text">4</text>
+      <circle cx="340" cy="80" r="20" class="g-node"/><text x="340" y="80" class="g-node-text">5</text>
+      <text x="200" y="150" fill="#a0a0a0" font-size="12" text-anchor="middle" font-family="Segoe UI, sans-serif">No direction — edges go both ways</text>
+    </svg>
+  </div>
+  <p><strong>Use cases:</strong> Friendship networks, road maps (bidirectional), molecular bonds.</p>
+
+  <h2>Directed Graph (Digraph)</h2>
+  <p>Each edge has a direction: (u, v) means u points to v, but not necessarily v to u.</p>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 400 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr1" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4a9eff"/>
+        </marker>
+      </defs>
+      <line x1="80" y1="80" x2="155" y2="44" stroke="var(--accent)" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="170" y1="40" x2="155" y2="114" stroke="var(--accent)" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="170" y1="120" x2="245" y2="86" stroke="var(--accent)" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="260" y1="80" x2="318" y2="80" stroke="var(--accent)" stroke-width="2" marker-end="url(#arr1)"/>
+      <line x1="80" y1="80" x2="155" y2="114" stroke="var(--accent)" stroke-width="2" marker-end="url(#arr1)"/>
+      <circle cx="80" cy="80" r="20" class="g-node"/><text x="80" y="80" class="g-node-text">A</text>
+      <circle cx="170" cy="40" r="20" class="g-node"/><text x="170" y="40" class="g-node-text">B</text>
+      <circle cx="170" cy="120" r="20" class="g-node"/><text x="170" y="120" class="g-node-text">C</text>
+      <circle cx="260" cy="80" r="20" class="g-node"/><text x="260" y="80" class="g-node-text">D</text>
+      <circle cx="340" cy="80" r="20" class="g-node"/><text x="340" y="80" class="g-node-text">E</text>
+      <text x="200" y="150" fill="#a0a0a0" font-size="12" text-anchor="middle" font-family="Segoe UI, sans-serif">Arrows show direction — A can reach B but B cannot reach A directly</text>
+    </svg>
+  </div>
+  <p><strong>Use cases:</strong> Web page links, task dependencies, Twitter follows, compiler call graphs.</p>
+
+  <h2>Weighted Graph</h2>
+  <p>Each edge carries a numeric weight (cost, distance, capacity). Both directed and undirected graphs can be weighted.</p>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 420 170" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <line x1="80" y1="85" x2="180" y2="45" stroke="var(--accent2)" stroke-width="2"/>
+      <line x1="80" y1="85" x2="180" y2="125" stroke="var(--accent2)" stroke-width="2"/>
+      <line x1="180" y1="45" x2="290" y2="85" stroke="var(--accent2)" stroke-width="2"/>
+      <line x1="180" y1="125" x2="290" y2="85" stroke="var(--accent2)" stroke-width="2"/>
+      <line x1="290" y1="85" x2="370" y2="85" stroke="var(--accent2)" stroke-width="2"/>
+      <!-- weights -->
+      <text x="122" y="55" class="g-weight-label">4</text>
+      <text x="122" y="118" class="g-weight-label">7</text>
+      <text x="237" y="55" class="g-weight-label">2</text>
+      <text x="237" y="125" class="g-weight-label">9</text>
+      <text x="330" y="78" class="g-weight-label">1</text>
+      <!-- nodes -->
+      <circle cx="80" cy="85" r="20" class="g-node"/><text x="80" y="85" class="g-node-text">S</text>
+      <circle cx="180" cy="45" r="20" class="g-node"/><text x="180" y="45" class="g-node-text">A</text>
+      <circle cx="180" cy="125" r="20" class="g-node"/><text x="180" y="125" class="g-node-text">B</text>
+      <circle cx="290" cy="85" r="20" class="g-node"/><text x="290" y="85" class="g-node-text">C</text>
+      <circle cx="370" cy="85" r="20" class="g-node"/><text x="370" y="85" class="g-node-text">T</text>
+      <text x="200" y="155" fill="#a0a0a0" font-size="12" text-anchor="middle" font-family="Segoe UI, sans-serif">Shortest path S→T: S-A-C-T = 4+2+1 = 7 (not S-B-C-T = 7+9+1 = 17)</text>
+    </svg>
+  </div>
+  <p><strong>Use cases:</strong> GPS routing, network flow, Dijkstra's/Bellman-Ford shortest path, minimum spanning tree.</p>
+
+  <h2>Summary</h2>
+  <table class="compare-table">
+    <tr><th>Type</th><th>Edge Direction</th><th>Edge Weight</th><th>Typical Algorithms</th></tr>
+    <tr><td>Undirected</td><td><span class="badge badge-accent">Bidirectional</span></td><td>Optional</td><td>DFS, BFS, MST (Kruskal/Prim)</td></tr>
+    <tr><td>Directed</td><td><span class="badge badge-green">One-way</span></td><td>Optional</td><td>Topological Sort, DFS, SCC</td></tr>
+    <tr><td>Weighted</td><td>Either</td><td><span class="badge badge-amber">Required</span></td><td>Dijkstra, Bellman-Ford, A*</td></tr>
+  </table>
+</div>
+
+<!-- PAGE: REPRESENTATIONS -->
+<div class="page" id="page-representations">
+  <h1>Graph Representations</h1>
+  <p class="subtitle">Two primary data structures encode a graph in memory. The choice critically affects space usage and the efficiency of operations.</p>
+
+  <div class="callout">
+    <div class="callout-title">Reference Graph</div>
+    Throughout this section, all representations use the same 5-vertex graph: vertices {0,1,2,3,4} with edges (0,1), (0,4), (1,2), (1,3), (1,4), (2,3), (3,4).
+  </div>
+
+  <div class="chart-wrap">
+    <svg viewBox="0 0 400 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <line x1="200" y1="40" x2="320" y2="100" class="g-edge"/>
+      <line x1="200" y1="40" x2="80" y2="100" class="g-edge"/>
+      <line x1="320" y1="100" x2="270" y2="170" class="g-edge"/>
+      <line x1="320" y1="100" x2="130" y2="170" class="g-edge"/>
+      <line x1="320" y1="100" x2="80" y2="100" class="g-edge"/>
+      <line x1="270" y1="170" x2="130" y2="170" class="g-edge"/>
+      <line x1="130" y1="170" x2="80" y2="100" class="g-edge"/>
+      <circle cx="200" cy="40" r="20" class="g-node"/><text x="200" y="40" class="g-node-text">0</text>
+      <circle cx="320" cy="100" r="20" class="g-node"/><text x="320" y="100" class="g-node-text">1</text>
+      <circle cx="270" cy="170" r="20" class="g-node"/><text x="270" y="170" class="g-node-text">2</text>
+      <circle cx="130" cy="170" r="20" class="g-node"/><text x="130" y="170" class="g-node-text">3</text>
+      <circle cx="80" cy="100" r="20" class="g-node"/><text x="80" y="100" class="g-node-text">4</text>
+    </svg>
+  </div>
+
+  <h2>Adjacency List</h2>
+  <p>Each vertex stores a list of its neighbors. The total storage used is O(V + E).</p>
+  <pre><span class="cm">// Adjacency List representation</span>
+<span class="kw">graph</span> = {
+  <span class="num">0</span>: [<span class="num">1</span>, <span class="num">4</span>],
+  <span class="num">1</span>: [<span class="num">0</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>],
+  <span class="num">2</span>: [<span class="num">1</span>, <span class="num">3</span>],
+  <span class="num">3</span>: [<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>],
+  <span class="num">4</span>: [<span class="num">0</span>, <span class="num">1</span>, <span class="num">3</span>]
+}
+
+<span class="cm">// Python: using defaultdict</span>
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="kw">def</span> <span class="fn">build_graph</span>(edges):
+    adj = defaultdict(list)
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        adj[u].append(v)
+        adj[v].append(u)  <span class="cm"># omit for directed</span>
+    <span class="kw">return</span> adj</pre>
+
+  <h2>Adjacency Matrix</h2>
+  <p>A V×V matrix where matrix[u][v] = 1 if edge (u,v) exists, 0 otherwise. Space: O(V²).</p>
+  <pre><span class="cm">// Adjacency Matrix for the same graph</span>
+<span class="cm">//   0  1  2  3  4</span>
+<span class="cm">// 0[0, 1, 0, 0, 1]</span>
+<span class="cm">// 1[1, 0, 1, 1, 1]</span>
+<span class="cm">// 2[0, 1, 0, 1, 0]</span>
+<span class="cm">// 3[0, 1, 1, 0, 1]</span>
+<span class="cm">// 4[1, 1, 0, 1, 0]</span>
+
+matrix = [
+  [<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>],
+  [<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">1</span>],
+  [<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>],
+  [<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>],
+  [<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>]
+]
+
+<span class="cm">// Check edge (u,v): O(1)  |  Iterate neighbors: O(V)</span></pre>
+
+  <h2>Visual: Adjacency Matrix</h2>
+  <div class="chart-wrap">
+    <table class="compare-table" style="font-family:var(--font-mono);font-size:14px;max-width:300px;">
+      <tr><th></th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+      <tr><th>0</th><td>—</td><td style="color:var(--green);font-weight:700">1</td><td>0</td><td>0</td><td style="color:var(--green);font-weight:700">1</td></tr>
+      <tr><th>1</th><td style="color:var(--green);font-weight:700">1</td><td>—</td><td style="color:var(--green);font-weight:700">1</td><td style="color:var(--green);font-weight:700">1</td><td style="color:var(--green);font-weight:700">1</td></tr>
+      <tr><th>2</th><td>0</td><td style="color:var(--green);font-weight:700">1</td><td>—</td><td style="color:var(--green);font-weight:700">1</td><td>0</td></tr>
+      <tr><th>3</th><td>0</td><td style="color:var(--green);font-weight:700">1</td><td style="color:var(--green);font-weight:700">1</td><td>—</td><td style="color:var(--green);font-weight:700">1</td></tr>
+      <tr><th>4</th><td style="color:var(--green);font-weight:700">1</td><td style="color:var(--green);font-weight:700">1</td><td>0</td><td style="color:var(--green);font-weight:700">1</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <h2>Comparison</h2>
+  <table class="compare-table">
+    <tr><th>Operation</th><th>Adjacency List</th><th>Adjacency Matrix</th></tr>
+    <tr><td>Space</td><td><span class="badge badge-green">O(V + E)</span></td><td><span class="badge badge-red">O(V²)</span></td></tr>
+    <tr><td>Check edge (u,v)</td><td><span class="badge badge-amber">O(deg(u))</span></td><td><span class="badge badge-green">O(1)</span></td></tr>
+    <tr><td>Iterate all neighbors of v</td><td><span class="badge badge-green">O(deg(v))</span></td><td><span class="badge badge-red">O(V)</span></td></tr>
+    <tr><td>Add edge</td><td><span class="badge badge-green">O(1)</span></td><td><span class="badge badge-green">O(1)</span></td></tr>
+    <tr><td>Remove edge</td><td><span class="badge badge-amber">O(deg(u))</span></td><td><span class="badge badge-green">O(1)</span></td></tr>
+    <tr><td>Best for</td><td>Sparse graphs (|E| &lt;&lt; V²)</td><td>Dense graphs, fast edge lookup</td></tr>
+  </table>
+
+  <div class="callout green">
+    <div class="callout-title">Practical Rule</div>
+    In most algorithm problems (social graphs, road networks, sparse connectivity), adjacency lists are preferred because real-world graphs are sparse. Adjacency matrices shine when V is small and edge queries must be O(1).
+  </div>
+</div>
+
+<!-- PAGE: DFS -->
+<div class="page" id="page-dfs">
+  <h1>Depth-First Search (DFS)</h1>
+  <p class="subtitle">Explore a branch as deep as possible before backtracking. Uses a stack (explicit or via recursion call stack).</p>
+
+  <div class="card-row">
+    <div class="card"><div class="stat-val">O(V+E)</div><div class="stat-label">Time Complexity</div></div>
+    <div class="card"><div class="stat-val">O(V)</div><div class="stat-label">Space (stack/visited)</div></div>
+    <div class="card"><div class="stat-val">Stack</div><div class="stat-label">Data Structure</div></div>
+    <div class="card"><div class="stat-val">LIFO</div><div class="stat-label">Processing Order</div></div>
+  </div>
+
+  <h2>Pseudocode — Recursive DFS</h2>
+  <pre><span class="fn">DFS</span>(graph, start):
+    visited = <span class="kw">set</span>()
+    <span class="fn">dfs_helper</span>(graph, start, visited)
+
+<span class="fn">dfs_helper</span>(graph, node, visited):
+    visited.add(node)
+    <span class="fn">process</span>(node)               <span class="cm">// e.g. print, collect</span>
+
+    <span class="kw">for</span> neighbor <span class="kw">in</span> graph[node]:
+        <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:
+            <span class="fn">dfs_helper</span>(graph, neighbor, visited)</pre>
+
+  <h2>Pseudocode — Iterative DFS</h2>
+  <pre><span class="fn">DFS_iterative</span>(graph, start):
+    visited = <span class="kw">set</span>()
+    stack = [start]
+
+    <span class="kw">while</span> stack <span class="kw">is not empty</span>:
+        node = stack.<span class="fn">pop</span>()          <span class="cm">// LIFO — top of stack</span>
+
+        <span class="kw">if</span> node <span class="kw">not in</span> visited:
+            visited.add(node)
+            <span class="fn">process</span>(node)
+
+            <span class="kw">for</span> neighbor <span class="kw">in</span> reversed(graph[node]):
+                <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:
+                    stack.<span class="fn">push</span>(neighbor)
+    <span class="cm">// reversed() ensures left-to-right visit order</span></pre>
+
+  <h2>Step-by-Step Trace — 11 Nodes</h2>
+  <p>Graph (undirected): 0:[1,2] &nbsp; 1:[0,3,4] &nbsp; 2:[0,5,6] &nbsp; 3:[1,7,8] &nbsp; 4:[1,9] &nbsp; 5:[2,10] &nbsp; 6:[2] &nbsp; 7,8,9,10: leaves. Start at node <strong>0</strong>.</p>
+
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0 6px;">
+    <span style="font-size:12px;color:var(--text-muted);">Legend:</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--green)"/></svg> Current (just popped)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--amber)"/></svg> In stack (pending)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--accent)"/></svg> Visited (done)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="#1e1e1e" stroke="#4a9eff" stroke-width="2"/></svg> Unvisited</span>
+  </div>
+
+  <div class="trace-controls">
+    <button class="trace-btn primary" onclick="dfsStep()">Next Step</button>
+    <button class="trace-btn" onclick="dfsReset()">Reset</button>
+    <span id="dfs-step-label" style="color:var(--text-muted);font-size:13px;">Step 0 / 11</span>
+  </div>
+
+  <div class="chart-wrap" style="padding:16px 10px;">
+    <svg id="dfs-svg" viewBox="0 0 560 310" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- edges -->
+      <line x1="280" y1="35" x2="140" y2="115" class="g-edge"/>
+      <line x1="280" y1="35" x2="420" y2="115" class="g-edge"/>
+      <line x1="140" y1="115" x2="65" y2="195" class="g-edge"/>
+      <line x1="140" y1="115" x2="190" y2="195" class="g-edge"/>
+      <line x1="420" y1="115" x2="360" y2="195" class="g-edge"/>
+      <line x1="420" y1="115" x2="490" y2="195" class="g-edge"/>
+      <line x1="65" y1="195" x2="30" y2="275" class="g-edge"/>
+      <line x1="65" y1="195" x2="110" y2="275" class="g-edge"/>
+      <line x1="190" y1="195" x2="190" y2="275" class="g-edge"/>
+      <line x1="360" y1="195" x2="360" y2="275" class="g-edge"/>
+      <!-- nodes -->
+      <circle cx="280" cy="35" r="22" class="g-node" id="dfn0"/><text x="280" y="35" class="g-node-text" id="dft0">0</text>
+      <circle cx="140" cy="115" r="22" class="g-node" id="dfn1"/><text x="140" y="115" class="g-node-text" id="dft1">1</text>
+      <circle cx="420" cy="115" r="22" class="g-node" id="dfn2"/><text x="420" y="115" class="g-node-text" id="dft2">2</text>
+      <circle cx="65" cy="195" r="22" class="g-node" id="dfn3"/><text x="65" y="195" class="g-node-text" id="dft3">3</text>
+      <circle cx="190" cy="195" r="22" class="g-node" id="dfn4"/><text x="190" y="195" class="g-node-text" id="dft4">4</text>
+      <circle cx="360" cy="195" r="22" class="g-node" id="dfn5"/><text x="360" y="195" class="g-node-text" id="dft5">5</text>
+      <circle cx="490" cy="195" r="22" class="g-node" id="dfn6"/><text x="490" y="195" class="g-node-text" id="dft6">6</text>
+      <circle cx="30" cy="275" r="22" class="g-node" id="dfn7"/><text x="30" y="275" class="g-node-text" id="dft7">7</text>
+      <circle cx="110" cy="275" r="22" class="g-node" id="dfn8"/><text x="110" y="275" class="g-node-text" id="dft8">8</text>
+      <circle cx="190" cy="275" r="22" class="g-node" id="dfn9"/><text x="190" y="275" class="g-node-text" id="dft9">9</text>
+      <circle cx="360" cy="275" r="22" class="g-node" id="dfn10"/><text x="360" y="275" class="g-node-text" id="dft10">10</text>
+      <!-- level labels -->
+      <text x="540" y="38" fill="var(--text-muted)" font-size="11" text-anchor="end" font-family="Segoe UI,sans-serif">L0</text>
+      <text x="540" y="118" fill="var(--text-muted)" font-size="11" text-anchor="end" font-family="Segoe UI,sans-serif">L1</text>
+      <text x="540" y="198" fill="var(--text-muted)" font-size="11" text-anchor="end" font-family="Segoe UI,sans-serif">L2</text>
+      <text x="540" y="278" fill="var(--text-muted)" font-size="11" text-anchor="end" font-family="Segoe UI,sans-serif">L3</text>
+    </svg>
+  </div>
+
+  <div class="stack-queue-display">
+    <div class="sq-box" style="flex:2;min-width:200px;">
+      <div class="sq-title">Stack — top is next to process (LIFO)</div>
+      <div class="sq-items" id="dfs-stack">[ ]</div>
+    </div>
+    <div class="sq-box" style="flex:2;min-width:200px;">
+      <div class="sq-title">Visited — order processed</div>
+      <div class="sq-items" id="dfs-visited">[ ]</div>
+    </div>
+  </div>
+  <div class="trace-info" id="dfs-info">Click "Next Step" to begin the DFS traversal from node 0.</div>
+
+  <h2>Complexity Analysis</h2>
+  <table class="compare-table">
+    <tr><th>Metric</th><th>Value</th><th>Reason</th></tr>
+    <tr><td>Time</td><td><span class="badge badge-green">O(V + E)</span></td><td>Each vertex visited once; each edge examined once (or twice for undirected)</td></tr>
+    <tr><td>Space (recursion)</td><td><span class="badge badge-amber">O(V)</span></td><td>Max recursion depth = longest DFS path; visited set = O(V)</td></tr>
+    <tr><td>Space (iterative)</td><td><span class="badge badge-amber">O(V)</span></td><td>Stack can hold at most V nodes</td></tr>
+    <tr><td>Best case</td><td>O(V + E)</td><td>Same — must explore the whole reachable graph</td></tr>
+  </table>
+
+  <div class="callout amber">
+    <div class="callout-title">Recursion Stack Overflow Risk</div>
+    For deep graphs (path graphs, star graphs), recursive DFS may exceed the call-stack limit. Prefer iterative DFS with an explicit stack when depth can exceed ~10,000 levels.
+  </div>
+</div>
+
+<!-- PAGE: BFS -->
+<div class="page" id="page-bfs">
+  <h1>Breadth-First Search (BFS)</h1>
+  <p class="subtitle">Explore all neighbors at the current depth before moving deeper. Uses a queue (FIFO). Guarantees shortest path in unweighted graphs.</p>
+
+  <div class="card-row">
+    <div class="card"><div class="stat-val">O(V+E)</div><div class="stat-label">Time Complexity</div></div>
+    <div class="card"><div class="stat-val">O(V)</div><div class="stat-label">Space (queue/visited)</div></div>
+    <div class="card"><div class="stat-val">Queue</div><div class="stat-label">Data Structure</div></div>
+    <div class="card"><div class="stat-val">FIFO</div><div class="stat-label">Processing Order</div></div>
+  </div>
+
+  <h2>Pseudocode</h2>
+  <pre><span class="fn">BFS</span>(graph, start):
+    visited = {start}
+    queue = <span class="fn">deque</span>([start])       <span class="cm">// FIFO queue — mark visited on enqueue</span>
+
+    <span class="kw">while</span> queue <span class="kw">is not empty</span>:
+        node = queue.<span class="fn">popleft</span>()    <span class="cm">// dequeue from front</span>
+        <span class="fn">process</span>(node)
+
+        <span class="kw">for</span> neighbor <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:
+                visited.add(neighbor)      <span class="cm">// mark NOW to avoid duplicate enqueues</span>
+                queue.<span class="fn">append</span>(neighbor)  <span class="cm">// enqueue at back</span></pre>
+
+  <h2>BFS with Shortest Path Tracking</h2>
+  <pre><span class="fn">BFS_shortest_path</span>(graph, start, target):
+    visited = {start}
+    queue = <span class="fn">deque</span>([(start, [start])])  <span class="cm">// (node, path_so_far)</span>
+
+    <span class="kw">while</span> queue:
+        node, path = queue.<span class="fn">popleft</span>()
+        <span class="kw">if</span> node == target:
+            <span class="kw">return</span> path              <span class="cm">// first time = shortest path</span>
+        <span class="kw">for</span> neighbor <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:
+                visited.add(neighbor)
+                queue.<span class="fn">append</span>((neighbor, path + [neighbor]))
+    <span class="kw">return</span> <span class="kw">None</span>                        <span class="cm">// target unreachable</span></pre>
+
+  <h2>Step-by-Step Trace — 11 Nodes</h2>
+  <p>Same graph as DFS: 0:[1,2] &nbsp; 1:[0,3,4] &nbsp; 2:[0,5,6] &nbsp; 3:[1,7,8] &nbsp; 4:[1,9] &nbsp; 5:[2,10] &nbsp; 6:[2] &nbsp; 7,8,9,10: leaves. Start at node <strong>0</strong>.</p>
+
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0 6px;">
+    <span style="font-size:12px;color:var(--text-muted);">Legend:</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--green)"/></svg> Current (just dequeued)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--amber)"/></svg> In queue (pending)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="var(--accent)"/></svg> Visited (done)</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="#1e1e1e" stroke="#4a9eff" stroke-width="2"/></svg> Unvisited</span>
+  </div>
+
+  <div class="trace-controls">
+    <button class="trace-btn primary" onclick="bfsStep()">Next Step</button>
+    <button class="trace-btn" onclick="bfsReset()">Reset</button>
+    <span id="bfs-step-label" style="color:var(--text-muted);font-size:13px;">Step 0 / 11</span>
+  </div>
+
+  <div class="chart-wrap" style="padding:16px 10px;">
+    <svg id="bfs-svg" viewBox="0 0 560 310" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- level bands -->
+      <rect x="0" y="14" width="540" height="44" fill="var(--accent)" fill-opacity="0.05" rx="4"/>
+      <rect x="0" y="94" width="540" height="44" fill="var(--accent2)" fill-opacity="0.05" rx="4"/>
+      <rect x="0" y="174" width="540" height="44" fill="var(--green)" fill-opacity="0.05" rx="4"/>
+      <rect x="0" y="254" width="540" height="44" fill="var(--amber)" fill-opacity="0.04" rx="4"/>
+      <text x="543" y="38" fill="var(--accent)" font-size="11" text-anchor="start" font-family="Segoe UI,sans-serif">L0</text>
+      <text x="543" y="118" fill="var(--accent2)" font-size="11" text-anchor="start" font-family="Segoe UI,sans-serif">L1</text>
+      <text x="543" y="198" fill="var(--green)" font-size="11" text-anchor="start" font-family="Segoe UI,sans-serif">L2</text>
+      <text x="543" y="278" fill="var(--amber)" font-size="11" text-anchor="start" font-family="Segoe UI,sans-serif">L3</text>
+      <!-- edges -->
+      <line x1="280" y1="35" x2="140" y2="115" class="g-edge"/>
+      <line x1="280" y1="35" x2="420" y2="115" class="g-edge"/>
+      <line x1="140" y1="115" x2="65" y2="195" class="g-edge"/>
+      <line x1="140" y1="115" x2="190" y2="195" class="g-edge"/>
+      <line x1="420" y1="115" x2="360" y2="195" class="g-edge"/>
+      <line x1="420" y1="115" x2="490" y2="195" class="g-edge"/>
+      <line x1="65" y1="195" x2="30" y2="275" class="g-edge"/>
+      <line x1="65" y1="195" x2="110" y2="275" class="g-edge"/>
+      <line x1="190" y1="195" x2="190" y2="275" class="g-edge"/>
+      <line x1="360" y1="195" x2="360" y2="275" class="g-edge"/>
+      <!-- nodes -->
+      <circle cx="280" cy="35" r="22" class="g-node" id="bfn0"/><text x="280" y="35" class="g-node-text" id="bft0">0</text>
+      <circle cx="140" cy="115" r="22" class="g-node" id="bfn1"/><text x="140" y="115" class="g-node-text" id="bft1">1</text>
+      <circle cx="420" cy="115" r="22" class="g-node" id="bfn2"/><text x="420" y="115" class="g-node-text" id="bft2">2</text>
+      <circle cx="65" cy="195" r="22" class="g-node" id="bfn3"/><text x="65" y="195" class="g-node-text" id="bft3">3</text>
+      <circle cx="190" cy="195" r="22" class="g-node" id="bfn4"/><text x="190" y="195" class="g-node-text" id="bft4">4</text>
+      <circle cx="360" cy="195" r="22" class="g-node" id="bfn5"/><text x="360" y="195" class="g-node-text" id="bft5">5</text>
+      <circle cx="490" cy="195" r="22" class="g-node" id="bfn6"/><text x="490" y="195" class="g-node-text" id="bft6">6</text>
+      <circle cx="30" cy="275" r="22" class="g-node" id="bfn7"/><text x="30" y="275" class="g-node-text" id="bft7">7</text>
+      <circle cx="110" cy="275" r="22" class="g-node" id="bfn8"/><text x="110" y="275" class="g-node-text" id="bft8">8</text>
+      <circle cx="190" cy="275" r="22" class="g-node" id="bfn9"/><text x="190" y="275" class="g-node-text" id="bft9">9</text>
+      <circle cx="360" cy="275" r="22" class="g-node" id="bfn10"/><text x="360" y="275" class="g-node-text" id="bft10">10</text>
+    </svg>
+  </div>
+
+  <div class="stack-queue-display">
+    <div class="sq-box" style="flex:2;min-width:200px;">
+      <div class="sq-title">Queue — front is next to process (FIFO)</div>
+      <div class="sq-items" id="bfs-queue">[ ]</div>
+    </div>
+    <div class="sq-box" style="flex:2;min-width:200px;">
+      <div class="sq-title">Visited — order processed</div>
+      <div class="sq-items" id="bfs-visited">[ ]</div>
+    </div>
+    <div class="sq-box" style="min-width:100px;">
+      <div class="sq-title">Current Level</div>
+      <div class="sq-items" id="bfs-level" style="font-size:20px;font-weight:700;">—</div>
+    </div>
+  </div>
+  <div class="trace-info" id="bfs-info">Click "Next Step" to begin the BFS traversal from node 0.</div>
+
+  <h2>Complexity Analysis</h2>
+  <table class="compare-table">
+    <tr><th>Metric</th><th>Value</th><th>Reason</th></tr>
+    <tr><td>Time</td><td><span class="badge badge-green">O(V + E)</span></td><td>Each vertex enqueued/dequeued once; each edge checked once (or twice for undirected)</td></tr>
+    <tr><td>Space</td><td><span class="badge badge-amber">O(V)</span></td><td>Queue can hold an entire level; worst case all V nodes in queue at once</td></tr>
+    <tr><td>Shortest path guarantee</td><td><span class="badge badge-green">Yes</span></td><td>Explores by increasing hop-count; first time a node is reached is always via shortest path</td></tr>
+    <tr><td>Worst case space</td><td>O(V)</td><td>Wide graphs (dense, low diameter) cause large queue</td></tr>
+  </table>
+
+  <div class="callout green">
+    <div class="callout-title">Shortest Path Property</div>
+    BFS guarantees the shortest path (minimum number of edges) in an unweighted graph because it exhausts all paths of length k before exploring length k+1. For weighted graphs, use Dijkstra's algorithm.
+  </div>
+</div>
+
+<!-- PAGE: COMPARISON -->
+<div class="page" id="page-comparison">
+  <h1>DFS vs BFS</h1>
+  <p class="subtitle">Both run in O(V+E) but differ fundamentally in exploration order, memory usage patterns, and the problems they solve best.</p>
+
+  <table class="compare-table">
+    <tr>
+      <th>Property</th>
+      <th>DFS</th>
+      <th>BFS</th>
+    </tr>
+    <tr>
+      <td><strong>Data Structure</strong></td>
+      <td>Stack (LIFO) / Recursion</td>
+      <td>Queue (FIFO)</td>
+    </tr>
+    <tr>
+      <td><strong>Exploration Order</strong></td>
+      <td>Deep before wide</td>
+      <td>Wide before deep (level by level)</td>
+    </tr>
+    <tr>
+      <td><strong>Shortest Path (unweighted)</strong></td>
+      <td><span class="badge badge-red">No guarantee</span></td>
+      <td><span class="badge badge-green">Guaranteed</span></td>
+    </tr>
+    <tr>
+      <td><strong>Memory (sparse graphs)</strong></td>
+      <td><span class="badge badge-green">O(depth)</span> — can be small</td>
+      <td><span class="badge badge-amber">O(width)</span> — can be large for wide graphs</td>
+    </tr>
+    <tr>
+      <td><strong>Memory (worst case)</strong></td>
+      <td>O(V) for linear graphs</td>
+      <td>O(V) for dense levels</td>
+    </tr>
+    <tr>
+      <td><strong>Cycle Detection</strong></td>
+      <td><span class="badge badge-green">Natural</span> — back-edge detection</td>
+      <td><span class="badge badge-accent">Possible</span> — via visited marking</td>
+    </tr>
+    <tr>
+      <td><strong>Topological Sort</strong></td>
+      <td><span class="badge badge-green">Yes</span></td>
+      <td><span class="badge badge-red">No</span> (use Kahn's BFS-based algorithm separately)</td>
+    </tr>
+    <tr>
+      <td><strong>Connected Components</strong></td>
+      <td><span class="badge badge-green">Yes</span></td>
+      <td><span class="badge badge-green">Yes</span></td>
+    </tr>
+    <tr>
+      <td><strong>Maze solving</strong></td>
+      <td>Finds A path (not shortest)</td>
+      <td>Finds shortest path</td>
+    </tr>
+    <tr>
+      <td><strong>Web crawling</strong></td>
+      <td>Goes deep into one site first</td>
+      <td>Explores all links at current depth first</td>
+    </tr>
+    <tr>
+      <td><strong>Completeness (infinite graphs)</strong></td>
+      <td><span class="badge badge-red">Not complete</span> — may go down infinite branch</td>
+      <td><span class="badge badge-green">Complete</span> — finds target if it exists at finite depth</td>
+    </tr>
+  </table>
+
+  <h2>Visualizing Order Difference</h2>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 560 220" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- Tree structure for DFS vs BFS order comparison -->
+      <!-- Left: DFS -->
+      <text x="130" y="18" fill="#a0a0a0" font-size="12" text-anchor="middle" font-family="Segoe UI, sans-serif">DFS Order: 1→2→4→5→3→6→7</text>
+      <line x1="130" y1="45" x2="80" y2="90" stroke="#333" stroke-width="1.5"/>
+      <line x1="130" y1="45" x2="180" y2="90" stroke="#333" stroke-width="1.5"/>
+      <line x1="80" y1="90" x2="55" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="80" y1="90" x2="100" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="180" y1="90" x2="160" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="180" y1="90" x2="205" y2="140" stroke="#333" stroke-width="1.5"/>
+      <circle cx="130" cy="45" r="18" fill="#4a9eff"/><text x="130" y="45" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">1</text>
+      <circle cx="80" cy="90" r="18" fill="#4a9eff" fill-opacity="0.8"/><text x="80" y="90" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">2</text>
+      <circle cx="180" cy="90" r="18" fill="#4a9eff" fill-opacity="0.4"/><text x="180" y="90" fill="#fafafa" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">3</text>
+      <circle cx="55" cy="140" r="18" fill="#4a9eff" fill-opacity="0.7"/><text x="55" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">4</text>
+      <circle cx="100" cy="140" r="18" fill="#4a9eff" fill-opacity="0.6"/><text x="100" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">5</text>
+      <circle cx="160" cy="140" r="18" fill="#4a9eff" fill-opacity="0.35"/><text x="160" y="140" fill="#fafafa" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">6</text>
+      <circle cx="205" cy="140" r="18" fill="#4a9eff" fill-opacity="0.25"/><text x="205" y="140" fill="#fafafa" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">7</text>
+      <text x="55" y="168" fill="#a0a0a0" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">3rd</text>
+      <text x="100" y="168" fill="#a0a0a0" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">4th</text>
+      <text x="80" y="118" fill="#a0a0a0" font-size="10" text-anchor="middle" font-family="Segoe UI, sans-serif">2nd</text>
+
+      <!-- Divider -->
+      <line x1="280" y1="10" x2="280" y2="200" stroke="#333" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- Right: BFS -->
+      <text x="420" y="18" fill="#a0a0a0" font-size="12" text-anchor="middle" font-family="Segoe UI, sans-serif">BFS Order: 1→2→3→4→5→6→7</text>
+      <line x1="420" y1="45" x2="370" y2="90" stroke="#333" stroke-width="1.5"/>
+      <line x1="420" y1="45" x2="470" y2="90" stroke="#333" stroke-width="1.5"/>
+      <line x1="370" y1="90" x2="345" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="370" y1="90" x2="390" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="470" y1="90" x2="450" y2="140" stroke="#333" stroke-width="1.5"/>
+      <line x1="470" y1="90" x2="495" y2="140" stroke="#333" stroke-width="1.5"/>
+      <!-- Level bands -->
+      <rect x="295" y="28" width="250" height="34" fill="var(--accent)" fill-opacity="0.08" rx="4"/>
+      <rect x="295" y="72" width="250" height="34" fill="var(--accent2)" fill-opacity="0.08" rx="4"/>
+      <rect x="295" y="122" width="250" height="34" fill="var(--green)" fill-opacity="0.08" rx="4"/>
+      <text x="548" y="47" fill="var(--accent)" font-size="10" text-anchor="end" font-family="Segoe UI, sans-serif">L0</text>
+      <text x="548" y="91" fill="var(--accent2)" font-size="10" text-anchor="end" font-family="Segoe UI, sans-serif">L1</text>
+      <text x="548" y="141" fill="var(--green)" font-size="10" text-anchor="end" font-family="Segoe UI, sans-serif">L2</text>
+      <circle cx="420" cy="45" r="18" fill="#4a9eff"/><text x="420" y="45" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">1</text>
+      <circle cx="370" cy="90" r="18" fill="#9d7eff"/><text x="370" y="90" fill="#fafafa" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">2</text>
+      <circle cx="470" cy="90" r="18" fill="#9d7eff"/><text x="470" y="90" fill="#fafafa" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">3</text>
+      <circle cx="345" cy="140" r="18" fill="#1abc9c"/><text x="345" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">4</text>
+      <circle cx="390" cy="140" r="18" fill="#1abc9c"/><text x="390" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">5</text>
+      <circle cx="450" cy="140" r="18" fill="#1abc9c"/><text x="450" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">6</text>
+      <circle cx="495" cy="140" r="18" fill="#1abc9c"/><text x="495" y="140" fill="#050505" font-size="12" font-weight="700" text-anchor="middle" dominant-baseline="central" font-family="Segoe UI, sans-serif">7</text>
+    </svg>
+  </div>
+
+  <h2>When to Use Which</h2>
+  <div class="card-row">
+    <div class="card">
+      <div style="color:var(--accent);font-weight:700;margin-bottom:8px;">Use DFS when...</div>
+      <ul style="padding-left:18px;font-size:14px;line-height:2;">
+        <li>Detecting cycles in a graph</li>
+        <li>Topological sorting (DAGs)</li>
+        <li>Finding strongly connected components</li>
+        <li>Solving puzzles / mazes where any path works</li>
+        <li>Memory is constrained and graph is deep</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="color:var(--green);font-weight:700;margin-bottom:8px;">Use BFS when...</div>
+      <ul style="padding-left:18px;font-size:14px;line-height:2;">
+        <li>Finding the shortest path (unweighted)</li>
+        <li>Level-order traversal</li>
+        <li>Finding all vertices within distance k</li>
+        <li>Web crawling (breadth-first by layer)</li>
+        <li>Peer-to-peer network discovery</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: APPLICATIONS -->
+<div class="page" id="page-applications">
+  <h1>Applications</h1>
+  <p class="subtitle">Graphs model relationships across virtually every domain of computer science and beyond.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-card-title">Social Networks</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Users are vertices; friendships/follows are edges. Graph algorithms power friend recommendations, community detection, and influence analysis.</p>
+      <div><span class="app-tag">Undirected (friends)</span><span class="app-tag">Directed (followers)</span></div>
+      <div><span class="app-tag">BFS for degree separation</span><span class="app-tag">DFS for communities</span></div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-title">Shortest Path Problems</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">GPS navigation, network routing, and game pathfinding all reduce to finding minimal-cost paths in weighted graphs.</p>
+      <div><span class="app-tag">Weighted directed</span><span class="app-tag">BFS (unweighted)</span></div>
+      <div><span class="app-tag">Dijkstra</span><span class="app-tag">A*</span><span class="app-tag">Bellman-Ford</span></div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-title">Web Crawling</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Web pages are vertices; hyperlinks are directed edges. Search engines use BFS/DFS to index the web and PageRank to score importance.</p>
+      <div><span class="app-tag">Directed graph</span><span class="app-tag">BFS crawl frontier</span></div>
+      <div><span class="app-tag">PageRank</span><span class="app-tag">Link analysis</span></div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-title">Dependency Resolution</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Package managers (npm, pip) model dependencies as a DAG. Topological sort (DFS-based) determines a valid installation order.</p>
+      <div><span class="app-tag">DAG</span><span class="app-tag">DFS topological sort</span></div>
+      <div><span class="app-tag">Cycle = circular dependency</span></div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-title">Network Flow</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Capacitated directed graphs model data routing, traffic flow, and supply chains. Max-flow algorithms use BFS (Edmonds-Karp) to find augmenting paths.</p>
+      <div><span class="app-tag">Weighted directed</span><span class="app-tag">BFS augmenting paths</span></div>
+      <div><span class="app-tag">Ford-Fulkerson</span><span class="app-tag">Edmonds-Karp</span></div>
+    </div>
+    <div class="app-card">
+      <div class="app-card-title">Compiler Analysis</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Control-flow graphs (CFGs) represent program execution paths. Dead-code elimination, register allocation, and loop detection all use graph algorithms.</p>
+      <div><span class="app-tag">Directed CFG</span><span class="app-tag">DFS dominance tree</span></div>
+      <div><span class="app-tag">Back-edge cycle detection</span></div>
+    </div>
+  </div>
+
+  <h2>Algorithm Selection by Problem</h2>
+  <table class="compare-table">
+    <tr><th>Problem</th><th>Graph Type</th><th>Algorithm</th><th>Complexity</th></tr>
+    <tr><td>Shortest path (unweighted)</td><td>Any</td><td>BFS</td><td>O(V+E)</td></tr>
+    <tr><td>Shortest path (weighted, non-neg)</td><td>Weighted</td><td>Dijkstra</td><td>O((V+E) log V)</td></tr>
+    <tr><td>Shortest path (negative weights)</td><td>Weighted directed</td><td>Bellman-Ford</td><td>O(VE)</td></tr>
+    <tr><td>All-pairs shortest path</td><td>Weighted</td><td>Floyd-Warshall</td><td>O(V³)</td></tr>
+    <tr><td>Cycle detection</td><td>Any</td><td>DFS (back-edge)</td><td>O(V+E)</td></tr>
+    <tr><td>Topological sort</td><td>DAG</td><td>DFS / Kahn's</td><td>O(V+E)</td></tr>
+    <tr><td>Minimum spanning tree</td><td>Weighted undirected</td><td>Kruskal / Prim</td><td>O(E log V)</td></tr>
+    <tr><td>Strongly connected components</td><td>Directed</td><td>Kosaraju / Tarjan</td><td>O(V+E)</td></tr>
+    <tr><td>Bipartite check</td><td>Undirected</td><td>BFS (2-coloring)</td><td>O(V+E)</td></tr>
+  </table>
+
+  <div class="callout green">
+    <div class="callout-title">Exam Insight</div>
+    When a problem asks for "minimum number of steps/hops/moves" between two states — model states as vertices, transitions as edges, and run BFS. The BFS level number when the target is first reached is the answer.
+  </div>
+
+  <h2>Complexity Summary</h2>
+  <div class="card-row">
+    <div class="card">
+      <div class="stat-val" style="font-size:20px;">O(V+E)</div>
+      <div class="stat-label">DFS and BFS — both traverse all reachable vertices and edges exactly once</div>
+    </div>
+    <div class="card">
+      <div class="stat-val" style="font-size:20px;">O(V+E)</div>
+      <div class="stat-label">Adjacency List space — optimal for sparse graphs where E &lt;&lt; V²</div>
+    </div>
+    <div class="card">
+      <div class="stat-val" style="font-size:20px;">O(V²)</div>
+      <div class="stat-label">Adjacency Matrix space — necessary for dense graphs needing O(1) edge lookup</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #main -->
+
+<script>
+// ---- THEME & SIDEBAR ----
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  const isMobile = window.innerWidth <= 700;
+  if (isMobile) {
+    sidebar.classList.toggle('visible');
+  } else {
+    sidebar.classList.toggle('hidden');
+    main.classList.toggle('expanded');
+  }
+}
+
+// ---- PAGE NAVIGATION ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) { page.classList.add('active'); }
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + id + "'")) {
+      l.classList.add('active');
+    }
+  });
+  window.scrollTo(0, 0);
+  if (window.innerWidth <= 700) {
+    document.getElementById('sidebar').classList.remove('visible');
+  }
+}
+
+// ---- DFS TRACE (11 nodes) ----
+// Graph: 0:[1,2] 1:[0,3,4] 2:[0,5,6] 3:[1,7,8] 4:[1,9] 5:[2,10] 6:[2] 7,8,9,10:leaves
+// Iterative DFS: push reversed neighbors so left-child is visited first
+const dfsSteps = [
+  { visited: [], current: null, pending: [0],       stack: [0],       info: 'INIT — Push start node 0 onto the stack.' },
+  { visited: [],  current: 0,   pending: [2,1],     stack: [2,1],     info: 'POP 0 → process. Push neighbors reversed [2,1] so 1 is on top. Next: pop 1.' },
+  { visited: [0], current: 1,   pending: [2,4,3],   stack: [2,4,3],   info: 'POP 1 → process. Push reversed unvisited [4,3] (skip 0: visited). 3 on top. Next: pop 3.' },
+  { visited: [0,1], current: 3, pending: [2,4,8,7], stack: [2,4,8,7], info: 'POP 3 → process. Push reversed unvisited [8,7] (skip 1: visited). 7 on top. Next: pop 7.' },
+  { visited: [0,1,3], current: 7, pending: [2,4,8], stack: [2,4,8],   info: 'POP 7 → process. No unvisited neighbors (only 3, already visited). Backtrack. Next: pop 8.' },
+  { visited: [0,1,3,7], current: 8, pending: [2,4], stack: [2,4],     info: 'POP 8 → process. No unvisited neighbors (only 3, visited). Backtrack. Next: pop 4.' },
+  { visited: [0,1,3,7,8], current: 4, pending: [2,9], stack: [2,9],   info: 'POP 4 → process. Push unvisited neighbor [9] (skip 1: visited). Next: pop 9.' },
+  { visited: [0,1,3,7,8,4], current: 9, pending: [2], stack: [2],     info: 'POP 9 → process. No unvisited neighbors (only 4, visited). Backtrack. Next: pop 2.' },
+  { visited: [0,1,3,7,8,4,9], current: 2, pending: [6,5], stack: [6,5], info: 'POP 2 → process. Push reversed unvisited [6,5] (skip 0: visited). 5 on top. Next: pop 5.' },
+  { visited: [0,1,3,7,8,4,9,2], current: 5, pending: [6,10], stack: [6,10], info: 'POP 5 → process. Push unvisited neighbor [10] (skip 2: visited). Next: pop 10.' },
+  { visited: [0,1,3,7,8,4,9,2,5], current: 10, pending: [6], stack: [6], info: 'POP 10 → process. No unvisited neighbors (only 5, visited). Backtrack. Next: pop 6.' },
+  { visited: [0,1,3,7,8,4,9,2,5,10], current: 6, pending: [], stack: [], info: 'POP 6 → process. No unvisited neighbors (only 2, visited). Stack EMPTY — DFS complete! Order: 0 → 1 → 3 → 7 → 8 → 4 → 9 → 2 → 5 → 10 → 6' }
+];
+let dfsIdx = 0;
+function paintDfsNode(i, state) {
+  const n = document.getElementById('dfn' + i);
+  const t = document.getElementById('dft' + i);
+  if (!n || !t) return;
+  const fills = { visited: 'var(--accent)', current: 'var(--green)', pending: 'var(--amber)', unvisited: 'var(--bg3)' };
+  const strokes = { visited: 'var(--accent)', current: 'var(--green)', pending: 'var(--amber)', unvisited: 'var(--accent)' };
+  const textFills = { visited: '#050505', current: '#050505', pending: '#050505', unvisited: 'var(--text)' };
+  n.setAttribute('fill', fills[state]); n.setAttribute('stroke', strokes[state]);
+  t.setAttribute('fill', textFills[state]);
+}
+function dfsReset() {
+  dfsIdx = 0;
+  for (let i = 0; i <= 10; i++) paintDfsNode(i, 'unvisited');
+  document.getElementById('dfs-stack').textContent = '[ ]';
+  document.getElementById('dfs-visited').textContent = '[ ]';
+  document.getElementById('dfs-info').textContent = 'Click "Next Step" to begin the DFS traversal from node 0.';
+  document.getElementById('dfs-step-label').textContent = 'Step 0 / 11';
+}
+function dfsStep() {
+  if (dfsIdx >= dfsSteps.length) return;
+  const s = dfsSteps[dfsIdx];
+  for (let i = 0; i <= 10; i++) {
+    if (s.visited.includes(i)) paintDfsNode(i, 'visited');
+    else if (i === s.current) paintDfsNode(i, 'current');
+    else if (s.pending.includes(i)) paintDfsNode(i, 'pending');
+    else paintDfsNode(i, 'unvisited');
+  }
+  const stackDisplay = s.stack.length ? s.stack.map((n,i) => i===s.stack.length-1 ? '['+n+']' : n).join(', ') : 'empty';
+  document.getElementById('dfs-stack').textContent = s.stack.length ? '[ ' + s.stack.join(', ') + ' ]  ← top' : '[ empty ]';
+  document.getElementById('dfs-visited').textContent = s.visited.length ? '[ ' + s.visited.join(' → ') + (s.current !== null ? ' → ' + s.current : '') + ' ]' : s.current !== null ? '[ ' + s.current + ' ]' : '[ ]';
+  document.getElementById('dfs-info').textContent = s.info;
+  document.getElementById('dfs-step-label').textContent = 'Step ' + (dfsIdx + 1) + ' / 11';
+  dfsIdx++;
+}
+
+// ---- BFS TRACE (11 nodes) ----
+const bfsSteps = [
+  { visited: [],  current: null, inQueue: [0],              queue: [0],              level: 0, info: 'INIT — Enqueue 0. Mark as visited immediately (prevents re-enqueuing).' },
+  { visited: [0], current: 0,   inQueue: [1,2],             queue: [1,2],            level: 1, info: 'DEQUEUE 0 (Level 0) → process. Enqueue unvisited neighbors: 1, 2. Level 1 discovered.' },
+  { visited: [0,1], current: 1, inQueue: [2,3,4],           queue: [2,3,4],          level: 1, info: 'DEQUEUE 1 (Level 1) → process. Enqueue unvisited: 3, 4. (0 already visited)' },
+  { visited: [0,1,2], current: 2, inQueue: [3,4,5,6],       queue: [3,4,5,6],        level: 1, info: 'DEQUEUE 2 (Level 1) → process. Enqueue unvisited: 5, 6. (0 already visited) Level 2 nodes now in queue.' },
+  { visited: [0,1,2,3], current: 3, inQueue: [4,5,6,7,8],   queue: [4,5,6,7,8],      level: 2, info: 'DEQUEUE 3 (Level 2) → process. Enqueue unvisited: 7, 8. (1 already visited)' },
+  { visited: [0,1,2,3,4], current: 4, inQueue: [5,6,7,8,9], queue: [5,6,7,8,9],      level: 2, info: 'DEQUEUE 4 (Level 2) → process. Enqueue unvisited: 9. (1 already visited)' },
+  { visited: [0,1,2,3,4,5], current: 5, inQueue: [6,7,8,9,10], queue: [6,7,8,9,10], level: 2, info: 'DEQUEUE 5 (Level 2) → process. Enqueue unvisited: 10. (2 already visited)' },
+  { visited: [0,1,2,3,4,5,6], current: 6, inQueue: [7,8,9,10], queue: [7,8,9,10],   level: 2, info: 'DEQUEUE 6 (Level 2) → process. No unvisited neighbors (2 already visited). Level 3 is next.' },
+  { visited: [0,1,2,3,4,5,6,7], current: 7, inQueue: [8,9,10], queue: [8,9,10],     level: 3, info: 'DEQUEUE 7 (Level 3) → process. No unvisited neighbors (3 already visited).' },
+  { visited: [0,1,2,3,4,5,6,7,8], current: 8, inQueue: [9,10], queue: [9,10],       level: 3, info: 'DEQUEUE 8 (Level 3) → process. No unvisited neighbors (3 already visited).' },
+  { visited: [0,1,2,3,4,5,6,7,8,9], current: 9, inQueue: [10], queue: [10],         level: 3, info: 'DEQUEUE 9 (Level 3) → process. No unvisited neighbors (4 already visited).' },
+  { visited: [0,1,2,3,4,5,6,7,8,9,10], current: 10, inQueue: [], queue: [],         level: 3, info: 'DEQUEUE 10 (Level 3) → process. No unvisited neighbors (5 already visited). Queue EMPTY — BFS complete! Order: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10' }
+];
+let bfsIdx = 0;
+function paintBfsNode(i, state) {
+  const n = document.getElementById('bfn' + i);
+  const t = document.getElementById('bft' + i);
+  if (!n || !t) return;
+  const fills = { visited: 'var(--accent)', current: 'var(--green)', pending: 'var(--amber)', unvisited: 'var(--bg3)' };
+  const strokes = { visited: 'var(--accent)', current: 'var(--green)', pending: 'var(--amber)', unvisited: 'var(--accent)' };
+  const textFills = { visited: '#050505', current: '#050505', pending: '#050505', unvisited: 'var(--text)' };
+  n.setAttribute('fill', fills[state]); n.setAttribute('stroke', strokes[state]);
+  t.setAttribute('fill', textFills[state]);
+}
+function bfsReset() {
+  bfsIdx = 0;
+  for (let i = 0; i <= 10; i++) paintBfsNode(i, 'unvisited');
+  document.getElementById('bfs-queue').textContent = '[ ]';
+  document.getElementById('bfs-visited').textContent = '[ ]';
+  document.getElementById('bfs-level').textContent = '—';
+  document.getElementById('bfs-info').textContent = 'Click "Next Step" to begin the BFS traversal from node 0.';
+  document.getElementById('bfs-step-label').textContent = 'Step 0 / 11';
+}
+function bfsStep() {
+  if (bfsIdx >= bfsSteps.length) return;
+  const s = bfsSteps[bfsIdx];
+  for (let i = 0; i <= 10; i++) {
+    if (s.visited.includes(i)) paintBfsNode(i, 'visited');
+    else if (i === s.current) paintBfsNode(i, 'current');
+    else if (s.inQueue.includes(i)) paintBfsNode(i, 'pending');
+    else paintBfsNode(i, 'unvisited');
+  }
+  document.getElementById('bfs-queue').textContent = s.queue.length ? '[ ' + s.queue.join(', ') + ' ]  ← front' : '[ empty ]';
+  document.getElementById('bfs-visited').textContent = s.visited.length ? '[ ' + s.visited.join(' → ') + (s.current !== null ? ' → ' + s.current : '') + ' ]' : s.current !== null ? '[ ' + s.current + ' ]' : '[ ]';
+  document.getElementById('bfs-level').textContent = 'L' + s.level;
+  document.getElementById('bfs-info').textContent = s.info;
+  document.getElementById('bfs-step-label').textContent = 'Step ' + (bfsIdx + 1) + ' / 11';
+  bfsIdx++;
+}
+
+function renderCharts() {}
+window.addEventListener('load', function() { setTimeout(renderCharts, 100); });
+</script>
+</body>
+</html>

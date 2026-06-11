@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tree Data Structures</title>
+<style>
+:root {
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', monospace;
+  --radius: 10px;
+  --sidebar-w: 260px;
+  --transition: 0.25s ease;
+}
+[data-theme="dark"] {
+  --bg: #050505; --bg2: #121212; --bg3: #1e1e1e;
+  --border: #333333; --text: #fafafa; --text-muted: #a0a0a0;
+  --accent: #4a9eff; --accent2: #9d7eff; --green: #1abc9c;
+  --amber: #f39c12; --red: #e74c3c;
+  --tab-active-bg: #4a9eff; --tab-active-text: #050505;
+  --chart-grid: rgba(255,255,255,0.04);
+}
+[data-theme="light"] {
+  --bg: #f0f2f8; --bg2: #ffffff; --bg3: #e8ecf4;
+  --border: #d0d5e8; --text: #0d1117; --text-muted: #4b5563;
+  --accent: #4361ee; --accent2: #7c3aed; --green: #059669;
+  --amber: #d97706; --red: #dc2626;
+  --tab-active-bg: #4361ee; --tab-active-text: #fff;
+  --chart-grid: rgba(0,0,0,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* TOPBAR */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 100;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 18px; gap: 14px;
+}
+#toggle-sidebar-btn, #theme-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  transition: background var(--transition);
+}
+#toggle-sidebar-btn:hover, #theme-btn:hover { background: var(--border); }
+#topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+#topbar-title span { color: var(--accent); }
+#theme-btn { margin-left: auto; }
+
+/* SIDEBAR */
+#sidebar {
+  position: fixed; top: 52px; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; transition: transform var(--transition); z-index: 90;
+  padding: 16px 0 40px;
+}
+#sidebar.hidden { transform: translateX(-260px); }
+.sidebar-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--text-muted); padding: 14px 18px 6px;
+}
+.nav-link {
+  display: block; padding: 8px 18px; font-size: 13px; color: var(--text-muted);
+  cursor: pointer; border-left: 3px solid transparent;
+  transition: all var(--transition); text-decoration: none;
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active { color: var(--accent); font-weight: 700; border-left-color: var(--accent); background: var(--bg3); }
+
+/* MAIN */
+#main {
+  margin-left: var(--sidebar-w); margin-top: 52px;
+  padding: 36px 48px 80px; transition: margin-left var(--transition);
+  min-height: calc(100vh - 52px);
+}
+#main.expanded { margin-left: 0; }
+.page { display: none; max-width: 900px; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* TYPOGRAPHY */
+h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+h2 { font-size: 20px; font-weight: 700; margin: 32px 0 14px; color: var(--text); }
+h3 { font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text-muted); }
+p { line-height: 1.7; color: var(--text-muted); margin-bottom: 12px; font-size: 14px; }
+.page-subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 28px; }
+
+/* CARDS */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+.card-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.card-row .card { flex: 1; min-width: 150px; }
+.stat-val { font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* CALLOUTS */
+.callout {
+  border-left: 3px solid var(--accent); background: var(--bg3);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 18px; margin: 16px 0; font-size: 14px; line-height: 1.6;
+}
+.callout.green { border-left-color: var(--green); }
+.callout.amber { border-left-color: var(--amber); }
+.callout.red { border-left-color: var(--red); }
+.callout strong { color: var(--text); }
+
+/* CODE BLOCKS */
+pre {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 20px; font-family: var(--font-mono); font-size: 13px;
+  line-height: 1.65; overflow-x: auto; margin: 12px 0; color: var(--text);
+  white-space: pre;
+}
+.kw { color: var(--accent); font-weight: 600; }
+.cm { color: var(--text-muted); font-style: italic; }
+.fn { color: var(--accent2); }
+.nm { color: var(--green); }
+.str { color: var(--amber); }
+
+/* COMPARE TABLE */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.compare-table th { background: var(--bg3); color: var(--text-muted); font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border); }
+.compare-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+.compare-table tr:hover td { background: var(--bg3); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.badge-green { background: rgba(26,188,156,0.15); color: var(--green); }
+.badge-amber { background: rgba(243,156,18,0.15); color: var(--amber); }
+.badge-red { background: rgba(231,76,60,0.15); color: var(--red); }
+.badge-accent { background: rgba(74,158,255,0.15); color: var(--accent); }
+.badge-purple { background: rgba(157,126,255,0.15); color: var(--accent2); }
+
+/* CHART WRAP */
+.chart-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin: 16px 0; }
+.chart-wrap svg text { font-family: var(--font-sans); }
+
+/* TRAVERSAL DEMO */
+.trav-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.trav-btn {
+  padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); cursor: pointer; font-size: 13px;
+  font-weight: 600; transition: all var(--transition);
+}
+.trav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.trav-btn.active { background: var(--tab-active-bg); color: var(--tab-active-text); border-color: var(--tab-active-bg); }
+.demo-controls { display: flex; gap: 10px; align-items: center; margin: 14px 0; flex-wrap: wrap; }
+.demo-btn {
+  padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); cursor: pointer; font-size: 13px;
+  transition: all var(--transition);
+}
+.demo-btn:hover { background: var(--border); }
+.demo-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+.demo-btn.primary:hover { opacity: 0.85; }
+.visit-seq { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 12px 0; min-height: 36px; }
+.visit-chip {
+  padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+.visit-chip.visited { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.visit-chip.current { background: var(--amber); color: var(--bg); border-color: var(--amber); transform: scale(1.1); }
+.step-info { font-size: 13px; color: var(--text-muted); min-height: 22px; }
+
+/* PROGRESS BAR */
+.progress-bar { background: var(--bg3); border-radius: 4px; height: 7px; overflow: hidden; margin: 8px 0 4px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.6s ease; }
+
+/* SECTION DIVIDER */
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+/* PSEUDO BLOCK */
+.pseudo-wrap { margin: 14px 0; }
+.pseudo-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; }
+.pseudo-title { font-size: 14px; font-weight: 600; color: var(--accent2); margin-bottom: 8px; }
+
+/* APP CARDS */
+.app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 14px; margin: 16px 0; }
+.app-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+.app-card h4 { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.app-card p { font-size: 13px; margin: 0; }
+
+/* COMPLEXITY TABLE */
+.cplx-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.cplx-bar { height: 8px; border-radius: 4px; min-width: 4px; transition: width 0.5s ease; }
+
+@media (max-width: 700px) {
+  #sidebar { transform: translateX(-260px); }
+  #sidebar.visible { transform: translateX(0); }
+  #main { margin-left: 0; padding: 24px 18px 60px; }
+  #main.expanded { margin-left: 0; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <button id="toggle-sidebar-btn" onclick="toggleSidebar()">Menu</button>
+  <div id="topbar-title">Tree <span>Data Structures</span></div>
+  <button id="theme-btn" onclick="toggleTheme()">Light</button>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-label">Foundations</div>
+  <a class="nav-link active" onclick="showPage('overview')">Overview</a>
+  <a class="nav-link" onclick="showPage('anatomy')">Tree Anatomy</a>
+
+  <div class="sidebar-label">Traversals</div>
+  <a class="nav-link" onclick="showPage('inorder')">Inorder (L-Root-R)</a>
+  <a class="nav-link" onclick="showPage('preorder')">Preorder (Root-L-R)</a>
+  <a class="nav-link" onclick="showPage('postorder')">Postorder (L-R-Root)</a>
+
+  <div class="sidebar-label">Analysis</div>
+  <a class="nav-link" onclick="showPage('demo')">Interactive Demo</a>
+  <a class="nav-link" onclick="showPage('properties')">Binary Tree Properties</a>
+  <a class="nav-link" onclick="showPage('applications')">Applications</a>
+  <a class="nav-link" onclick="showPage('takeaways')">Key Takeaways</a>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- ===== PAGE: OVERVIEW ===== -->
+<div id="page-overview" class="page active">
+  <h1>Tree Data Structures</h1>
+  <p class="page-subtitle">A hierarchical data structure where nodes are connected by edges, encoding parent-child relationships.</p>
+
+  <div class="card-row">
+    <div class="card">
+      <div class="stat-val">O(log n)</div>
+      <div class="stat-label">Search in balanced BST</div>
+    </div>
+    <div class="card">
+      <div class="stat-val">3</div>
+      <div class="stat-label">Core traversal orders</div>
+    </div>
+    <div class="card">
+      <div class="stat-val">O(n)</div>
+      <div class="stat-label">Space complexity (all traversals)</div>
+    </div>
+    <div class="card">
+      <div class="stat-val">2</div>
+      <div class="stat-label">Max children per node (Binary Tree)</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Core Definition:</strong> A tree is an acyclic, connected graph where exactly one node — the root — has no parent, every other node has exactly one parent, and any two nodes are connected by exactly one path.
+  </div>
+
+  <h2>Essential Terminology</h2>
+  <table class="compare-table">
+    <thead><tr><th>Term</th><th>Definition</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Root</strong></td><td>Topmost node; no parent</td><td>Node A in a tree rooted at A</td></tr>
+      <tr><td><strong>Leaf</strong></td><td>Node with no children</td><td>Terminal nodes at the bottom</td></tr>
+      <tr><td><strong>Internal Node</strong></td><td>Node with at least one child</td><td>Any non-leaf node</td></tr>
+      <tr><td><strong>Edge</strong></td><td>Directed link from parent to child</td><td>The line between two nodes</td></tr>
+      <tr><td><strong>Height</strong></td><td>Longest path from root to a leaf (edges)</td><td>A balanced tree of 7 nodes has height 2</td></tr>
+      <tr><td><strong>Depth</strong></td><td>Distance from root to a given node (edges)</td><td>Root has depth 0</td></tr>
+      <tr><td><strong>Subtree</strong></td><td>A node and all its descendants</td><td>Left subtree rooted at node B</td></tr>
+      <tr><td><strong>Degree</strong></td><td>Number of children of a node</td><td>Binary tree max degree = 2</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout amber">
+    <strong>Binary Tree constraint:</strong> Every node has at most 2 children, conventionally labeled <em>left</em> and <em>right</em>. This constraint enables ordered traversal algorithms and makes BST operations efficient.
+  </div>
+</div>
+
+<!-- ===== PAGE: ANATOMY ===== -->
+<div id="page-anatomy" class="page">
+  <h1>Tree Anatomy</h1>
+  <p class="page-subtitle">Visual breakdown of a binary tree — nodes, levels, edges, and structural roles.</p>
+
+  <div class="chart-wrap">
+    <svg id="anatomy-svg" viewBox="0 0 700 340" width="100%" style="display:block;">
+      <!-- Level lines -->
+      <text x="10" y="58" font-size="11" fill="var(--text-muted)">Level 0</text>
+      <text x="10" y="138" font-size="11" fill="var(--text-muted)">Level 1</text>
+      <text x="10" y="218" font-size="11" fill="var(--text-muted)">Level 2</text>
+      <text x="10" y="298" font-size="11" fill="var(--text-muted)">Level 3</text>
+
+      <!-- Edges -->
+      <line x1="350" y1="64" x2="210" y2="134" stroke="var(--border)" stroke-width="2"/>
+      <line x1="350" y1="64" x2="490" y2="134" stroke="var(--border)" stroke-width="2"/>
+      <line x1="210" y1="154" x2="140" y2="214" stroke="var(--border)" stroke-width="2"/>
+      <line x1="210" y1="154" x2="280" y2="214" stroke="var(--border)" stroke-width="2"/>
+      <line x1="490" y1="154" x2="420" y2="214" stroke="var(--border)" stroke-width="2"/>
+      <line x1="490" y1="154" x2="560" y2="214" stroke="var(--border)" stroke-width="2"/>
+      <line x1="140" y1="234" x2="105" y2="284" stroke="var(--border)" stroke-width="2"/>
+      <line x1="140" y1="234" x2="175" y2="284" stroke="var(--border)" stroke-width="2"/>
+
+      <!-- Root node -->
+      <circle cx="350" cy="50" r="22" fill="var(--accent)" opacity="0.9"/>
+      <text x="350" y="55" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--bg)">50</text>
+
+      <!-- Level 1 -->
+      <circle cx="210" cy="144" r="22" fill="var(--accent2)" opacity="0.85"/>
+      <text x="210" y="149" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--bg)">30</text>
+      <circle cx="490" cy="144" r="22" fill="var(--accent2)" opacity="0.85"/>
+      <text x="490" y="149" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--bg)">70</text>
+
+      <!-- Level 2 -->
+      <circle cx="140" cy="224" r="22" fill="var(--bg3)" stroke="var(--border)" stroke-width="2"/>
+      <text x="140" y="229" text-anchor="middle" font-size="14" fill="var(--text)">20</text>
+      <circle cx="280" cy="224" r="22" fill="var(--bg3)" stroke="var(--border)" stroke-width="2"/>
+      <text x="280" y="229" text-anchor="middle" font-size="14" fill="var(--text)">40</text>
+      <circle cx="420" cy="224" r="22" fill="var(--bg3)" stroke="var(--border)" stroke-width="2"/>
+      <text x="420" y="229" text-anchor="middle" font-size="14" fill="var(--text)">60</text>
+      <circle cx="560" cy="224" r="22" fill="var(--green)" opacity="0.8"/>
+      <text x="560" y="229" text-anchor="middle" font-size="14" font-weight="bold" fill="var(--bg)">80</text>
+
+      <!-- Level 3 (leaves) -->
+      <circle cx="105" cy="290" r="20" fill="var(--amber)" opacity="0.8"/>
+      <text x="105" y="295" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--bg)">10</text>
+      <circle cx="175" cy="290" r="20" fill="var(--amber)" opacity="0.8"/>
+      <text x="175" y="295" text-anchor="middle" font-size="13" font-weight="bold" fill="var(--bg)">25</text>
+
+      <!-- Labels -->
+      <rect x="370" y="30" width="68" height="20" rx="4" fill="var(--accent)" opacity="0.2"/>
+      <text x="404" y="44" text-anchor="middle" font-size="11" fill="var(--accent)" font-weight="700">ROOT</text>
+
+      <rect x="578" y="204" width="60" height="20" rx="4" fill="var(--green)" opacity="0.2"/>
+      <text x="608" y="218" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="700">INTERNAL</text>
+
+      <rect x="56" y="270" width="50" height="20" rx="4" fill="var(--amber)" opacity="0.2"/>
+      <text x="81" y="284" text-anchor="middle" font-size="11" fill="var(--amber)" font-weight="700">LEAF</text>
+      <rect x="188" y="270" width="50" height="20" rx="4" fill="var(--amber)" opacity="0.2"/>
+      <text x="213" y="284" text-anchor="middle" font-size="11" fill="var(--amber)" font-weight="700">LEAF</text>
+
+      <!-- Depth arrow -->
+      <line x1="650" y1="50" x2="650" y2="290" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="665" y="50" font-size="10" fill="var(--text-muted)">d=0</text>
+      <text x="665" y="144" font-size="10" fill="var(--text-muted)">d=1</text>
+      <text x="665" y="224" font-size="10" fill="var(--text-muted)">d=2</text>
+      <text x="665" y="290" font-size="10" fill="var(--text-muted)">d=3</text>
+    </svg>
+  </div>
+
+  <div class="callout">
+    <strong>Legend:</strong> Blue = Root &nbsp;|&nbsp; Purple = Internal node (level 1) &nbsp;|&nbsp; Gray = Internal nodes (level 2) &nbsp;|&nbsp; Green = Internal node with no right child shown &nbsp;|&nbsp; Orange = Leaf nodes (depth 3)
+  </div>
+
+  <h2>Structural Properties</h2>
+  <table class="compare-table">
+    <thead><tr><th>Property</th><th>Value (this tree)</th><th>General Formula</th></tr></thead>
+    <tbody>
+      <tr><td>Height</td><td>3 (root to leaf 10/25)</td><td>max depth of any leaf</td></tr>
+      <tr><td>Number of nodes</td><td>9</td><td>varies</td></tr>
+      <tr><td>Leaves</td><td>5 (10, 25, 40, 60, 80 — 40, 60 have no children shown)</td><td>floor(n/2) + 1 for full binary tree</td></tr>
+      <tr><td>Max nodes at level k</td><td>2^k</td><td>2^k</td></tr>
+      <tr><td>Max nodes in full tree of height h</td><td>2^(h+1) - 1</td><td>2^(h+1) - 1</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== PAGE: INORDER ===== -->
+<div id="page-inorder" class="page">
+  <h1>Inorder Traversal</h1>
+  <p class="page-subtitle">Visit order: <strong>Left subtree → Root → Right subtree</strong>. For a BST, produces nodes in sorted ascending order.</p>
+
+  <div class="callout green">
+    <strong>Key property:</strong> Inorder traversal of a Binary Search Tree always yields keys in non-decreasing order — this is the standard method for BST sorted enumeration.
+  </div>
+
+  <!-- SVG diagram -->
+  <h2>Traversal Order Diagram</h2>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 600 280" width="100%" style="display:block;">
+      <!-- edges -->
+      <line x1="300" y1="54" x2="180" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="300" y1="54" x2="420" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="110" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="250" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="360" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="490" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <!-- nodes with visit order numbers -->
+      <circle cx="300" cy="40" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="300" y="37" text-anchor="middle" font-size="13" fill="var(--text)">40</text>
+      <text x="300" y="52" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">4th</text>
+
+      <circle cx="180" cy="124" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="180" y="121" text-anchor="middle" font-size="13" fill="var(--text)">20</text>
+      <text x="180" y="136" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">2nd</text>
+
+      <circle cx="420" cy="124" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="420" y="121" text-anchor="middle" font-size="13" fill="var(--text)">60</text>
+      <text x="420" y="136" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">5th</text>
+
+      <circle cx="110" cy="204" r="24" fill="var(--accent)" opacity="0.8"/>
+      <text x="110" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">10</text>
+      <text x="110" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">1st</text>
+
+      <circle cx="250" cy="204" r="24" fill="var(--accent)" opacity="0.8"/>
+      <text x="250" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">30</text>
+      <text x="250" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">3rd</text>
+
+      <circle cx="360" cy="204" r="24" fill="var(--accent)" opacity="0.8"/>
+      <text x="360" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">50</text>
+      <text x="360" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">6th</text>
+
+      <circle cx="490" cy="204" r="24" fill="var(--accent)" opacity="0.8"/>
+      <text x="490" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">70</text>
+      <text x="490" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">7th</text>
+
+      <!-- result sequence -->
+      <text x="300" y="262" text-anchor="middle" font-size="12" fill="var(--text-muted)">Result: 10 → 20 → 30 → 40 → 50 → 60 → 70 (sorted!)</text>
+    </svg>
+  </div>
+
+  <!-- PSEUDOCODE EXAMPLE 1 -->
+  <h2>Pseudocode Example 1 — Generic Inorder</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Algorithm</div>
+    <div class="pseudo-title">Recursive Inorder Traversal</div>
+<pre><span class="kw">function</span> <span class="fn">inorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is</span> NULL:
+        <span class="kw">return</span>                        <span class="cm">// base case: empty subtree</span>
+
+    <span class="fn">inorder</span>(node.left)             <span class="cm">// 1. Recurse into left subtree</span>
+    <span class="fn">visit</span>(node)                    <span class="cm">// 2. Process current node</span>
+    <span class="fn">inorder</span>(node.right)            <span class="cm">// 3. Recurse into right subtree</span></pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Step</th><th>Action</th><th>Stack effect</th></tr></thead>
+      <tbody>
+        <tr><td>inorder(node.left)</td><td>Dive all the way left before visiting anything</td><td>Push frame; recurse deeper</td></tr>
+        <tr><td>visit(node)</td><td>Print / collect / process node value</td><td>At current frame</td></tr>
+        <tr><td>inorder(node.right)</td><td>Process right subtree after current node</td><td>Push frame; recurse right</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Case</th><th>Time</th><th>Space (call stack)</th></tr></thead>
+      <tbody>
+        <tr><td>All cases</td><td><span class="badge badge-accent">O(n)</span></td><td><span class="badge badge-amber">O(h)</span> — h = tree height</td></tr>
+        <tr><td>Balanced tree</td><td>O(n)</td><td>O(log n) stack depth</td></tr>
+        <tr><td>Degenerate (linked list)</td><td>O(n)</td><td>O(n) stack depth</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <!-- PSEUDOCODE EXAMPLE 2 -->
+  <h2>Pseudocode Example 2 — Inorder for BST Sorted Output</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Applied Algorithm</div>
+    <div class="pseudo-title">Collect Sorted Keys from BST</div>
+<pre><span class="kw">function</span> <span class="fn">bstSortedList</span>(root) → List:
+    result ← <span class="fn">emptyList</span>()
+    <span class="fn">inorderCollect</span>(root, result)
+    <span class="kw">return</span> result
+
+<span class="kw">function</span> <span class="fn">inorderCollect</span>(node, result):
+    <span class="kw">if</span> node <span class="kw">is</span> NULL:
+        <span class="kw">return</span>
+
+    <span class="fn">inorderCollect</span>(node.left, result)   <span class="cm">// all smaller keys first</span>
+    result.<span class="fn">append</span>(node.key)             <span class="cm">// append current key in sorted position</span>
+    <span class="fn">inorderCollect</span>(node.right, result)  <span class="cm">// all larger keys after</span>
+
+<span class="cm">// Example BST:   40
+//               /  \
+//              20   60
+//             / \   / \
+//            10  30 50  70
+// Result: [10, 20, 30, 40, 50, 60, 70]</span></pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Line</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>result ← emptyList()</td><td>Accumulator; passed by reference through all recursive calls</td></tr>
+        <tr><td>inorderCollect(node.left, result)</td><td>Ensures all keys less than node.key are appended first</td></tr>
+        <tr><td>result.append(node.key)</td><td>BST property guarantees this key is larger than all previously appended</td></tr>
+        <tr><td>inorderCollect(node.right, result)</td><td>All keys greater than node.key appended last</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Metric</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Time</td><td><span class="badge badge-accent">O(n)</span></td><td>Each node visited exactly once</td></tr>
+        <tr><td>Space (stack)</td><td><span class="badge badge-amber">O(h)</span></td><td>Recursion depth = tree height</td></tr>
+        <tr><td>Output list</td><td><span class="badge badge-green">O(n)</span></td><td>Stores all n keys</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PAGE: PREORDER ===== -->
+<div id="page-preorder" class="page">
+  <h1>Preorder Traversal</h1>
+  <p class="page-subtitle">Visit order: <strong>Root → Left subtree → Right subtree</strong>. The root is always the first node visited.</p>
+
+  <div class="callout">
+    <strong>Key property:</strong> Preorder captures the structural "shape" of a tree — the output sequence fully encodes the tree and can reconstruct it. Used for copying trees and serializing tree structure.
+  </div>
+
+  <h2>Traversal Order Diagram</h2>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 600 280" width="100%" style="display:block;">
+      <line x1="300" y1="54" x2="180" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="300" y1="54" x2="420" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="110" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="250" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="360" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="490" y2="194" stroke="var(--border)" stroke-width="2"/>
+
+      <circle cx="300" cy="40" r="24" fill="var(--accent)" opacity="0.9"/>
+      <text x="300" y="37" text-anchor="middle" font-size="13" fill="var(--bg)">40</text>
+      <text x="300" y="52" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">1st</text>
+
+      <circle cx="180" cy="124" r="24" fill="var(--accent2)" opacity="0.85"/>
+      <text x="180" y="121" text-anchor="middle" font-size="13" fill="var(--bg)">20</text>
+      <text x="180" y="136" text-anchor="middle" font-size="10" fill="var(--accent2)" font-weight="700">2nd</text>
+
+      <circle cx="420" cy="124" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="420" y="121" text-anchor="middle" font-size="13" fill="var(--text)">60</text>
+      <text x="420" y="136" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">5th</text>
+
+      <circle cx="110" cy="204" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="110" y="201" text-anchor="middle" font-size="13" fill="var(--text)">10</text>
+      <text x="110" y="216" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">3rd</text>
+
+      <circle cx="250" cy="204" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="250" y="201" text-anchor="middle" font-size="13" fill="var(--text)">30</text>
+      <text x="250" y="216" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">4th</text>
+
+      <circle cx="360" cy="204" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="360" y="201" text-anchor="middle" font-size="13" fill="var(--text)">50</text>
+      <text x="360" y="216" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">6th</text>
+
+      <circle cx="490" cy="204" r="24" fill="var(--bg3)" stroke="var(--accent)" stroke-width="2"/>
+      <text x="490" y="201" text-anchor="middle" font-size="13" fill="var(--text)">70</text>
+      <text x="490" y="216" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">7th</text>
+
+      <text x="300" y="262" text-anchor="middle" font-size="12" fill="var(--text-muted)">Result: 40 → 20 → 10 → 30 → 60 → 50 → 70</text>
+    </svg>
+  </div>
+
+  <h2>Pseudocode Example 1 — Generic Preorder</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Algorithm</div>
+    <div class="pseudo-title">Recursive Preorder Traversal</div>
+<pre><span class="kw">function</span> <span class="fn">preorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is</span> NULL:
+        <span class="kw">return</span>                        <span class="cm">// base case</span>
+
+    <span class="fn">visit</span>(node)                    <span class="cm">// 1. Process root FIRST</span>
+    <span class="fn">preorder</span>(node.left)            <span class="cm">// 2. Recurse into left subtree</span>
+    <span class="fn">preorder</span>(node.right)           <span class="cm">// 3. Recurse into right subtree</span></pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Step</th><th>Action</th><th>Why first?</th></tr></thead>
+      <tbody>
+        <tr><td>visit(node)</td><td>Process node before any child</td><td>Guarantees root appears before all descendants in output</td></tr>
+        <tr><td>preorder(node.left)</td><td>Dive into left subtree</td><td>All left descendants visited before right</td></tr>
+        <tr><td>preorder(node.right)</td><td>Dive into right subtree</td><td>Right subtree visited last</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Case</th><th>Time</th><th>Space</th></tr></thead>
+      <tbody>
+        <tr><td>All cases</td><td><span class="badge badge-accent">O(n)</span></td><td><span class="badge badge-amber">O(h)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <h2>Pseudocode Example 2 — Tree Serialization</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Applied Algorithm</div>
+    <div class="pseudo-title">Serialize Tree to String (Preorder + NULL markers)</div>
+<pre><span class="kw">function</span> <span class="fn">serialize</span>(root) → String:
+    parts ← <span class="fn">emptyList</span>()
+    <span class="fn">serializeHelper</span>(root, parts)
+    <span class="kw">return</span> parts.<span class="fn">join</span>(<span class="str">","</span>)
+
+<span class="kw">function</span> <span class="fn">serializeHelper</span>(node, parts):
+    <span class="kw">if</span> node <span class="kw">is</span> NULL:
+        parts.<span class="fn">append</span>(<span class="str">"#"</span>)           <span class="cm">// NULL marker preserves structure</span>
+        <span class="kw">return</span>
+
+    parts.<span class="fn">append</span>(node.val)         <span class="cm">// visit root FIRST (preorder)</span>
+    <span class="fn">serializeHelper</span>(node.left, parts)
+    <span class="fn">serializeHelper</span>(node.right, parts)
+
+<span class="cm">// Tree:    1
+//         / \
+//        2   3
+//       / \
+//      4   5
+// Output: "1,2,4,#,#,5,#,#,3,#,#"
+// The # markers make deserialization unambiguous</span>
+
+<span class="kw">function</span> <span class="fn">deserialize</span>(data) → Node:
+    tokens ← data.<span class="fn">split</span>(<span class="str">","</span>)
+    index ← <span class="nm">0</span>
+    <span class="kw">return</span> <span class="fn">buildTree</span>(tokens, index)
+
+<span class="kw">function</span> <span class="fn">buildTree</span>(tokens, index):
+    <span class="kw">if</span> tokens[index] == <span class="str">"#"</span>:
+        index ← index + <span class="nm">1</span>
+        <span class="kw">return</span> NULL
+    node ← <span class="fn">newNode</span>(tokens[index])
+    index ← index + <span class="nm">1</span>
+    node.left  ← <span class="fn">buildTree</span>(tokens, index)
+    node.right ← <span class="fn">buildTree</span>(tokens, index)
+    <span class="kw">return</span> node</pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Element</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>"#" marker</td><td>Encodes NULL children — without this, the string is ambiguous and reconstruction fails</td></tr>
+        <tr><td>Preorder order</td><td>Root is always first token; enables top-down reconstruction in deserialize</td></tr>
+        <tr><td>index (shared)</td><td>Single advancing pointer through token array; must be passed by reference</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Operation</th><th>Time</th><th>Space</th></tr></thead>
+      <tbody>
+        <tr><td>Serialize</td><td><span class="badge badge-accent">O(n)</span></td><td><span class="badge badge-amber">O(n)</span> output string + O(h) stack</td></tr>
+        <tr><td>Deserialize</td><td><span class="badge badge-accent">O(n)</span></td><td><span class="badge badge-amber">O(n)</span> reconstructed tree + O(h) stack</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PAGE: POSTORDER ===== -->
+<div id="page-postorder" class="page">
+  <h1>Postorder Traversal</h1>
+  <p class="page-subtitle">Visit order: <strong>Left subtree → Right subtree → Root</strong>. The root is always the last node visited.</p>
+
+  <div class="callout amber">
+    <strong>Key property:</strong> Children are always visited before their parent. This makes postorder the natural traversal for operations that must process children before the parent: deletion, computing subtree sizes, evaluating expression trees bottom-up.
+  </div>
+
+  <h2>Traversal Order Diagram</h2>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 600 280" width="100%" style="display:block;">
+      <line x1="300" y1="54" x2="180" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="300" y1="54" x2="420" y2="114" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="110" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="180" y1="134" x2="250" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="360" y2="194" stroke="var(--border)" stroke-width="2"/>
+      <line x1="420" y1="134" x2="490" y2="194" stroke="var(--border)" stroke-width="2"/>
+
+      <circle cx="300" cy="40" r="24" fill="var(--red)" opacity="0.8"/>
+      <text x="300" y="37" text-anchor="middle" font-size="13" fill="var(--bg)">40</text>
+      <text x="300" y="52" text-anchor="middle" font-size="10" fill="var(--red)" font-weight="700">7th</text>
+
+      <circle cx="180" cy="124" r="24" fill="var(--bg3)" stroke="var(--border)" stroke-width="2"/>
+      <text x="180" y="121" text-anchor="middle" font-size="13" fill="var(--text)">20</text>
+      <text x="180" y="136" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">3rd</text>
+
+      <circle cx="420" cy="124" r="24" fill="var(--bg3)" stroke="var(--border)" stroke-width="2"/>
+      <text x="420" y="121" text-anchor="middle" font-size="13" fill="var(--text)">60</text>
+      <text x="420" y="136" text-anchor="middle" font-size="10" fill="var(--amber)" font-weight="700">6th</text>
+
+      <circle cx="110" cy="204" r="24" fill="var(--accent)" opacity="0.85"/>
+      <text x="110" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">10</text>
+      <text x="110" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">1st</text>
+
+      <circle cx="250" cy="204" r="24" fill="var(--accent)" opacity="0.85"/>
+      <text x="250" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">30</text>
+      <text x="250" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">2nd</text>
+
+      <circle cx="360" cy="204" r="24" fill="var(--accent)" opacity="0.85"/>
+      <text x="360" y="201" text-anchor="middle" font-size="13" fill="var(--bg)">50</text>
+      <text x="360" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">4th</text>
+
+      <circle cx="490" cy="204" r="24" fill="var(--accent)" opacity="0.85"/>
+      <text x="490" y="201" text-anchor="middle" font-size="13" fill="var(--text)">70</text>
+      <text x="490" y="216" text-anchor="middle" font-size="10" fill="var(--accent)" font-weight="700">5th</text>
+
+      <text x="300" y="262" text-anchor="middle" font-size="12" fill="var(--text-muted)">Result: 10 → 30 → 20 → 50 → 70 → 60 → 40</text>
+    </svg>
+  </div>
+
+  <h2>Pseudocode Example 1 — Generic Postorder</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Algorithm</div>
+    <div class="pseudo-title">Recursive Postorder Traversal</div>
+<pre><span class="kw">function</span> <span class="fn">postorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is</span> NULL:
+        <span class="kw">return</span>                        <span class="cm">// base case</span>
+
+    <span class="fn">postorder</span>(node.left)           <span class="cm">// 1. Recurse into left subtree first</span>
+    <span class="fn">postorder</span>(node.right)          <span class="cm">// 2. Recurse into right subtree</span>
+    <span class="fn">visit</span>(node)                    <span class="cm">// 3. Process root LAST</span></pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Step</th><th>Implication</th></tr></thead>
+      <tbody>
+        <tr><td>postorder(node.left)</td><td>Entire left subtree is fully processed before current node is touched</td></tr>
+        <tr><td>postorder(node.right)</td><td>Entire right subtree processed before current node</td></tr>
+        <tr><td>visit(node)</td><td>Safe to process parent only after both children are done — critical for deletion or aggregation</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Case</th><th>Time</th><th>Space</th></tr></thead>
+      <tbody>
+        <tr><td>All cases</td><td><span class="badge badge-accent">O(n)</span></td><td><span class="badge badge-amber">O(h)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider"/>
+
+  <h2>Pseudocode Example 2 — Expression Tree Evaluation</h2>
+  <div class="pseudo-wrap">
+    <div class="pseudo-label">Applied Algorithm</div>
+    <div class="pseudo-title">Evaluate Arithmetic Expression Tree (Bottom-Up)</div>
+<pre><span class="cm">// Expression tree for (3 + 4) * (2 - 1):
+//        *
+//       / \
+//      +   -
+//     / \ / \
+//    3  4 2  1</span>
+
+<span class="kw">function</span> <span class="fn">evaluate</span>(node) → Number:
+    <span class="kw">if</span> node <span class="kw">is</span> a leaf (no children):
+        <span class="kw">return</span> node.value              <span class="cm">// base case: numeric operand</span>
+
+    leftVal  ← <span class="fn">evaluate</span>(node.left)   <span class="cm">// evaluate left operand subtree</span>
+    rightVal ← <span class="fn">evaluate</span>(node.right)  <span class="cm">// evaluate right operand subtree</span>
+
+    <span class="cm">// now apply operator stored at this node</span>
+    <span class="kw">switch</span> node.operator:
+        <span class="kw">case</span> <span class="str">'+'</span>: <span class="kw">return</span> leftVal + rightVal
+        <span class="kw">case</span> <span class="str">'-'</span>: <span class="kw">return</span> leftVal - rightVal
+        <span class="kw">case</span> <span class="str">'*'</span>: <span class="kw">return</span> leftVal * rightVal
+        <span class="kw">case</span> <span class="str">'/'</span>: <span class="kw">return</span> leftVal / rightVal
+
+<span class="cm">// Call trace:
+// evaluate(*) calls evaluate(+) and evaluate(-)
+//   evaluate(+) → evaluate(3)=3, evaluate(4)=4 → returns 7
+//   evaluate(-) → evaluate(2)=2, evaluate(1)=1 → returns 1
+// evaluate(*) → 7 * 1 = 7   ← final answer</span></pre>
+    <h3>Annotation</h3>
+    <table class="compare-table">
+      <thead><tr><th>Pattern</th><th>Why postorder?</th></tr></thead>
+      <tbody>
+        <tr><td>Leaf returns literal value</td><td>Base case — no children to evaluate</td></tr>
+        <tr><td>Recurse left, then right, then operator</td><td>An operator node cannot compute its result until both operand subtrees return values</td></tr>
+        <tr><td>switch node.operator</td><td>Internal nodes hold operators (+, -, *, /); leaves hold operands</td></tr>
+      </tbody>
+    </table>
+    <h3>Complexity</h3>
+    <table class="compare-table">
+      <thead><tr><th>Metric</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Time</td><td><span class="badge badge-accent">O(n)</span></td><td>Each operator/operand node visited exactly once</td></tr>
+        <tr><td>Space (stack)</td><td><span class="badge badge-amber">O(h)</span></td><td>Recursion depth equals expression tree height</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PAGE: DEMO ===== -->
+<div id="page-demo" class="page">
+  <h1>Interactive Traversal Demo</h1>
+  <p class="page-subtitle">Step through each traversal algorithm on a 7-node binary tree and observe the visit sequence build up node by node.</p>
+
+  <div class="trav-btns">
+    <button class="trav-btn active" onclick="setTraversal('inorder')">Inorder (L-Root-R)</button>
+    <button class="trav-btn" onclick="setTraversal('preorder')">Preorder (Root-L-R)</button>
+    <button class="trav-btn" onclick="setTraversal('postorder')">Postorder (L-R-Root)</button>
+  </div>
+
+  <div class="chart-wrap" style="padding:24px 16px;">
+    <svg id="demo-svg" viewBox="0 0 560 240" width="100%" style="display:block;"></svg>
+  </div>
+
+  <div class="demo-controls">
+    <button class="demo-btn primary" onclick="demoStep()">Next Step</button>
+    <button class="demo-btn" onclick="demoReset()">Reset</button>
+    <span id="demo-counter" style="font-size:13px;color:var(--text-muted);">Step 0 / 7</span>
+  </div>
+
+  <div class="step-info" id="step-info">Select a traversal and click "Next Step" to begin.</div>
+
+  <h3 style="margin-top:18px;">Visit sequence:</h3>
+  <div class="visit-seq" id="visit-seq"></div>
+
+  <div class="callout" style="margin-top:20px;">
+    <strong>Tree used:</strong> BST with root 40, left subtree {20: left=10, right=30}, right subtree {60: left=50, right=70}.
+  </div>
+</div>
+
+<!-- ===== PAGE: PROPERTIES ===== -->
+<div id="page-properties" class="page">
+  <h1>Binary Tree Properties</h1>
+  <p class="page-subtitle">Classification of binary trees based on structural completeness and balance.</p>
+
+  <h2>Tree Type Comparison</h2>
+  <table class="compare-table">
+    <thead><tr><th>Type</th><th>Definition</th><th>Height</th><th>Example use</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Full Binary Tree</strong></td>
+        <td>Every node has 0 or 2 children (never 1)</td>
+        <td>O(n) worst, O(log n) best</td>
+        <td>Expression trees</td>
+      </tr>
+      <tr>
+        <td><strong>Complete Binary Tree</strong></td>
+        <td>All levels filled except possibly the last; last level filled left-to-right</td>
+        <td><span class="badge badge-green">O(log n)</span></td>
+        <td>Binary heaps (priority queues)</td>
+      </tr>
+      <tr>
+        <td><strong>Perfect Binary Tree</strong></td>
+        <td>All internal nodes have exactly 2 children; all leaves at same level</td>
+        <td><span class="badge badge-green">O(log n)</span></td>
+        <td>Theoretical analysis baseline</td>
+      </tr>
+      <tr>
+        <td><strong>Balanced Binary Tree</strong></td>
+        <td>|height(left) - height(right)| ≤ 1 for every node (AVL definition)</td>
+        <td><span class="badge badge-green">O(log n)</span></td>
+        <td>AVL trees, Red-Black trees</td>
+      </tr>
+      <tr>
+        <td><strong>Degenerate Tree</strong></td>
+        <td>Every internal node has exactly 1 child (a linked list in tree form)</td>
+        <td><span class="badge badge-red">O(n)</span></td>
+        <td>Worst case for naive BST insertions</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Visual: Tree Type Diagrams</h2>
+  <div class="chart-wrap">
+    <svg viewBox="0 0 680 200" width="100%" style="display:block;">
+      <!-- Full -->
+      <text x="70" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent)">Full</text>
+      <line x1="70" y1="40" x2="40" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="70" y1="40" x2="100" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="40" y1="80" x2="20" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="40" y1="80" x2="60" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="70" cy="30" r="14" fill="var(--accent)" opacity="0.8"/>
+      <circle cx="40" cy="70" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="100" cy="70" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="20" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="60" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <text x="100" y="155" text-anchor="middle" font-size="10" fill="var(--green)">OK: 0 or 2 children</text>
+
+      <!-- Complete -->
+      <text x="250" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent)">Complete</text>
+      <line x1="250" y1="40" x2="210" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="250" y1="40" x2="290" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="210" y1="80" x2="185" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="210" y1="80" x2="235" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="290" y1="80" x2="265" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="250" cy="30" r="14" fill="var(--accent)" opacity="0.8"/>
+      <circle cx="210" cy="70" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="290" cy="70" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="185" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="235" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="265" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <text x="250" y="155" text-anchor="middle" font-size="10" fill="var(--green)">Left-fill last level</text>
+
+      <!-- Perfect -->
+      <text x="430" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent)">Perfect</text>
+      <line x1="430" y1="40" x2="390" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="430" y1="40" x2="470" y2="80" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="390" y1="80" x2="365" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="390" y1="80" x2="415" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="470" y1="80" x2="445" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="470" y1="80" x2="495" y2="120" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="430" cy="30" r="14" fill="var(--accent)" opacity="0.8"/>
+      <circle cx="390" cy="70" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="470" cy="70" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="365" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="415" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="445" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <circle cx="495" cy="110" r="14" fill="var(--accent)" opacity="0.5"/>
+      <text x="430" y="155" text-anchor="middle" font-size="10" fill="var(--green)">All leaves same level</text>
+
+      <!-- Degenerate -->
+      <text x="615" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">Degenerate</text>
+      <line x1="615" y1="40" x2="615" y2="78" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="615" y1="88" x2="615" y2="118" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="615" y1="128" x2="615" y2="158" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="615" cy="30" r="14" fill="var(--red)" opacity="0.7"/>
+      <circle cx="615" cy="88" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="615" cy="138" r="14" fill="var(--bg3)" stroke="var(--border)" stroke-width="1.5"/>
+      <circle cx="615" cy="178" r="14" fill="var(--red)" opacity="0.4"/>
+      <text x="615" y="200" text-anchor="middle" font-size="10" fill="var(--red)">Linear chain</text>
+    </svg>
+  </div>
+
+  <h2>Height and Complexity Impact</h2>
+  <table class="compare-table">
+    <thead><tr><th>Tree Type</th><th>Height</th><th>Search (BST)</th><th>Insert (BST)</th><th>Space</th></tr></thead>
+    <tbody>
+      <tr><td>Perfect / Balanced</td><td><span class="badge badge-green">O(log n)</span></td><td><span class="badge badge-green">O(log n)</span></td><td><span class="badge badge-green">O(log n)</span></td><td>O(n)</td></tr>
+      <tr><td>Complete</td><td><span class="badge badge-green">O(log n)</span></td><td><span class="badge badge-green">O(log n)</span></td><td><span class="badge badge-green">O(log n)</span></td><td>O(n)</td></tr>
+      <tr><td>Degenerate</td><td><span class="badge badge-red">O(n)</span></td><td><span class="badge badge-red">O(n)</span></td><td><span class="badge badge-red">O(n)</span></td><td>O(n)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout red">
+    <strong>The degenerate case is why balancing matters.</strong> Inserting sorted data into a naive BST degenerates it into a linked list, destroying the O(log n) guarantees. Self-balancing trees (AVL, Red-Black) maintain height O(log n) through rotations.
+  </div>
+</div>
+
+<!-- ===== PAGE: APPLICATIONS ===== -->
+<div id="page-applications" class="page">
+  <h1>Applications</h1>
+  <p class="page-subtitle">Where tree structures and their traversals appear in real systems.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <h4>Expression Trees</h4>
+      <p>Compilers parse arithmetic/boolean expressions into binary trees. Inorder traversal reconstructs infix notation. Postorder traversal evaluates the expression bottom-up (operands before operators).</p>
+    </div>
+    <div class="app-card">
+      <h4>Decision Trees (ML)</h4>
+      <p>Classification and regression trees. Each internal node splits on a feature; each leaf holds a prediction. Preorder traversal mirrors the prediction algorithm — evaluate root condition, recurse into the matching child.</p>
+    </div>
+    <div class="app-card">
+      <h4>File System Hierarchy</h4>
+      <p>Directories form an n-ary tree (not strictly binary). Preorder traversal walks top-down (Unix find). Postorder traversal enables safe directory deletion — children deleted before parent.</p>
+    </div>
+    <div class="app-card">
+      <h4>Binary Search Tree (BST)</h4>
+      <p>Inorder traversal of a BST yields sorted keys in O(n). BST supports O(log n) search, insert, delete on balanced trees. Basis for database index structures (B-trees generalize BSTs).</p>
+    </div>
+    <div class="app-card">
+      <h4>Heap (Priority Queue)</h4>
+      <p>A complete binary tree satisfying the heap property. Efficiently supports O(log n) insert and O(log n) extract-min/max. Used in Dijkstra's algorithm, heap sort, task scheduling.</p>
+    </div>
+    <div class="app-card">
+      <h4>Syntax Trees (AST)</h4>
+      <p>Abstract Syntax Trees represent program structure. Compilers, linters, and transpilers traverse ASTs (usually preorder or postorder) to analyze, optimize, or transform source code.</p>
+    </div>
+  </div>
+
+  <h2>Traversal-Application Mapping</h2>
+  <table class="compare-table">
+    <thead><tr><th>Traversal</th><th>Key Applications</th><th>Why this order?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-accent">Inorder</span></td>
+        <td>BST sorted output, infix expression generation, kth-smallest element</td>
+        <td>L → Root → R respects BST ordering: left keys &lt; root &lt; right keys</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">Preorder</span></td>
+        <td>Tree copying/serialization, prefix expression, directory listing, AST printing</td>
+        <td>Root first — encodes structure; parent always appears before children</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">Postorder</span></td>
+        <td>Tree deletion, expression evaluation, directory size computation, dependency resolution</td>
+        <td>Children before parent — safe to free/process parent only after all children done</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ===== PAGE: TAKEAWAYS ===== -->
+<div id="page-takeaways" class="page">
+  <h1>Key Takeaways</h1>
+  <p class="page-subtitle">Consolidation of core concepts, complexity bounds, and decision heuristics.</p>
+
+  <h2>Traversal Summary</h2>
+  <table class="compare-table">
+    <thead><tr><th>Traversal</th><th>Order</th><th>First visited</th><th>Last visited</th><th>Time</th><th>Space</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-accent">Inorder</span></td>
+        <td>L → Root → R</td>
+        <td>Leftmost leaf</td>
+        <td>Rightmost leaf</td>
+        <td>O(n)</td>
+        <td>O(h)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">Preorder</span></td>
+        <td>Root → L → R</td>
+        <td>Root</td>
+        <td>Rightmost leaf</td>
+        <td>O(n)</td>
+        <td>O(h)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">Postorder</span></td>
+        <td>L → R → Root</td>
+        <td>Leftmost leaf</td>
+        <td>Root</td>
+        <td>O(n)</td>
+        <td>O(h)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <strong>All three traversals have identical asymptotic complexity:</strong> O(n) time (every node visited once) and O(h) space (maximum call stack depth equals tree height h). The difference is purely in visit order.
+  </div>
+
+  <h2>Height Impact on Performance</h2>
+  <div style="margin:16px 0;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;">
+      <span>Balanced tree — h = O(log n)</span><span style="color:var(--green);">Optimal</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:25%;background:linear-gradient(90deg,var(--green),var(--accent));"></div></div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:12px;margin-bottom:4px;font-size:13px;">
+      <span>Degenerate tree — h = O(n)</span><span style="color:var(--red);">Worst case</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:95%;background:linear-gradient(90deg,var(--amber),var(--red));"></div></div>
+  </div>
+
+  <h2>When to Use Each Traversal</h2>
+  <div class="callout">
+    <strong>Inorder</strong> — whenever sorted order matters: BST validation, range queries, sorted output.
+  </div>
+  <div class="callout" style="border-left-color:var(--accent2);">
+    <strong>Preorder</strong> — whenever the parent must be processed before children: copying, serialization, prefix notation, top-down algorithms.
+  </div>
+  <div class="callout amber">
+    <strong>Postorder</strong> — whenever children must be ready before the parent: deletion, bottom-up evaluation, subtree aggregation, dependency resolution.
+  </div>
+
+  <h2>Common Exam Patterns</h2>
+  <table class="compare-table">
+    <thead><tr><th>Question type</th><th>Approach</th></tr></thead>
+    <tbody>
+      <tr><td>Given a tree, write the traversal output</td><td>Simulate the recursion mentally: trace L/R/Root order at each node. Draw the call stack if unsure.</td></tr>
+      <tr><td>Given inorder + preorder, reconstruct the tree</td><td>First element of preorder = root. Find root in inorder to split left/right subtrees. Recurse.</td></tr>
+      <tr><td>Worst-case time for BST search</td><td>O(n) — degenerate tree. O(log n) only when balanced is guaranteed.</td></tr>
+      <tr><td>Why postorder for tree deletion?</td><td>Deleting a parent before its children creates dangling pointers. Postorder ensures children freed first.</td></tr>
+      <tr><td>Space complexity of recursive traversal</td><td>O(h) = O(log n) balanced, O(n) degenerate — call stack, not the output array.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</main>
+
+<script>
+// ---- TREE DATA ----
+const NODES = [
+  { id: 'n40', val: 40, cx: 280, cy: 36, left: 'n20', right: 'n60' },
+  { id: 'n20', val: 20, cx: 160, cy: 106, left: 'n10', right: 'n30' },
+  { id: 'n60', val: 60, cx: 400, cy: 106, left: 'n50', right: 'n70' },
+  { id: 'n10', val: 10, cx: 80,  cy: 176, left: null,  right: null  },
+  { id: 'n30', val: 30, cx: 240, cy: 176, left: null,  right: null  },
+  { id: 'n50', val: 50, cx: 320, cy: 176, left: null,  right: null  },
+  { id: 'n70', val: 70, cx: 480, cy: 176, left: null,  right: null  },
+];
+const EDGES = [
+  ['n40','n20'],['n40','n60'],
+  ['n20','n10'],['n20','n30'],
+  ['n60','n50'],['n60','n70'],
+];
+const nodeMap = {};
+NODES.forEach(n => nodeMap[n.id] = n);
+
+// Traversal sequences
+const TRAVERSALS = {
+  inorder:   ['n10','n20','n30','n40','n50','n60','n70'],
+  preorder:  ['n40','n20','n10','n30','n60','n50','n70'],
+  postorder: ['n10','n30','n20','n50','n70','n60','n40'],
+};
+const MESSAGES = {
+  inorder: [
+    'Visit n10 (10): leftmost leaf — first in inorder',
+    'Visit n20 (20): left subtree done, now visit root of left',
+    'Visit n30 (30): right child of 20 — left-root-right of subtree',
+    'Visit n40 (40): main root — entire left subtree processed',
+    'Visit n50 (50): leftmost of right subtree',
+    'Visit n60 (60): root of right subtree',
+    'Visit n70 (70): rightmost leaf — last in inorder',
+  ],
+  preorder: [
+    'Visit n40 (40): root first — always first in preorder',
+    'Visit n20 (20): go left — root of left subtree',
+    'Visit n10 (10): go left — leaf',
+    'Visit n30 (30): go right — right child of 20',
+    'Visit n60 (60): back to main root\'s right child',
+    'Visit n50 (50): left child of 60',
+    'Visit n70 (70): right child of 60 — last node',
+  ],
+  postorder: [
+    'Visit n10 (10): leftmost leaf — no children, process first',
+    'Visit n30 (30): right child of 20 — leaf',
+    'Visit n20 (20): both children done — now visit parent',
+    'Visit n50 (50): left leaf of right subtree',
+    'Visit n70 (70): right leaf of right subtree',
+    'Visit n60 (60): both children of right subtree done',
+    'Visit n40 (40): root — processed last in postorder',
+  ],
+};
+
+let currentTraversal = 'inorder';
+let currentStep = 0;
+let visitedSet = new Set();
+
+function buildDemoSVG() {
+  const svg = document.getElementById('demo-svg');
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // edges
+  EDGES.forEach(([pid, cid]) => {
+    const p = nodeMap[pid], c = nodeMap[cid];
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', p.cx); line.setAttribute('y1', p.cy);
+    line.setAttribute('x2', c.cx); line.setAttribute('y2', c.cy);
+    line.setAttribute('stroke', 'var(--border)');
+    line.setAttribute('stroke-width', '2');
+    svg.appendChild(line);
+  });
+
+  // nodes
+  NODES.forEach(n => {
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('id', 'demo-' + n.id);
+
+    const seq = TRAVERSALS[currentTraversal];
+    const visitIdx = seq.indexOf(n.id);
+    const visited = visitedSet.has(n.id);
+    const isCurrent = currentStep > 0 && seq[currentStep - 1] === n.id;
+
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', n.cx); circle.setAttribute('cy', n.cy); circle.setAttribute('r', '24');
+    if (isCurrent) {
+      circle.setAttribute('fill', 'var(--amber)');
+    } else if (visited) {
+      circle.setAttribute('fill', 'var(--accent)');
+      circle.setAttribute('opacity', '0.85');
+    } else {
+      circle.setAttribute('fill', 'var(--bg3)');
+      circle.setAttribute('stroke', 'var(--border)');
+      circle.setAttribute('stroke-width', '2');
+    }
+    g.appendChild(circle);
+
+    const text = document.createElementNS(ns, 'text');
+    text.setAttribute('x', n.cx); text.setAttribute('y', n.cy + 5);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-size', '14');
+    text.setAttribute('font-weight', '700');
+    text.setAttribute('fill', (visited || isCurrent) ? 'var(--bg)' : 'var(--text)');
+    text.textContent = n.val;
+    g.appendChild(text);
+
+    svg.appendChild(g);
+  });
+}
+
+function setTraversal(name) {
+  currentTraversal = name;
+  currentStep = 0;
+  visitedSet = new Set();
+  document.querySelectorAll('.trav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  buildDemoSVG();
+  updateVisitSeq();
+  document.getElementById('demo-counter').textContent = 'Step 0 / 7';
+  document.getElementById('step-info').textContent = 'Click "Next Step" to begin.';
+}
+
+function demoStep() {
+  const seq = TRAVERSALS[currentTraversal];
+  if (currentStep >= seq.length) return;
+  const nodeId = seq[currentStep];
+  visitedSet.add(nodeId);
+  currentStep++;
+  buildDemoSVG();
+  updateVisitSeq();
+  document.getElementById('demo-counter').textContent = `Step ${currentStep} / ${seq.length}`;
+  document.getElementById('step-info').textContent = MESSAGES[currentTraversal][currentStep - 1];
+  if (currentStep === seq.length) {
+    document.getElementById('step-info').textContent += ' — Traversal complete!';
+  }
+}
+
+function demoReset() {
+  currentStep = 0;
+  visitedSet = new Set();
+  buildDemoSVG();
+  updateVisitSeq();
+  document.getElementById('demo-counter').textContent = 'Step 0 / 7';
+  document.getElementById('step-info').textContent = 'Click "Next Step" to begin.';
+}
+
+function updateVisitSeq() {
+  const seq = TRAVERSALS[currentTraversal];
+  const container = document.getElementById('visit-seq');
+  container.innerHTML = '';
+  seq.forEach((nid, i) => {
+    const n = nodeMap[nid];
+    const chip = document.createElement('span');
+    chip.className = 'visit-chip';
+    chip.textContent = n.val;
+    const isCurrent = (currentStep > 0 && i === currentStep - 1);
+    const isVisited = i < currentStep - 1;
+    if (isCurrent) chip.classList.add('current');
+    else if (isVisited) chip.classList.add('visited');
+    container.appendChild(chip);
+    if (i < seq.length - 1) {
+      const arrow = document.createElement('span');
+      arrow.style.cssText = 'color:var(--text-muted);font-size:12px;';
+      arrow.textContent = '→';
+      container.appendChild(arrow);
+    }
+  });
+}
+
+// ---- THEME ----
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? 'Dark' : 'Light';
+}
+
+// ---- SIDEBAR ----
+let sidebarVisible = true;
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  const isMobile = window.innerWidth <= 700;
+  if (isMobile) {
+    sb.classList.toggle('visible');
+  } else {
+    sidebarVisible = !sidebarVisible;
+    sb.classList.toggle('hidden', !sidebarVisible);
+    main.classList.toggle('expanded', !sidebarVisible);
+  }
+}
+
+// ---- PAGE NAV ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + id + "'")) {
+      l.classList.add('active');
+    }
+  });
+  window.scrollTo(0, 0);
+  if (id === 'demo') {
+    buildDemoSVG();
+    updateVisitSeq();
+  }
+}
+
+// ---- INIT ----
+window.addEventListener('load', function() {
+  buildDemoSVG();
+  updateVisitSeq();
+});
+</script>
+</body>
+</html>

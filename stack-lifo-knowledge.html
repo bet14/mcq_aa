@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Stack — LIFO Data Structure</title>
+<style>
+:root {
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  --radius: 10px;
+  --sidebar-w: 260px;
+  --transition: 0.25s ease;
+}
+[data-theme="dark"] {
+  --bg: #050505;
+  --bg2: #121212;
+  --bg3: #1e1e1e;
+  --border: #333333;
+  --text: #fafafa;
+  --text-muted: #a0a0a0;
+  --accent: #4a9eff;
+  --accent2: #9d7eff;
+  --green: #1abc9c;
+  --amber: #f39c12;
+  --red: #e74c3c;
+  --tab-active-bg: #4a9eff;
+  --tab-active-text: #050505;
+  --chart-grid: rgba(255,255,255,0.04);
+}
+[data-theme="light"] {
+  --bg: #f0f2f8;
+  --bg2: #ffffff;
+  --bg3: #e8ecf4;
+  --border: #d0d5e8;
+  --text: #0d1117;
+  --text-muted: #4b5563;
+  --accent: #4361ee;
+  --accent2: #7c3aed;
+  --green: #059669;
+  --amber: #d97706;
+  --red: #dc2626;
+  --tab-active-bg: #4361ee;
+  --tab-active-text: #fff;
+  --chart-grid: rgba(0,0,0,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+}
+
+/* TOPBAR */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 14px;
+  z-index: 100;
+}
+#toggle-sidebar-btn, #theme-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: 6px; padding: 6px 12px;
+  cursor: pointer; font-size: 13px; font-family: var(--font-sans);
+  transition: background var(--transition);
+}
+#toggle-sidebar-btn:hover, #theme-btn:hover { background: var(--border); }
+#topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+#topbar-title span { color: var(--accent); }
+
+/* SIDEBAR */
+#sidebar {
+  position: fixed; top: 52px; left: 0; bottom: 0;
+  width: var(--sidebar-w); background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 16px 0;
+  transition: transform var(--transition); z-index: 90;
+}
+#sidebar.hidden { transform: translateX(-260px); }
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--text-muted); padding: 12px 20px 4px; text-transform: uppercase;
+}
+.nav-link {
+  display: block; padding: 8px 20px; font-size: 13px;
+  color: var(--text-muted); cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all var(--transition); text-decoration: none;
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active {
+  color: var(--accent); border-left-color: var(--accent);
+  background: var(--bg3); font-weight: 600;
+}
+
+/* MAIN */
+#main {
+  margin-left: var(--sidebar-w); margin-top: 52px;
+  padding: 36px 48px 80px; transition: margin-left var(--transition);
+  min-height: calc(100vh - 52px);
+}
+#main.expanded { margin-left: 0; }
+.page { display: none; max-width: 900px; animation: fadein 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* TYPOGRAPHY */
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+h2 { font-size: 20px; font-weight: 600; margin: 28px 0 12px; }
+h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+p { font-size: 14px; line-height: 1.7; color: var(--text-muted); margin-bottom: 12px; }
+.page-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+/* CARDS */
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px;
+}
+.card-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.card-row .card { flex: 1; min-width: 160px; }
+.stat-val { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* CALLOUT */
+.callout {
+  border-left: 3px solid var(--accent); background: var(--bg3);
+  border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px;
+  font-size: 13px; line-height: 1.6;
+}
+.callout.green { border-left-color: var(--green); }
+.callout.amber { border-left-color: var(--amber); }
+.callout.red   { border-left-color: var(--red); }
+
+/* CODE */
+pre {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.8;
+  overflow-x: auto; margin-bottom: 16px; color: var(--text);
+  white-space: pre;
+}
+.kw  { color: var(--accent); font-weight: 600; }
+.cm  { color: var(--text-muted); font-style: italic; }
+.fn  { color: var(--accent2); }
+.num { color: var(--amber); }
+.str { color: var(--green); }
+
+/* ANNOTATION TABLE */
+.anno-table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;
+}
+.anno-table th {
+  text-align: left; padding: 8px 12px;
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase;
+}
+.anno-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.anno-table tr:last-child td { border-bottom: none; }
+.anno-table tr:hover td { background: var(--bg3); }
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px; letter-spacing: 0.04em;
+}
+.badge-accent { background: var(--accent); color: #fff; }
+.badge-green  { background: var(--green);  color: #fff; }
+.badge-amber  { background: var(--amber);  color: #000; }
+.badge-red    { background: var(--red);    color: #fff; }
+.badge-muted  { background: var(--bg3); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* STEPS */
+.steps { display: flex; gap: 0; margin-bottom: 24px; flex-wrap: wrap; }
+.step {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1; min-width: 80px; position: relative; cursor: pointer;
+}
+.step:not(:last-child)::after {
+  content: ''; position: absolute; top: 16px; left: 55%;
+  width: 90%; height: 2px; background: var(--border); z-index: 0;
+}
+.step.done:not(:last-child)::after { background: var(--accent); }
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  position: relative; z-index: 1; transition: all var(--transition);
+}
+.step.done .step-circle {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.step-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+.step.done .step-label { color: var(--accent); font-weight: 600; }
+
+/* STACK VISUAL */
+.stack-visual-wrap {
+  display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 24px;
+}
+.stack-col { flex: 1; min-width: 160px; }
+.stack-diagram {
+  display: flex; flex-direction: column-reverse;
+  border: 2px solid var(--border); border-radius: var(--radius);
+  min-height: 180px; max-height: 280px; overflow: hidden;
+  background: var(--bg3); position: relative;
+}
+.stack-slot {
+  padding: 10px 16px; text-align: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  border-top: 1px solid var(--border); transition: all 0.2s;
+}
+.stack-slot.top-slot {
+  background: var(--accent); color: #fff;
+  border-top-color: var(--accent);
+}
+.stack-slot.mid-slot { background: var(--bg2); }
+.stack-bottom-label {
+  text-align: center; font-size: 10px; color: var(--text-muted);
+  padding: 6px; border-top: 2px solid var(--border); background: var(--bg3);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.stack-pointer {
+  font-size: 11px; color: var(--amber); font-weight: 600;
+  margin-top: 6px; font-family: var(--font-mono);
+}
+.trace-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.trace-table th {
+  background: var(--bg3); padding: 7px 10px;
+  border-bottom: 1px solid var(--border); color: var(--text-muted);
+  text-align: left; font-size: 10px; text-transform: uppercase; font-weight: 700;
+}
+.trace-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 12px; }
+.trace-table tr:last-child td { border-bottom: none; }
+.trace-table tr.active-trace td { background: rgba(74,158,255,0.1); color: var(--accent); font-weight: 600; }
+
+/* SIMULATOR */
+.sim-wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.sim-controls { min-width: 200px; flex: 1; }
+.sim-stack-area { flex: 1; min-width: 180px; }
+.sim-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.sim-input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); border-radius: 6px; padding: 8px 12px;
+  font-family: var(--font-mono); font-size: 13px;
+}
+.sim-btn {
+  padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border);
+  font-size: 13px; font-family: var(--font-sans); cursor: pointer;
+  font-weight: 600; transition: all var(--transition);
+}
+.sim-btn.push { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sim-btn.pop  { background: var(--red);   color: #fff; border-color: var(--red); }
+.sim-btn.peek { background: var(--bg3);   color: var(--text); }
+.sim-btn:hover { opacity: 0.85; }
+.sim-log {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px; min-height: 60px;
+  margin-top: 10px; line-height: 1.7;
+}
+.log-ok   { color: var(--green); }
+.log-err  { color: var(--red); }
+.log-info { color: var(--amber); }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  #sidebar { transform: translateX(-260px); }
+  #sidebar.visible { transform: translateX(0); }
+  #main { margin-left: 0; padding: 24px 18px 60px; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="toggle-sidebar-btn" onclick="toggleSidebar()">Menu</button>
+  <div id="topbar-title">Stack — <span>LIFO</span> Data Structure</div>
+  <button id="theme-btn" onclick="toggleTheme()">Light Mode</button>
+</div>
+
+<div id="sidebar">
+  <div class="sidebar-label">Foundation</div>
+  <a class="nav-link active" onclick="showPage('overview')">Overview</a>
+  <a class="nav-link" onclick="showPage('operations')">Core Operations</a>
+
+  <div class="sidebar-label">Examples</div>
+  <a class="nav-link" onclick="showPage('ex1')">Example 1 — Push &amp; Pop</a>
+  <a class="nav-link" onclick="showPage('ex2')">Example 2 — Backtracking</a>
+  <a class="nav-link" onclick="showPage('ex3')">Example 3 — Parentheses</a>
+
+  <div class="sidebar-label">Practice</div>
+  <a class="nav-link" onclick="showPage('simulator')">Interactive Simulator</a>
+</div>
+
+<div id="main">
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div class="page active" id="page-overview">
+  <h1>Stack — LIFO Data Structure</h1>
+  <p class="page-subtitle">A linear, ordered collection where insertion and removal are both restricted to a single end: the <strong>top</strong>.</p>
+
+  <div class="card-row">
+    <div class="card">
+      <div class="stat-val">O(1)</div>
+      <div class="stat-label">Push / Pop / Peek — all constant time</div>
+    </div>
+    <div class="card">
+      <div class="stat-val">LIFO</div>
+      <div class="stat-label">Last In, First Out — insertion order inverted on removal</div>
+    </div>
+    <div class="card">
+      <div class="stat-val">O(n)</div>
+      <div class="stat-label">Space — proportional to number of elements</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Core invariant:</strong> the element removed next is always the one most recently inserted. No element below the top is accessible until every element above it has been popped.
+  </div>
+
+  <h2>Lifecycle of a Stack Operation</h2>
+  <div class="steps" id="overview-steps">
+    <div class="step" onclick="markSteps(1)">
+      <div class="step-circle">1</div>
+      <div class="step-label">Create empty stack</div>
+    </div>
+    <div class="step" onclick="markSteps(2)">
+      <div class="step-circle">2</div>
+      <div class="step-label">Push elements</div>
+    </div>
+    <div class="step" onclick="markSteps(3)">
+      <div class="step-circle">3</div>
+      <div class="step-label">Peek top</div>
+    </div>
+    <div class="step" onclick="markSteps(4)">
+      <div class="step-circle">4</div>
+      <div class="step-label">Pop elements</div>
+    </div>
+    <div class="step" onclick="markSteps(5)">
+      <div class="step-circle">5</div>
+      <div class="step-label">Stack empty</div>
+    </div>
+  </div>
+
+  <h2>Typical Use Cases</h2>
+  <div class="card">
+    <table class="anno-table">
+      <thead><tr><th>Domain</th><th>How the stack is used</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-accent">Backtracking</span></td><td>Store exploration states; pop to undo a path and try the next candidate.</td></tr>
+        <tr><td><span class="badge badge-green">Undo / Redo</span></td><td>Each user action is pushed; Ctrl-Z pops and reverses the top action.</td></tr>
+        <tr><td><span class="badge badge-amber">Expression eval</span></td><td>Push operands/operators; pop when a closing delimiter or operator of lower precedence is met.</td></tr>
+        <tr><td><span class="badge badge-muted">Call stack</span></td><td>The CPU pushes a stack frame on every function call; pops on return.</td></tr>
+        <tr><td><span class="badge badge-muted">Browser history</span></td><td">Back button pops the current URL; forward pushes it again.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout amber">
+    <strong>Overflow / Underflow:</strong> Pushing onto a full stack (array-backed, fixed size) causes <em>stack overflow</em>. Popping from an empty stack causes <em>stack underflow</em>. Both must be guarded in production code.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CORE OPS ═══════════════════════════════ -->
+<div class="page" id="page-operations">
+  <h1>Core Operations</h1>
+  <p class="page-subtitle">Three primitive operations define a stack's entire interface. Each runs in O(1) time regardless of stack size.</p>
+
+  <!-- PUSH -->
+  <h2>Push — Add an element to the top</h2>
+
+  <pre><span class="kw">function</span> <span class="fn">Push</span>(stack, element):
+    <span class="kw">if</span> stack.size == stack.capacity:
+        <span class="kw">raise</span> StackOverflowError   <span class="cm">// guard: array-backed stacks only</span>
+    stack.top  ← stack.top + <span class="num">1</span>  <span class="cm">// advance top pointer</span>
+    stack.data[stack.top] ← element  <span class="cm">// write element at new top</span>
+    stack.size ← stack.size + <span class="num">1</span></pre>
+
+  <h3>Line-by-line annotation</h3>
+  <table class="anno-table">
+    <thead><tr><th>Line</th><th>Action</th><th>Complexity</th></tr></thead>
+    <tbody>
+      <tr><td>Overflow check</td><td>Prevents writing past allocated memory. Skipped for dynamic (linked-list) stacks.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Advance top pointer</td><td>The index pointing to the current top of the underlying array is incremented by 1.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Write element</td><td>The new element is placed at position <code>top</code>. No shifting of existing elements.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Update size</td><td>Maintains the logical count; not always needed if top index is the source of truth.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- POP -->
+  <h2>Pop — Remove the top element</h2>
+
+  <pre><span class="kw">function</span> <span class="fn">Pop</span>(stack):
+    <span class="kw">if</span> stack.size == <span class="num">0</span>:
+        <span class="kw">raise</span> StackUnderflowError  <span class="cm">// guard: cannot pop empty stack</span>
+    element    ← stack.data[stack.top]  <span class="cm">// read top value</span>
+    stack.top  ← stack.top - <span class="num">1</span>         <span class="cm">// retract top pointer</span>
+    stack.size ← stack.size - <span class="num">1</span>
+    <span class="kw">return</span> element</pre>
+
+  <h3>Line-by-line annotation</h3>
+  <table class="anno-table">
+    <thead><tr><th>Line</th><th>Action</th><th>Complexity</th></tr></thead>
+    <tbody>
+      <tr><td>Underflow check</td><td>Attempting to pop from an empty stack is a logical error; guard before reading.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Read top value</td><td>The element at index <code>top</code> is copied out before the pointer moves.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Retract pointer</td><td>Decrementing <code>top</code> logically removes the element; the memory slot is simply ignored.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Return</td><td>The caller receives the removed element — critical for algorithms that process popped values.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- PEEK -->
+  <h2>Peek / Top — View without removal</h2>
+
+  <pre><span class="kw">function</span> <span class="fn">Peek</span>(stack):
+    <span class="kw">if</span> stack.size == <span class="num">0</span>:
+        <span class="kw">raise</span> StackEmptyError      <span class="cm">// guard</span>
+    <span class="kw">return</span> stack.data[stack.top]   <span class="cm">// read top, no pointer change</span></pre>
+
+  <h3>Line-by-line annotation</h3>
+  <table class="anno-table">
+    <thead><tr><th>Line</th><th>Action</th><th>Complexity</th></tr></thead>
+    <tbody>
+      <tr><td>Empty check</td><td>Same guard as Pop — reading an undefined slot is undefined behavior.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+      <tr><td>Return top element</td><td>No mutation occurs. The stack state is identical before and after Peek.</td><td><span class="badge badge-green">O(1)</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <strong>Peek vs Pop:</strong> Peek is a <em>non-destructive</em> read — it answers "what is next?" without committing to removal. Use it when the decision to pop depends on the top value (e.g., operator precedence comparison in expression evaluation).
+  </div>
+</div>
+
+<!-- ═══════════════════════════ EXAMPLE 1: PUSH & POP ═══════════════════════ -->
+<div class="page" id="page-ex1">
+  <h1>Example 1 — Basic Push &amp; Pop Sequence</h1>
+  <p class="page-subtitle">Tracing 7 operations on an initially empty integer stack. Each step shows the operation, the resulting stack state, and the value of the top pointer.</p>
+
+  <div class="callout">
+    <strong>Setup:</strong> <code>stack = []</code>, <code>top = -1</code> (sentinel for empty). Array indices are 0-based.
+  </div>
+
+  <div class="stack-visual-wrap">
+    <div class="sim-stack-area" style="flex:0 0 160px;">
+      <div id="ex1-diagram" class="stack-diagram">
+        <div class="stack-bottom-label">Bottom</div>
+      </div>
+      <div class="stack-pointer" id="ex1-ptr">top = -1 (empty)</div>
+    </div>
+    <div style="flex:1; min-width:200px;">
+      <table class="trace-table" id="ex1-trace">
+        <thead><tr><th>Step</th><th>Operation</th><th>Stack after</th><th>top</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr onclick="ex1Go(0)" id="ex1-row-0"><td>1</td><td>Push(10)</td><td>[10]</td><td>0</td><td>—</td></tr>
+          <tr onclick="ex1Go(1)" id="ex1-row-1"><td>2</td><td>Push(20)</td><td>[10,20]</td><td>1</td><td>—</td></tr>
+          <tr onclick="ex1Go(2)" id="ex1-row-2"><td>3</td><td>Push(30)</td><td>[10,20,30]</td><td>2</td><td>—</td></tr>
+          <tr onclick="ex1Go(3)" id="ex1-row-3"><td>4</td><td>Peek()</td><td>[10,20,30]</td><td>2</td><td>30</td></tr>
+          <tr onclick="ex1Go(4)" id="ex1-row-4"><td>5</td><td>Pop()</td><td>[10,20]</td><td>1</td><td>30</td></tr>
+          <tr onclick="ex1Go(5)" id="ex1-row-5"><td>6</td><td>Pop()</td><td>[10]</td><td>0</td><td>20</td></tr>
+          <tr onclick="ex1Go(6)" id="ex1-row-6"><td>7</td><td>Pop()</td><td>[]</td><td>-1</td><td>10</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px; font-size:12px; color:var(--text-muted);">Click any row to jump to that step.</p>
+    </div>
+  </div>
+
+  <h2>What this demonstrates</h2>
+  <div class="card">
+    <p>Push operations 1-3 build the stack bottom-up: 10 is at index 0, 20 at index 1, 30 at index 2. The top pointer tracks the last filled index.</p>
+    <p>Step 4 (Peek) reads <code>stack[2] = 30</code> without mutating state — the top pointer stays at 2.</p>
+    <p>Steps 5-7 (Pop) remove elements in reverse insertion order: 30, then 20, then 10. This is the LIFO property made concrete — the first element inserted (10) is the last to be removed.</p>
+  </div>
+
+  <div class="callout green">
+    <strong>Key observation:</strong> after Pop returns 10, <code>top = -1</code>. The array still holds <code>[10, 20, 30]</code> in memory — but those slots are logically invisible because the top pointer is below index 0. No cleanup is needed unless memory reclamation is required.
+  </div>
+</div>
+
+<!-- ═══════════════════════ EXAMPLE 2: BACKTRACKING ═══════════════════════ -->
+<div class="page" id="page-ex2">
+  <h1>Example 2 — Backtracking (Path Exploration)</h1>
+  <p class="page-subtitle">A stack drives depth-first path search. Each visited node is pushed; when a dead end is reached, nodes are popped to retreat to the last branching point.</p>
+
+  <div class="callout">
+    <strong>Scenario:</strong> Explore the path A → B → D → (dead end) → backtrack → C → E (goal). The stack records the current exploration path.
+  </div>
+
+  <h2>Step-by-step trace</h2>
+
+  <div class="stack-visual-wrap">
+    <div class="sim-stack-area" style="flex:0 0 160px;">
+      <div id="ex2-diagram" class="stack-diagram">
+        <div class="stack-bottom-label">Bottom</div>
+      </div>
+      <div class="stack-pointer" id="ex2-ptr">top = -1 (empty)</div>
+    </div>
+    <div style="flex:1; min-width:200px;">
+      <table class="trace-table" id="ex2-trace">
+        <thead><tr><th>Step</th><th>Operation</th><th>Reason</th><th>Stack after</th></tr></thead>
+        <tbody>
+          <tr onclick="ex2Go(0)" id="ex2-row-0"><td>1</td><td>Push("A")</td><td>Start at node A</td><td>["A"]</td></tr>
+          <tr onclick="ex2Go(1)" id="ex2-row-1"><td>2</td><td>Push("B")</td><td>Move to neighbor B</td><td>["A","B"]</td></tr>
+          <tr onclick="ex2Go(2)" id="ex2-row-2"><td>3</td><td>Push("D")</td><td>Move to neighbor D</td><td>["A","B","D"]</td></tr>
+          <tr onclick="ex2Go(3)" id="ex2-row-3"><td>4</td><td>Pop() → "D"</td><td>D is a dead end — backtrack</td><td>["A","B"]</td></tr>
+          <tr onclick="ex2Go(4)" id="ex2-row-4"><td>5</td><td>Pop() → "B"</td><td>B has no unvisited neighbors — backtrack again</td><td>["A"]</td></tr>
+          <tr onclick="ex2Go(5)" id="ex2-row-5"><td>6</td><td>Push("C")</td><td>Try next neighbor of A</td><td>["A","C"]</td></tr>
+          <tr onclick="ex2Go(6)" id="ex2-row-6"><td>7</td><td>Push("E")</td><td>Move to E — goal reached</td><td>["A","C","E"]</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px; font-size:12px; color:var(--text-muted);">Click any row to jump to that step.</p>
+    </div>
+  </div>
+
+  <h2>Graph structure</h2>
+  <div class="card">
+    <pre style="font-size:12px; margin-bottom:0;">        A
+       / \
+      B   C
+      |   |
+      D   E  ← goal
+  (dead end)</pre>
+  </div>
+
+  <h2>Why this requires a stack</h2>
+  <div class="card">
+    <p>The stack encodes the current path from the start node to the current position. When a dead end is encountered, a Pop instantly retreats to the previous node — the one that still has unexplored neighbors.</p>
+    <p>This is precisely what the CPU call stack does during recursive DFS: each recursive call pushes a frame, each return pops one. An explicit stack like this replaces recursion with iteration, giving direct control over backtracking.</p>
+    <p>The final stack state <code>["A","C","E"]</code> is the solution path — readable bottom-to-top.</p>
+  </div>
+
+  <div class="callout amber">
+    <strong>Visited set:</strong> real implementations pair the stack with a set of visited nodes to prevent re-exploring the same node. The stack handles order; the set handles deduplication.
+  </div>
+</div>
+
+<!-- ═══════════════════════ EXAMPLE 3: PARENTHESES ═══════════════════════ -->
+<div class="page" id="page-ex3">
+  <h1>Example 3 — Balanced Parentheses (Expression Evaluation)</h1>
+  <p class="page-subtitle">A stack validates whether every opening bracket has a matching, correctly nested closing bracket. The approach generalizes to full expression parsing and operator precedence.</p>
+
+  <div class="callout">
+    <strong>Input string:</strong> <code>( [ { } ] )</code> — expected result: <span class="badge badge-green">VALID</span>
+  </div>
+
+  <h2>Pseudocode</h2>
+  <pre><span class="kw">function</span> <span class="fn">IsBalanced</span>(expression):
+    stack ← <span class="fn">EmptyStack</span>()
+    open  ← { <span class="str">'('</span>, <span class="str">'['</span>, <span class="str">'{'</span> }
+    match ← { <span class="str">')'</span>:<span class="str">'('</span>, <span class="str">']'</span>:<span class="str">'['</span>, <span class="str">'}'</span>:<span class="str">'{'</span> }
+
+    <span class="kw">for each</span> char <span class="kw">in</span> expression:
+        <span class="kw">if</span> char <span class="kw">in</span> open:
+            <span class="fn">Push</span>(stack, char)         <span class="cm">// opening bracket → push</span>
+        <span class="kw">else if</span> char <span class="kw">in</span> match:
+            <span class="kw">if</span> <span class="fn">IsEmpty</span>(stack):
+                <span class="kw">return</span> <span class="str">INVALID</span>           <span class="cm">// closing with nothing open</span>
+            top ← <span class="fn">Pop</span>(stack)
+            <span class="kw">if</span> top != match[char]:
+                <span class="kw">return</span> <span class="str">INVALID</span>           <span class="cm">// wrong bracket type</span>
+
+    <span class="kw">if</span> <span class="fn">IsEmpty</span>(stack):
+        <span class="kw">return</span> <span class="str">VALID</span>                  <span class="cm">// all openers were closed</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="str">INVALID</span>                <span class="cm">// unclosed openers remain</span></pre>
+
+  <h2>Step-by-step trace — <code>( [ { } ] )</code></h2>
+
+  <div class="stack-visual-wrap">
+    <div class="sim-stack-area" style="flex:0 0 160px;">
+      <div id="ex3-diagram" class="stack-diagram">
+        <div class="stack-bottom-label">Bottom</div>
+      </div>
+      <div class="stack-pointer" id="ex3-ptr">top = -1 (empty)</div>
+    </div>
+    <div style="flex:1; min-width:200px;">
+      <table class="trace-table" id="ex3-trace">
+        <thead><tr><th>Step</th><th>Char</th><th>Action</th><th>Stack after</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr onclick="ex3Go(0)" id="ex3-row-0"><td>1</td><td><code>(</code></td><td>Opening → Push</td><td>["("]</td><td><span class="badge badge-muted">—</span></td></tr>
+          <tr onclick="ex3Go(1)" id="ex3-row-1"><td>2</td><td><code>[</code></td><td>Opening → Push</td><td>["(","["]</td><td><span class="badge badge-muted">—</span></td></tr>
+          <tr onclick="ex3Go(2)" id="ex3-row-2"><td>3</td><td><code>{</code></td><td>Opening → Push</td><td>["(","[","{"]</td><td><span class="badge badge-muted">—</span></td></tr>
+          <tr onclick="ex3Go(3)" id="ex3-row-3"><td>4</td><td><code>}</code></td><td>Closing → Pop "{" — matches "}" ✓</td><td>["(","["]</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr onclick="ex3Go(4)" id="ex3-row-4"><td>5</td><td><code>]</code></td><td>Closing → Pop "[" — matches "]" ✓</td><td>["("]</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr onclick="ex3Go(5)" id="ex3-row-5"><td>6</td><td><code>)</code></td><td>Closing → Pop "(" — matches ")" ✓</td><td>[]</td><td><span class="badge badge-green">OK</span></td></tr>
+          <tr onclick="ex3Go(6)" id="ex3-row-6"><td>7</td><td>—</td><td>End of string — stack empty</td><td>[]</td><td><span class="badge badge-green">VALID</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px; font-size:12px; color:var(--text-muted);">Click any row to jump to that step.</p>
+    </div>
+  </div>
+
+  <h2>Invalid case — <code>( [ ) ]</code></h2>
+  <div class="card">
+    <table class="anno-table">
+      <thead><tr><th>Step</th><th>Char</th><th>Action</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>(</code></td><td>Push</td><td>Stack: ["("]</td></tr>
+        <tr><td>2</td><td><code>[</code></td><td>Push</td><td>Stack: ["(","["]</td></tr>
+        <tr><td>3</td><td><code>)</code></td><td>Pop → "[" — expected "(" — mismatch!</td><td><span class="badge badge-red">INVALID — abort</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green">
+    <strong>Why the stack is the right structure:</strong> brackets must close in the reverse order they opened — an exact LIFO relationship. No other data structure captures this nesting constraint as directly. The top of the stack always holds the most recent unmatched opener, which is exactly the one the current closer must pair with.
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SIMULATOR ═══════════════════════════════════ -->
+<div class="page" id="page-simulator">
+  <h1>Interactive Simulator</h1>
+  <p class="page-subtitle">Build and manipulate a stack in real time. Push any value, pop the top, or peek without removing.</p>
+
+  <div class="sim-wrap">
+    <div class="sim-controls">
+      <div class="sim-input-row">
+        <input class="sim-input" id="sim-val" placeholder="Value to push" onkeydown="if(event.key==='Enter')simPush()"/>
+        <button class="sim-btn push" onclick="simPush()">Push</button>
+      </div>
+      <div class="sim-input-row">
+        <button class="sim-btn pop"  onclick="simPop()"  style="flex:1">Pop</button>
+        <button class="sim-btn peek" onclick="simPeek()" style="flex:1">Peek</button>
+      </div>
+      <div class="sim-log" id="sim-log">Ready. Push a value to begin.</div>
+    </div>
+
+    <div class="sim-stack-area">
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.06em;">Stack (top → bottom)</div>
+      <div id="sim-diagram" class="stack-diagram">
+        <div class="stack-bottom-label">Bottom (empty)</div>
+      </div>
+      <div class="stack-pointer" id="sim-ptr">top = -1 (empty)</div>
+    </div>
+  </div>
+
+  <h2>Pseudocode Reference</h2>
+  <div class="card-row">
+    <div class="card">
+      <div style="font-size:11px; color:var(--accent); font-weight:700; margin-bottom:8px;">PUSH</div>
+      <pre style="margin:0; font-size:12px; border:none; padding:0; background:transparent;">top ← top + 1
+data[top] ← element</pre>
+    </div>
+    <div class="card">
+      <div style="font-size:11px; color:var(--red); font-weight:700; margin-bottom:8px;">POP</div>
+      <pre style="margin:0; font-size:12px; border:none; padding:0; background:transparent;">val ← data[top]
+top ← top - 1
+return val</pre>
+    </div>
+    <div class="card">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:8px;">PEEK</div>
+      <pre style="margin:0; font-size:12px; border:none; padding:0; background:transparent;">return data[top]
+// top unchanged</pre>
+    </div>
+  </div>
+</div>
+
+</div><!-- #main -->
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let sidebarHidden = false;
+const simStack = [];
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const mn = document.getElementById('main');
+  sidebarHidden = !sidebarHidden;
+  if (window.innerWidth <= 700) {
+    sb.classList.toggle('visible', !sidebarHidden);
+  } else {
+    sb.classList.toggle('hidden', sidebarHidden);
+    mn.classList.toggle('expanded', sidebarHidden);
+  }
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) { pg.classList.add('active'); }
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + id + "'")) {
+      l.classList.add('active');
+    }
+  });
+  document.getElementById('main').scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+// ─── OVERVIEW STEPS ──────────────────────────────────────────────────────────
+function markSteps(n) {
+  const steps = document.querySelectorAll('#overview-steps .step');
+  steps.forEach((s, i) => s.classList.toggle('done', i < n));
+}
+
+// ─── STACK DIAGRAM RENDERER ──────────────────────────────────────────────────
+function renderStackDiagram(containerId, ptrId, items) {
+  const diag = document.getElementById(containerId);
+  // clear all but bottom label
+  const bottom = diag.querySelector('.stack-bottom-label');
+  diag.innerHTML = '';
+  diag.appendChild(bottom);
+  items.forEach((v, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'stack-slot ' + (i === items.length - 1 ? 'top-slot' : 'mid-slot');
+    slot.textContent = v;
+    diag.appendChild(slot);
+  });
+  const ptr = document.getElementById(ptrId);
+  if (items.length === 0) {
+    ptr.textContent = 'top = -1 (empty)';
+  } else {
+    ptr.textContent = 'top = ' + (items.length - 1) + '  →  ' + items[items.length - 1];
+  }
+}
+
+function highlightRow(prefix, count, idx) {
+  for (let i = 0; i < count; i++) {
+    const row = document.getElementById(prefix + i);
+    if (row) row.classList.toggle('active-trace', i === idx);
+  }
+}
+
+// ─── EXAMPLE 1 ───────────────────────────────────────────────────────────────
+const ex1States = [
+  { stack: [10],          ptr: 'top=0 → 10' },
+  { stack: [10, 20],      ptr: 'top=1 → 20' },
+  { stack: [10, 20, 30],  ptr: 'top=2 → 30' },
+  { stack: [10, 20, 30],  ptr: 'top=2 → 30  (Peek, no change)' },
+  { stack: [10, 20],      ptr: 'top=1 → 20' },
+  { stack: [10],          ptr: 'top=0 → 10' },
+  { stack: [],            ptr: 'top=-1 (empty)' },
+];
+function ex1Go(idx) {
+  const s = ex1States[idx];
+  renderStackDiagram('ex1-diagram', 'ex1-ptr', s.stack);
+  highlightRow('ex1-row-', 7, idx);
+}
+
+// ─── EXAMPLE 2 ───────────────────────────────────────────────────────────────
+const ex2States = [
+  { stack: ['A'] },
+  { stack: ['A','B'] },
+  { stack: ['A','B','D'] },
+  { stack: ['A','B'] },
+  { stack: ['A'] },
+  { stack: ['A','C'] },
+  { stack: ['A','C','E'] },
+];
+function ex2Go(idx) {
+  renderStackDiagram('ex2-diagram', 'ex2-ptr', ex2States[idx].stack);
+  highlightRow('ex2-row-', 7, idx);
+}
+
+// ─── EXAMPLE 3 ───────────────────────────────────────────────────────────────
+const ex3States = [
+  { stack: ['('] },
+  { stack: ['(','['] },
+  { stack: ['(','[','{'] },
+  { stack: ['(','['] },
+  { stack: ['('] },
+  { stack: [] },
+  { stack: [] },
+];
+function ex3Go(idx) {
+  renderStackDiagram('ex3-diagram', 'ex3-ptr', ex3States[idx].stack);
+  highlightRow('ex3-row-', 7, idx);
+}
+
+// ─── SIMULATOR ───────────────────────────────────────────────────────────────
+function simRender() {
+  renderStackDiagram('sim-diagram', 'sim-ptr', simStack);
+  const bottom = document.querySelector('#sim-diagram .stack-bottom-label');
+  if (bottom) bottom.textContent = simStack.length === 0 ? 'Bottom (empty)' : 'Bottom';
+}
+
+function simLog(msg, cls) {
+  const log = document.getElementById('sim-log');
+  const span = document.createElement('div');
+  span.className = cls || '';
+  span.textContent = msg;
+  log.innerHTML = '';
+  log.appendChild(span);
+}
+
+function simPush() {
+  const inp = document.getElementById('sim-val');
+  const val = inp.value.trim();
+  if (!val) { simLog('Enter a value to push.', 'log-err'); return; }
+  simStack.push(val);
+  simRender();
+  simLog('Push("' + val + '") — top is now ' + val + '.', 'log-ok');
+  inp.value = '';
+  inp.focus();
+}
+
+function simPop() {
+  if (simStack.length === 0) { simLog('StackUnderflowError — stack is empty.', 'log-err'); return; }
+  const val = simStack.pop();
+  simRender();
+  simLog('Pop() → returned "' + val + '".', 'log-info');
+}
+
+function simPeek() {
+  if (simStack.length === 0) { simLog('Stack is empty — nothing to peek.', 'log-err'); return; }
+  const val = simStack[simStack.length - 1];
+  simLog('Peek() → "' + val + '" (stack unchanged, top=' + (simStack.length-1) + ').', 'log-ok');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  // initialize all example diagrams at step 0
+  ex1Go(0);
+  ex2Go(0);
+  ex3Go(0);
+  simRender();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DFS and BFS — Graph Traversal Explainer</title>
+<style>
+:root{
+  --font-sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --font-mono:'Cascadia Code','Fira Code',monospace;
+  --radius:10px; --sidebar-w:260px; --transition:0.25s ease;
+}
+[data-theme="dark"]{
+  --bg:#050505; --bg2:#121212; --bg3:#1e1e1e; --border:#333333;
+  --text:#fafafa; --text-muted:#a0a0a0; --accent:#4a9eff; --accent2:#9d7eff;
+  --green:#1abc9c; --amber:#f39c12; --red:#e74c3c;
+  --tab-active-bg:#4a9eff; --tab-active-text:#050505; --chart-grid:rgba(255,255,255,0.04);
+}
+[data-theme="light"]{
+  --bg:#f0f2f8; --bg2:#ffffff; --bg3:#e8ecf4; --border:#d0d5e8;
+  --text:#0d1117; --text-muted:#4b5563; --accent:#4361ee; --accent2:#7c3aed;
+  --green:#059669; --amber:#d97706; --red:#dc2626;
+  --tab-active-bg:#4361ee; --tab-active-text:#fff; --chart-grid:rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:15px;line-height:1.6}
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px;z-index:30}
+#topbar h1{font-size:16px;font-weight:600}
+#topbar h1 span{color:var(--accent)}
+#toggle-sidebar-btn,#theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-family:var(--font-sans)}
+#toggle-sidebar-btn:hover,#theme-btn:hover{border-color:var(--accent)}
+#theme-btn{margin-left:auto}
+#sidebar{position:fixed;left:0;top:52px;bottom:0;width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);padding:18px 0;overflow-y:auto;transition:transform var(--transition);z-index:20}
+#sidebar.hidden{transform:translateX(-260px)}
+.sidebar-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);padding:14px 22px 6px}
+.nav-link{display:block;padding:8px 22px;color:var(--text);text-decoration:none;font-size:14px;cursor:pointer;border-left:3px solid transparent}
+.nav-link:hover{background:var(--bg3)}
+.nav-link.active{border-left-color:var(--accent);color:var(--accent);font-weight:600;background:var(--bg3)}
+#main{margin-left:var(--sidebar-w);margin-top:52px;padding:36px 48px 80px;transition:margin var(--transition);max-width:calc(var(--sidebar-w) + 900px)}
+#main.expanded{margin-left:0}
+.page{display:none}
+.page.active{display:block;animation:fadein .3s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+h2{font-size:24px;margin-bottom:14px}
+h3{font-size:18px;margin:30px 0 10px}
+h4{font-size:15px;margin:18px 0 8px}
+p{margin-bottom:12px}
+p.muted{color:var(--text-muted)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:18px}
+.card-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.card-row .card{flex:1;min-width:180px;margin-bottom:0}
+.stat-val{font-size:28px;font-weight:700;color:var(--accent);font-family:var(--font-mono)}
+.stat-val.alt{color:var(--accent2)}
+.stat-label{font-size:12px;color:var(--text-muted);margin-top:4px}
+.callout{border-left:3px solid var(--accent);background:var(--bg3);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;margin:16px 0}
+.callout.green{border-left-color:var(--green)}
+.callout.amber{border-left-color:var(--amber)}
+.callout.red{border-left-color:var(--red)}
+.compare-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.compare-table th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+.compare-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.compare-table tr:hover td{background:var(--bg3)}
+.compare-table code, p code, li code, .callout code{font-family:var(--font-mono);font-size:13px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:1px 6px}
+.badge-green{color:var(--green);font-weight:600}
+.badge-amber{color:var(--amber);font-weight:600}
+.badge-red{color:var(--red);font-weight:600}
+.badge-accent{color:var(--accent);font-weight:600}
+pre.code{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.75;margin:14px 0}
+pre.code .ln{color:var(--text-muted);display:inline-block;width:26px;user-select:none}
+pre.code .kw{color:var(--accent);font-weight:600}
+pre.code .cm{color:var(--text-muted);font-style:italic}
+pre.code .fn{color:var(--accent2)}
+.flow-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:700px){.flow-cols{grid-template-columns:1fr}}
+.flow-col{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.flow-col h4{margin-top:0;color:var(--accent)}
+.flow-col.alt h4{color:var(--accent2)}
+.flow-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:13.5px;text-align:center}
+.flow-link{width:2px;height:16px;background:var(--border);margin:0 auto}
+.flow-box.hl{border-color:var(--accent);color:var(--accent);font-weight:600}
+.flow-col.alt .flow-box.hl{border-color:var(--accent2);color:var(--accent2)}
+.trace-host{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:14px 0 28px}
+.trace-host svg{width:100%;height:auto;display:block;margin:10px 0}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--text-muted);margin-bottom:4px}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:50%;border:2px solid transparent}
+.sw-cur{background:var(--accent)}
+.sw-pend{background:var(--amber)}
+.sw-vis{background:var(--green)}
+.sw-idle{background:var(--bg3);border-color:var(--border)}
+.tedge{stroke:var(--border);stroke-width:2}
+.arrowhead{fill:var(--text-muted)}
+.tnode circle{fill:var(--bg3);stroke:var(--border);stroke-width:2;transition:fill .2s,stroke .2s}
+.tnode text{fill:var(--text);font-size:13px;font-weight:600;font-family:var(--font-mono)}
+.tnode.cur circle{fill:var(--accent);stroke:var(--accent)}
+.tnode.pend circle{fill:var(--amber);stroke:var(--amber)}
+.tnode.vis circle{fill:var(--green);stroke:var(--green)}
+.tnode.cur text,.tnode.pend text,.tnode.vis text{fill:#fff}
+.trace-controls{display:flex;align-items:center;gap:12px;margin:10px 0}
+.tbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 18px;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--font-sans)}
+.tbtn:disabled{opacity:.35;cursor:default}
+.tbtn.ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.step-ind{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);min-width:110px;text-align:center}
+.struct-row{display:flex;align-items:flex-start;gap:10px;margin:6px 0;flex-wrap:wrap}
+.struct-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding-top:5px;min-width:150px}
+.chips{flex:1}
+.chip{display:inline-block;padding:2px 9px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;margin:2px}
+.chip.top{border-color:var(--accent);color:var(--accent);font-weight:700}
+.chip.vo{border-color:var(--green);color:var(--green)}
+.chip.empty{border-style:dashed;color:var(--text-muted)}
+.trace-note{border-left:3px solid var(--accent);background:var(--bg3);border-radius:0 8px 8px 0;padding:10px 14px;margin-top:10px;font-size:14px;min-height:44px}
+.progress-bar{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:6px 0 14px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
+@media(max-width:700px){
+  #sidebar{transform:translateX(-260px)}
+  #sidebar.visible{transform:translateX(0)}
+  #main{margin-left:0;padding:24px 18px 60px}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="toggle-sidebar-btn" onclick="toggleSidebar()">Menu</button>
+  <h1>Graph Traversal: <span>DFS</span> and <span>BFS</span></h1>
+  <button id="theme-btn" onclick="toggleTheme()">Light mode</button>
+</div>
+
+<nav id="sidebar">
+  <div class="sidebar-label">Contents</div>
+  <a class="nav-link active" data-page="overview" onclick="showPage('overview')">Overview</a>
+  <a class="nav-link" data-page="dfs" onclick="showPage('dfs')">DFS — Depth-First Search</a>
+  <a class="nav-link" data-page="bfs" onclick="showPage('bfs')">BFS — Breadth-First Search</a>
+</nav>
+
+<main id="main">
+
+<!-- ============ PAGE 1: OVERVIEW ============ -->
+<div class="page active" id="page-overview">
+  <h2>Overview: Two Ways to Explore a Graph</h2>
+  <p>Depth-First Search (DFS) and Breadth-First Search (BFS) are the two fundamental graph traversal algorithms. Both visit every vertex reachable from a start vertex exactly once, and both run in linear time on an adjacency-list representation. They differ in one decision only: <strong>which discovered-but-unprocessed vertex to expand next</strong>. DFS expands the most recently discovered vertex (LIFO — a stack), diving as deep as possible before backtracking. BFS expands the earliest discovered vertex (FIFO — a queue), sweeping outward level by level.</p>
+
+  <div class="card-row">
+    <div class="card"><div class="stat-val">O(V+E)</div><div class="stat-label">DFS time — adjacency list</div></div>
+    <div class="card"><div class="stat-val">O(V)</div><div class="stat-label">DFS space — stack / recursion depth</div></div>
+    <div class="card"><div class="stat-val alt">O(V+E)</div><div class="stat-label">BFS time — adjacency list</div></div>
+    <div class="card"><div class="stat-val alt">O(V)</div><div class="stat-label">BFS space — queue (frontier width)</div></div>
+  </div>
+
+  <h3>Conceptual flow, side by side</h3>
+  <div class="flow-cols">
+    <div class="flow-col">
+      <h4>DFS — go deep, then backtrack</h4>
+      <div class="flow-box">Push start vertex onto the <strong>stack</strong></div>
+      <div class="flow-link"></div>
+      <div class="flow-box hl">Pop the top vertex u</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">If u already visited: skip (stale entry)</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Mark u visited (process it)</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Push all unvisited neighbors of u</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Repeat until the stack is empty</div>
+    </div>
+    <div class="flow-col alt">
+      <h4>BFS — expand the frontier evenly</h4>
+      <div class="flow-box">Mark start discovered, put it in the <strong>queue</strong></div>
+      <div class="flow-link"></div>
+      <div class="flow-box hl">Dequeue the front vertex u</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Process u (it is now visited)</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">For each neighbor v not yet discovered:</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Mark v discovered and enqueue it</div>
+      <div class="flow-link"></div>
+      <div class="flow-box">Repeat until the queue is empty</div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>The only structural difference is the container.</strong> Replace the stack in DFS with a queue and the algorithm becomes BFS. LIFO order produces deep, branch-committed exploration; FIFO order produces concentric, level-by-level exploration. Everything else — visited set, neighbor iteration, linear cost — is identical.
+  </div>
+
+  <h3>Key differences</h3>
+  <table class="compare-table">
+    <tr><th>Property</th><th>DFS</th><th>BFS</th></tr>
+    <tr><td>Container</td><td><span class="badge-accent">Stack</span> (LIFO) or recursion call stack</td><td><span class="badge-accent">Queue</span> (FIFO)</td></tr>
+    <tr><td>Exploration order</td><td>One branch fully, then backtrack</td><td>All vertices at distance k before any at distance k+1</td></tr>
+    <tr><td>Shortest paths (unweighted)</td><td><span class="badge-red">No</span> — path found can be arbitrarily long</td><td><span class="badge-green">Yes</span> — first arrival is via a minimum-edge path</td></tr>
+    <tr><td>Time</td><td>O(V+E) list, O(V&sup2;) matrix</td><td>O(V+E) list, O(V&sup2;) matrix</td></tr>
+    <tr><td>Memory profile</td><td>O(depth) — small on wide shallow graphs, large on deep ones</td><td>O(frontier width) — small on deep narrow graphs, large on wide ones</td></tr>
+    <tr><td>Typical uses</td><td>Cycle detection, topological sort, connected components, maze solving, backtracking</td><td>Unweighted shortest path, level-order traversal, bipartiteness test, nearest-neighbor queries</td></tr>
+    <tr><td>When marking happens</td><td>Variant-dependent: at pop (iterative) or at call entry (recursive)</td><td>At <em>enqueue</em> (discovered) — prevents duplicates in the queue</td></tr>
+  </table>
+
+  <div class="callout green">
+    <strong>Exam heuristic.</strong> If the question mentions "shortest", "fewest moves", "minimum number of steps", or "closest" on an unweighted structure — reach for BFS. If it mentions "exists a path", "all configurations", "detect a cycle", "order tasks by dependency", or memory is tight on a wide graph — reach for DFS.
+  </div>
+</div>
+
+<!-- ============ PAGE 2: DFS ============ -->
+<div class="page" id="page-dfs">
+  <h2>DFS — Depth-First Search</h2>
+  <p>DFS commits to one neighbor, then one of <em>its</em> neighbors, and so on, until it hits a vertex with no unvisited neighbors (a dead end). It then <strong>backtracks</strong> to the most recent vertex that still has unexplored options. The LIFO stack implements this automatically: the most recently pushed vertex is the next one expanded.</p>
+
+  <h3>Iterative pseudocode (explicit stack)</h3>
+  <pre class="code"><span class="ln">1</span><span class="fn">DFS-Iterative</span>(G, s):
+<span class="ln">2</span>    stack &#8592; empty stack;  <span class="kw">push</span>(stack, s)
+<span class="ln">3</span>    visited &#8592; &empty;
+<span class="ln">4</span>    <span class="kw">while</span> stack is not empty:
+<span class="ln">5</span>        u &#8592; <span class="kw">pop</span>(stack)
+<span class="ln">6</span>        <span class="kw">if</span> u &isin; visited: <span class="kw">continue</span>      <span class="cm">// stale entry — skip</span>
+<span class="ln">7</span>        add u to visited                 <span class="cm">// u is processed HERE</span>
+<span class="ln">8</span>        <span class="kw">for each</span> v <span class="kw">in</span> Adj[u], <span class="kw">in reverse order</span>:
+<span class="ln">9</span>            <span class="kw">if</span> v &notin; visited:
+<span class="ln">10</span>                <span class="kw">push</span>(stack, v)</pre>
+
+  <h4>Line-by-line annotation</h4>
+  <table class="compare-table">
+    <tr><th>Line</th><th>What it does</th><th>Cost contribution</th></tr>
+    <tr><td>2–3</td><td>Initialize: start vertex on the stack, empty visited set</td><td>O(1)</td></tr>
+    <tr><td>4–5</td><td>Loop until no pending vertices remain; pop the most recent</td><td>Each push is popped once</td></tr>
+    <tr><td>6</td><td>A vertex can be pushed several times (reached from several neighbors); only the first pop processes it — later pops are <em>stale</em> and skipped</td><td>O(1) per pop</td></tr>
+    <tr><td>7</td><td>Marking at pop time defines the visit order</td><td>O(1), executed exactly V times</td></tr>
+    <tr><td>8–10</td><td>Scan the adjacency list of u; reverse push order makes pops follow natural (e.g. alphabetical) order. Across the whole run every edge is scanned at most twice (undirected) or once (directed)</td><td>&Sigma; deg(u) = O(E)</td></tr>
+  </table>
+
+  <h3>Recursive pseudocode</h3>
+  <pre class="code"><span class="ln">1</span><span class="fn">DFS-Recursive</span>(G, u, visited):
+<span class="ln">2</span>    add u to visited                 <span class="cm">// u processed at call entry</span>
+<span class="ln">3</span>    <span class="kw">for each</span> v <span class="kw">in</span> Adj[u]:
+<span class="ln">4</span>        <span class="kw">if</span> v &notin; visited:
+<span class="ln">5</span>            <span class="fn">DFS-Recursive</span>(G, v, visited)</pre>
+  <p class="muted">The recursive version uses the language call stack instead of an explicit one. It is shorter and never holds duplicates, but recursion depth can reach V — on large or path-shaped graphs this risks stack overflow, which is why the iterative form is preferred in production. Both produce a depth-first order; they may differ slightly in tie-breaking depending on push order.</p>
+
+  <h3>Time and space complexity</h3>
+  <table class="compare-table">
+    <tr><th>Aspect</th><th>Adjacency list</th><th>Adjacency matrix</th><th>Why</th></tr>
+    <tr><td>Time</td><td><span class="badge-green">O(V + E)</span></td><td><span class="badge-amber">O(V&sup2;)</span></td><td>Each vertex processed once (O(V)); neighbor scan totals all degrees (O(E) list) or a full row of V entries per vertex (matrix)</td></tr>
+    <tr><td>Space — recursive</td><td colspan="2"><span class="badge-green">O(V)</span> worst case (recursion depth = longest path; O(h) on a tree of height h)</td><td>Deepest chain of nested calls</td></tr>
+    <tr><td>Space — iterative (this variant)</td><td colspan="2"><span class="badge-amber">O(V + E)</span> worst case stack size</td><td>A vertex may sit in the stack once per incoming edge before its first pop</td></tr>
+    <tr><td>Visited set</td><td colspan="2">O(V)</td><td>One flag per vertex</td></tr>
+  </table>
+  <div class="callout">
+    <strong>Best vs worst case.</strong> Traversal always touches every reachable vertex, so time is &Theta;(V+E) regardless of input shape — there is no "lucky" early exit unless searching for a specific target found early. Space is what varies: a path graph drives recursive DFS to depth V (worst), while a star graph keeps depth at 2 (best).
+  </div>
+
+  <h3>How the walk proceeds — 3 interactive traces</h3>
+  <p>Use <strong>Next</strong> / <strong>Prev</strong> to step through. At every step the note explains the pop, the marking, and the pushes. Watch how DFS dives along one branch and how stale stack entries (a node pushed twice via different neighbors) get skipped — that skip <em>is</em> the backtracking in action.</p>
+
+  <h4>Trace 1 — General undirected graph (16 nodes)</h4>
+  <p class="muted">Neighbors are explored alphabetically. Several nodes are reachable by more than one route, so duplicate stack entries and skip-steps occur.</p>
+  <div class="trace-host" id="trace-dfs-ug" data-graph="ug" data-mode="dfs"></div>
+
+  <h4>Trace 2 — Complete binary tree (15 nodes)</h4>
+  <p class="muted">On a tree, DFS from the root with children pushed right-then-left yields exactly the <strong>preorder traversal</strong>: root, entire left subtree, entire right subtree.</p>
+  <div class="trace-host" id="trace-dfs-bt" data-graph="bt" data-mode="dfs"></div>
+
+  <h4>Trace 3 — Directed acyclic graph (15 nodes)</h4>
+  <p class="muted">Edges are one-way (arrowheads). DFS follows out-edges only. Nodes with several in-edges (diamond shapes) are pushed multiple times but visited once — DFS on DAGs is the engine behind topological sorting.</p>
+  <div class="trace-host" id="trace-dfs-dag" data-graph="dag" data-mode="dfs"></div>
+</div>
+
+<!-- ============ PAGE 3: BFS ============ -->
+<div class="page" id="page-bfs">
+  <h2>BFS — Breadth-First Search</h2>
+  <p>BFS explores in concentric rings: first the start vertex (distance 0), then everything one edge away, then two edges away, and so on. The FIFO queue guarantees that no vertex at distance k+1 is processed before all vertices at distance k — which is precisely why BFS computes shortest paths in unweighted graphs.</p>
+
+  <h3>Pseudocode (queue)</h3>
+  <pre class="code"><span class="ln">1</span><span class="fn">BFS</span>(G, s):
+<span class="ln">2</span>    queue &#8592; empty queue
+<span class="ln">3</span>    mark s as <span class="kw">discovered</span>;  <span class="kw">enqueue</span>(queue, s)
+<span class="ln">4</span>    <span class="kw">while</span> queue is not empty:
+<span class="ln">5</span>        u &#8592; <span class="kw">dequeue</span>(queue)
+<span class="ln">6</span>        process u                        <span class="cm">// u is visited HERE</span>
+<span class="ln">7</span>        <span class="kw">for each</span> v <span class="kw">in</span> Adj[u]:
+<span class="ln">8</span>            <span class="kw">if</span> v is not discovered:
+<span class="ln">9</span>                mark v <span class="kw">discovered</span>;  <span class="kw">enqueue</span>(queue, v)</pre>
+
+  <h4>Line-by-line annotation</h4>
+  <table class="compare-table">
+    <tr><th>Line</th><th>What it does</th><th>Cost contribution</th></tr>
+    <tr><td>2–3</td><td>Initialize; the start vertex is the entire distance-0 level</td><td>O(1)</td></tr>
+    <tr><td>4–5</td><td>Dequeue the <em>oldest</em> discovered vertex — FIFO enforces level order</td><td>Each vertex enqueued once, dequeued once: O(V)</td></tr>
+    <tr><td>6</td><td>Processing point; record distance/parent here for shortest-path reconstruction</td><td>O(1) per vertex</td></tr>
+    <tr><td>7–9</td><td>Marking at <em>enqueue</em> time (not dequeue) guarantees each vertex enters the queue at most once — no stale entries, unlike the iterative-DFS variant</td><td>&Sigma; deg(u) = O(E)</td></tr>
+  </table>
+
+  <div class="callout green">
+    <strong>Shortest-path property.</strong> When v is first discovered from u (line 8–9), dist(v) = dist(u) + 1, and this is provably the minimum number of edges from s to v. Store <code>parent[v] = u</code> at that moment and walk parents backward to reconstruct the path.
+  </div>
+
+  <h3>Time and space complexity</h3>
+  <table class="compare-table">
+    <tr><th>Aspect</th><th>Adjacency list</th><th>Adjacency matrix</th><th>Why</th></tr>
+    <tr><td>Time</td><td><span class="badge-green">O(V + E)</span></td><td><span class="badge-amber">O(V&sup2;)</span></td><td>One enqueue/dequeue per vertex; each adjacency list scanned once</td></tr>
+    <tr><td>Space — queue</td><td colspan="2"><span class="badge-green">O(V)</span> worst case</td><td>Bounded by the widest level (frontier); a star graph puts V−1 vertices in the queue at once</td></tr>
+    <tr><td>Discovered set</td><td colspan="2">O(V)</td><td>One flag per vertex</td></tr>
+  </table>
+  <div class="callout">
+    <strong>Best vs worst case.</strong> Like DFS, full BFS is &Theta;(V+E) — every reachable vertex and edge is examined. The shape-dependent quantity is queue memory: deep narrow graphs (paths) keep the frontier at size 1 (best); wide shallow graphs (stars, dense levels) inflate it toward V (worst). Note this is the mirror image of DFS's memory behavior.
+  </div>
+
+  <h3>How the walk proceeds — 3 interactive traces</h3>
+  <p>Same three graphs as the DFS page, so the two orders can be compared directly. Watch the amber frontier expand as a ring: every node at the current distance is dequeued before any node one step further.</p>
+
+  <h4>Trace 1 — General undirected graph (16 nodes)</h4>
+  <p class="muted">A is distance 0; B, C, D are distance 1; E–I distance 2; J–N distance 3; O, P distance 4. The visit order groups exactly by these levels.</p>
+  <div class="trace-host" id="trace-bfs-ug" data-graph="ug" data-mode="bfs"></div>
+
+  <h4>Trace 2 — Complete binary tree (15 nodes)</h4>
+  <p class="muted">BFS on a tree from the root is precisely <strong>level-order traversal</strong>: 1, then 2 3, then 4 5 6 7, then the leaves 8–15.</p>
+  <div class="trace-host" id="trace-bfs-bt" data-graph="bt" data-mode="bfs"></div>
+
+  <h4>Trace 3 — Directed acyclic graph (15 nodes)</h4>
+  <p class="muted">Following out-edges only, BFS discovers each diamond-join node the first time any in-edge reaches it; the discovered-check stops later in-edges from re-enqueueing it.</p>
+  <div class="trace-host" id="trace-bfs-dag" data-graph="dag" data-mode="bfs"></div>
+</div>
+
+</main>
+
+<script>
+/* ---------- layout / theme ---------- */
+function toggleTheme(){
+  var html=document.documentElement;
+  var dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  document.getElementById('theme-btn').textContent=dark?'Dark mode':'Light mode';
+  renderCharts();
+}
+function toggleSidebar(){
+  var sb=document.getElementById('sidebar');
+  if(window.innerWidth<=700){ sb.classList.toggle('visible'); }
+  else{ sb.classList.toggle('hidden'); document.getElementById('main').classList.toggle('expanded'); }
+}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(function(l){l.classList.toggle('active',l.dataset.page===id);});
+  if(window.innerWidth<=700) document.getElementById('sidebar').classList.remove('visible');
+  window.scrollTo(0,0);
+}
+function switchTab(group,panel){
+  document.querySelectorAll('[data-tabgroup="'+group+'"]').forEach(function(b){b.classList.toggle('active',b.dataset.tabpanel===panel);});
+  document.querySelectorAll('[data-panelgroup="'+group+'"]').forEach(function(p){p.classList.toggle('active',p.id===panel);});
+}
+function renderCharts(){ /* SVG traces read CSS variables directly; nothing to redraw */ }
+
+/* ---------- graph definitions ---------- */
+var GRAPHS={
+  ug:{ vb:[720,440], directed:false, start:'A', sort:'alpha',
+    pos:{A:[60,220],B:[180,80],C:[180,220],D:[180,360],E:[320,40],F:[320,130],G:[320,220],H:[320,310],I:[320,400],J:[470,40],K:[470,130],L:[470,220],M:[470,310],N:[470,400],O:[620,130],P:[620,310]},
+    edges:[['A','B'],['A','C'],['A','D'],['B','E'],['B','F'],['C','G'],['D','H'],['D','I'],['E','J'],['F','G'],['F','K'],['G','L'],['H','L'],['H','M'],['I','N'],['J','O'],['K','O'],['L','P'],['M','P'],['N','P']] },
+  bt:{ vb:[720,330], directed:false, start:'1', sort:'num',
+    pos:{'1':[360,40],'2':[180,120],'3':[540,120],'4':[90,200],'5':[270,200],'6':[450,200],'7':[630,200],'8':[45,290],'9':[135,290],'10':[225,290],'11':[315,290],'12':[405,290],'13':[495,290],'14':[585,290],'15':[675,290]},
+    edges:[['1','2'],['1','3'],['2','4'],['2','5'],['3','6'],['3','7'],['4','8'],['4','9'],['5','10'],['5','11'],['6','12'],['6','13'],['7','14'],['7','15']] },
+  dag:{ vb:[720,440], directed:true, start:'S', sort:'alpha',
+    pos:{S:[60,210],A:[190,90],B:[190,210],C:[190,330],D:[330,40],E:[330,150],F:[330,260],G:[330,380],H:[470,90],I:[470,200],J:[470,300],K:[470,395],L:[590,150],M:[590,310],T:[690,230]},
+    edges:[['S','A'],['S','B'],['S','C'],['A','D'],['A','E'],['B','E'],['B','F'],['C','F'],['C','G'],['D','H'],['E','H'],['E','I'],['F','I'],['F','J'],['G','J'],['G','K'],['H','L'],['I','L'],['I','M'],['J','M'],['K','M'],['L','T'],['M','T']] }
+};
+
+function adjacency(g){
+  var adj={};
+  Object.keys(g.pos).forEach(function(n){adj[n]=[];});
+  g.edges.forEach(function(e){ adj[e[0]].push(e[1]); if(!g.directed) adj[e[1]].push(e[0]); });
+  var cmp = g.sort==='num' ? function(a,b){return a-b;} : undefined;
+  Object.keys(adj).forEach(function(n){adj[n].sort(cmp);});
+  return adj;
+}
+
+/* ---------- simulation: record every step ---------- */
+function simulate(mode,g){
+  var adj=adjacency(g), steps=[], order=[], isVis={};
+  if(mode==='dfs'){
+    var st=[g.start];
+    steps.push({cur:null, ds:st.slice(), vis:[], note:'Initialize: visited = {} and push start node '+g.start+' onto the stack.'});
+    while(st.length){
+      var u=st.pop();
+      if(isVis[u]){
+        steps.push({cur:null, ds:st.slice(), vis:order.slice(), note:'Pop '+u+' — already visited (stale duplicate entry). Skip it and pop again. This skip is the backtracking mechanism.'});
+        continue;
+      }
+      isVis[u]=true; order.push(u);
+      var ns=adj[u].filter(function(v){return !isVis[v];});
+      for(var i=ns.length-1;i>=0;i--) st.push(ns[i]);
+      var note;
+      if(ns.length) note='Pop '+u+' and mark it visited. Push its unvisited neighbors in reverse order: '+ns.slice().reverse().join(', ')+'. Top of stack is now '+st[st.length-1]+' — DFS dives there next.';
+      else note='Pop '+u+' and mark it visited. No unvisited neighbors: dead end. The next pop backtracks to the most recent branch point.';
+      steps.push({cur:u, ds:st.slice(), vis:order.slice(), note:note});
+    }
+    steps.push({cur:null, ds:[], vis:order.slice(), note:'Stack empty — traversal complete. Visit order: '+order.join(' → ')+'.'});
+  } else {
+    var q=[g.start], disc={}; disc[g.start]=true;
+    steps.push({cur:null, ds:q.slice(), vis:[], note:'Initialize: mark start node '+g.start+' as discovered and enqueue it. It forms level 0 by itself.'});
+    while(q.length){
+      var u2=q.shift(); isVis[u2]=true; order.push(u2);
+      var ns2=adj[u2].filter(function(v){return !disc[v];});
+      ns2.forEach(function(v){disc[v]=true; q.push(v);});
+      var note2;
+      if(ns2.length) note2='Dequeue '+u2+' (front of queue) and mark it visited. Discover and enqueue its new neighbors: '+ns2.join(', ')+'. They join the back of the queue — one level further out.';
+      else note2='Dequeue '+u2+' and mark it visited. All its neighbors were already discovered — nothing to enqueue.';
+      steps.push({cur:u2, ds:q.slice(), vis:order.slice(), note:note2});
+    }
+    steps.push({cur:null, ds:[], vis:order.slice(), note:'Queue empty — traversal complete. Visit order (grouped by level): '+order.join(' → ')+'.'});
+  }
+  return steps;
+}
+
+/* ---------- build trace widgets ---------- */
+var TRACES={};
+
+function buildTrace(host){
+  var g=GRAPHS[host.dataset.graph], mode=host.dataset.mode, key=host.id;
+  var steps=simulate(mode,g);
+  var isD=(mode==='dfs');
+  var R=17;
+
+  var svg='<svg viewBox="0 0 '+g.vb[0]+' '+g.vb[1]+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="trace graph">';
+  if(g.directed){
+    svg+='<defs><marker id="arr-'+key+'" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrowhead"></path></marker></defs>';
+  }
+  g.edges.forEach(function(e){
+    var p1=g.pos[e[0]], p2=g.pos[e[1]];
+    if(g.directed){
+      var dx=p2[0]-p1[0], dy=p2[1]-p1[1], len=Math.sqrt(dx*dx+dy*dy);
+      var sx=p1[0]+dx/len*(R+1), sy=p1[1]+dy/len*(R+1);
+      var ex=p2[0]-dx/len*(R+6), ey=p2[1]-dy/len*(R+6);
+      svg+='<line class="tedge" x1="'+sx.toFixed(1)+'" y1="'+sy.toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)+'" marker-end="url(#arr-'+key+')"></line>';
+    } else {
+      svg+='<line class="tedge" x1="'+p1[0]+'" y1="'+p1[1]+'" x2="'+p2[0]+'" y2="'+p2[1]+'"></line>';
+    }
+  });
+  Object.keys(g.pos).forEach(function(n){
+    var p=g.pos[n];
+    svg+='<g class="tnode" id="'+key+'-n-'+n+'"><circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+R+'"></circle><text x="'+p[0]+'" y="'+(p[1]+4.5)+'" text-anchor="middle">'+n+'</text></g>';
+  });
+  svg+='</svg>';
+
+  var legend='<div class="legend">'
+    +'<span><i class="sw sw-cur"></i>Current ('+(isD?'just popped':'just dequeued')+')</span>'
+    +'<span><i class="sw sw-pend"></i>'+(isD?'In Stack':'In Queue')+' (pending)</span>'
+    +'<span><i class="sw sw-vis"></i>Visited (done)</span>'
+    +'<span><i class="sw sw-idle"></i>Unreached</span></div>';
+
+  var controls='<div class="trace-controls">'
+    +'<button class="tbtn" id="'+key+'-prev" onclick="stepTrace(\''+key+'\',-1)">Prev</button>'
+    +'<span class="step-ind" id="'+key+'-ind"></span>'
+    +'<button class="tbtn" id="'+key+'-next" onclick="stepTrace(\''+key+'\',1)">Next</button>'
+    +'<button class="tbtn ghost" onclick="resetTrace(\''+key+'\')">Reset</button></div>';
+
+  var structs='<div class="struct-row"><span class="struct-label">'+(isD?'Stack (top at right)':'Queue (front at left)')+'</span><span class="chips" id="'+key+'-ds"></span></div>'
+    +'<div class="struct-row"><span class="struct-label">Visit order</span><span class="chips" id="'+key+'-vo"></span></div>';
+
+  host.innerHTML=legend+svg+controls+structs+'<div class="trace-note" id="'+key+'-note"></div>';
+  TRACES[key]={i:0, steps:steps, g:g, mode:mode};
+  renderTrace(key);
+}
+
+function renderTrace(key){
+  var t=TRACES[key], s=t.steps[t.i], g=t.g, isD=(t.mode==='dfs');
+  var visSet={}; s.vis.forEach(function(n){visSet[n]=true;});
+  var pendSet={}; s.ds.forEach(function(n){pendSet[n]=true;});
+  Object.keys(g.pos).forEach(function(n){
+    var el=document.getElementById(key+'-n-'+n);
+    var cls='tnode';
+    if(n===s.cur) cls+=' cur';
+    else if(visSet[n]) cls+=' vis';
+    else if(pendSet[n]) cls+=' pend';
+    el.setAttribute('class',cls);
+  });
+  var dsEl=document.getElementById(key+'-ds');
+  if(s.ds.length){
+    dsEl.innerHTML=s.ds.map(function(n,idx){
+      var top = isD ? (idx===s.ds.length-1) : (idx===0);
+      return '<span class="chip'+(top?' top':'')+'">'+n+'</span>';
+    }).join('');
+  } else {
+    dsEl.innerHTML='<span class="chip empty">(empty)</span>';
+  }
+  var voEl=document.getElementById(key+'-vo');
+  voEl.innerHTML = s.vis.length
+    ? s.vis.map(function(n){return '<span class="chip vo">'+n+'</span>';}).join('')
+    : '<span class="chip empty">(none yet)</span>';
+  document.getElementById(key+'-note').textContent=s.note;
+  document.getElementById(key+'-ind').textContent='Step '+(t.i+1)+' / '+t.steps.length;
+  document.getElementById(key+'-prev').disabled=(t.i===0);
+  document.getElementById(key+'-next').disabled=(t.i===t.steps.length-1);
+}
+
+function stepTrace(key,d){
+  var t=TRACES[key];
+  t.i=Math.max(0,Math.min(t.steps.length-1,t.i+d));
+  renderTrace(key);
+}
+function resetTrace(key){ TRACES[key].i=0; renderTrace(key); }
+
+/* ---------- init ---------- */
+window.addEventListener('load',function(){
+  document.querySelectorAll('.trace-host').forEach(buildTrace);
+  setTimeout(renderCharts,100);
+});
+window.addEventListener('resize',function(){ renderCharts(); });
+</script>
+</body>
+</html>

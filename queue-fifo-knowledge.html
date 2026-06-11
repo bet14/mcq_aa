@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queue — FIFO Data Structure</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', monospace;
+  --radius: 10px;
+  --sidebar-w: 260px;
+  --transition: 0.25s ease;
+}
+
+[data-theme="dark"] {
+  --bg: #050505; --bg2: #121212; --bg3: #1e1e1e;
+  --border: #333333; --text: #fafafa; --text-muted: #a0a0a0;
+  --accent: #4a9eff; --accent2: #9d7eff; --green: #1abc9c;
+  --amber: #f39c12; --red: #e74c3c;
+  --tab-active-bg: #4a9eff; --tab-active-text: #050505;
+  --chart-grid: rgba(255,255,255,0.04);
+}
+
+[data-theme="light"] {
+  --bg: #f0f2f8; --bg2: #ffffff; --bg3: #e8ecf4;
+  --border: #d0d5e8; --text: #0d1117; --text-muted: #4b5563;
+  --accent: #4361ee; --accent2: #7c3aed; --green: #059669;
+  --amber: #d97706; --red: #dc2626;
+  --tab-active-bg: #4361ee; --tab-active-text: #fff;
+  --chart-grid: rgba(0,0,0,0.08);
+}
+
+body { font-family: var(--font-sans); background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+/* Topbar */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 14px; z-index: 100;
+}
+#toggle-sidebar-btn {
+  background: none; border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 16px;
+  transition: background var(--transition);
+}
+#toggle-sidebar-btn:hover { background: var(--bg3); }
+#topbar h1 { font-size: 17px; font-weight: 600; flex: 1; }
+#topbar h1 span { color: var(--accent); }
+#theme-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 5px 14px; cursor: pointer; font-size: 13px;
+  transition: background var(--transition);
+}
+#theme-btn:hover { background: var(--border); }
+
+/* Sidebar */
+#sidebar {
+  position: fixed; top: 52px; left: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--bg2); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 18px 0;
+  transition: transform var(--transition); z-index: 90;
+}
+#sidebar.hidden { transform: translateX(-260px); }
+
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-muted); padding: 14px 20px 4px;
+}
+.nav-link {
+  display: block; padding: 8px 20px; color: var(--text-muted); cursor: pointer;
+  font-size: 14px; border-left: 3px solid transparent; transition: all var(--transition);
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active { color: var(--accent); font-weight: 600; border-left-color: var(--accent); background: var(--bg3); }
+
+/* Main */
+#main {
+  margin-top: 52px; margin-left: var(--sidebar-w);
+  padding: 36px 48px 80px; transition: margin-left var(--transition);
+}
+#main.expanded { margin-left: 0; }
+
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Typography */
+h2 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+h3 { font-size: 17px; font-weight: 600; margin: 28px 0 10px; }
+p { margin-bottom: 14px; }
+.page-subtitle {
+  color: var(--text-muted); font-size: 14px; margin-bottom: 28px;
+  border-bottom: 1px solid var(--border); padding-bottom: 14px;
+}
+
+/* Cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; }
+.card-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.card-row .card { flex: 1; min-width: 140px; }
+.stat-val { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* Callout */
+.callout {
+  border-left: 3px solid var(--accent); background: var(--bg3);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; margin-bottom: 18px;
+}
+.callout.green { border-left-color: var(--green); }
+.callout.amber { border-left-color: var(--amber); }
+.callout.red { border-left-color: var(--red); }
+.callout-title { font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+
+/* Code blocks */
+pre {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 22px; overflow-x: auto; font-family: var(--font-mono);
+  font-size: 13.5px; line-height: 1.7; margin-bottom: 16px;
+}
+.kw { color: var(--accent); font-weight: 600; }
+.cmt { color: var(--text-muted); font-style: italic; }
+.fn { color: var(--accent2); }
+.str { color: var(--green); }
+.num { color: var(--amber); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 14px; }
+th {
+  background: var(--bg3); color: var(--text-muted); font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 14px;
+  text-align: left; border-bottom: 1px solid var(--border);
+}
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg3); }
+code { font-family: var(--font-mono); font-size: 12.5px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(26,188,156,0.15); color: var(--green); }
+.badge-accent { background: rgba(74,158,255,0.15); color: var(--accent); }
+.badge-amber { background: rgba(243,156,18,0.15); color: var(--amber); }
+.badge-red { background: rgba(231,76,60,0.15); color: var(--red); }
+
+/* Queue display */
+.queue-wrap {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 18px;
+}
+.queue-display {
+  display: flex; align-items: center; min-height: 60px;
+  flex-wrap: wrap; gap: 4px; margin: 10px 0;
+}
+.q-item {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 52px; height: 52px; padding: 0 8px;
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  transition: all 0.3s ease;
+}
+.q-item.front { border-color: var(--accent); background: rgba(74,158,255,0.1); color: var(--accent); }
+.q-item.new-item { border-color: var(--green); background: rgba(26,188,156,0.1); color: var(--green); }
+.q-item.removing { border-color: var(--red); background: rgba(231,76,60,0.1); color: var(--red); opacity: 0.5; }
+.q-arrow { color: var(--text-muted); font-size: 16px; padding: 0 4px; }
+.q-empty { color: var(--text-muted); font-style: italic; font-size: 14px; padding: 10px 0; }
+.q-end-label { font-size: 11px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+
+/* Step controls */
+.step-desc {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 18px; font-size: 14px; margin-top: 12px; min-height: 52px; line-height: 1.6;
+}
+.step-desc .op {
+  font-family: var(--font-mono); background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 7px; font-size: 13px; color: var(--accent);
+}
+.step-controls { display: flex; gap: 10px; align-items: center; margin-top: 12px; }
+.step-btn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: 13px;
+  transition: all var(--transition);
+}
+.step-btn:hover:not(:disabled) { background: var(--border); }
+.step-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.step-btn.primary:hover:not(:disabled) { opacity: 0.85; }
+.step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.step-counter { font-size: 13px; color: var(--text-muted); }
+
+/* Simulator */
+.sim-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.sim-input {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; padding: 8px 14px; font-size: 14px;
+  font-family: var(--font-mono); width: 140px; outline: none;
+}
+.sim-input:focus { border-color: var(--accent); }
+.sim-btn {
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 18px;
+  cursor: pointer; font-size: 13px; font-weight: 600; transition: all var(--transition);
+}
+.sim-btn.enqueue { background: rgba(26,188,156,0.15); color: var(--green); border-color: var(--green); }
+.sim-btn.enqueue:hover { background: rgba(26,188,156,0.3); }
+.sim-btn.dequeue { background: rgba(231,76,60,0.15); color: var(--red); border-color: var(--red); }
+.sim-btn.dequeue:hover { background: rgba(231,76,60,0.3); }
+.sim-btn.peek-btn { background: rgba(74,158,255,0.15); color: var(--accent); border-color: var(--accent); }
+.sim-btn.peek-btn:hover { background: rgba(74,158,255,0.3); }
+.sim-btn.reset { background: var(--bg3); color: var(--text-muted); }
+.sim-btn.reset:hover { background: var(--border); }
+.sim-log {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 18px; font-family: var(--font-mono); font-size: 13px;
+  min-height: 80px; max-height: 180px; overflow-y: auto; color: var(--text-muted);
+}
+.log-entry { margin-bottom: 4px; }
+.log-op { color: var(--accent); font-weight: 600; }
+.log-ok { color: var(--green); }
+.log-err { color: var(--red); }
+.log-info { color: var(--amber); }
+
+/* BFS graph */
+.graph-wrap {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+}
+
+/* Progress bars */
+.progress-wrap { margin-bottom: 14px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-muted); }
+.progress-bar { height: 7px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.6s ease; }
+
+/* Legend */
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; font-size: 13px; }
+.legend-item { display: flex; align-items: center; gap: 7px; color: var(--text-muted); }
+.legend-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; }
+
+@media (max-width: 700px) {
+  #sidebar { transform: translateX(-260px); }
+  #sidebar.visible { transform: translateX(0); }
+  #main { margin-left: 0; padding: 24px 18px 60px; }
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="toggle-sidebar-btn" onclick="toggleSidebar()">&#9776;</button>
+  <h1>Queue &mdash; <span>FIFO Data Structure</span></h1>
+  <button id="theme-btn" onclick="toggleTheme()">Light Mode</button>
+</div>
+
+<nav id="sidebar">
+  <div class="sidebar-label">Foundation</div>
+  <span class="nav-link active" onclick="showPage('overview')">Overview</span>
+
+  <div class="sidebar-label">Core Operations</div>
+  <span class="nav-link" onclick="showPage('operations')">Enqueue, Dequeue, Peek</span>
+
+  <div class="sidebar-label">Examples</div>
+  <span class="nav-link" onclick="showPage('ex1')">Example 1 &mdash; Enqueue &amp; Dequeue</span>
+  <span class="nav-link" onclick="showPage('ex2')">Example 2 &mdash; Task Scheduling</span>
+  <span class="nav-link" onclick="showPage('ex3')">Example 3 &mdash; BFS Traversal</span>
+
+  <div class="sidebar-label">Practice</div>
+  <span class="nav-link" onclick="showPage('simulator')">Interactive Simulator</span>
+</nav>
+
+<main id="main">
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <h2>Queue &mdash; FIFO Data Structure</h2>
+    <p class="page-subtitle">A linear data structure where elements follow First In, First Out order. The first element added is the first element removed.</p>
+
+    <div class="card-row">
+      <div class="card"><div class="stat-val">O(1)</div><div class="stat-label">Enqueue (add to back)</div></div>
+      <div class="card"><div class="stat-val">O(1)</div><div class="stat-label">Dequeue (remove from front)</div></div>
+      <div class="card"><div class="stat-val">O(1)</div><div class="stat-label">Peek (view front)</div></div>
+      <div class="card"><div class="stat-val">O(n)</div><div class="stat-label">Space complexity</div></div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">The FIFO Principle</div>
+      Elements enter at the <strong>back (rear)</strong> and leave from the <strong>front</strong>. Insertion order is strictly preserved &mdash; no element can skip the line.
+    </div>
+
+    <h3>Queue Anatomy</h3>
+    <div class="queue-wrap">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+        <span>BACK &mdash; new elements enter here</span>
+        <span>FRONT &mdash; elements removed from here</span>
+      </div>
+      <div class="queue-display">
+        <span class="q-end-label" style="color:var(--green)">enqueue &rarr;</span>
+        &nbsp;
+        <div class="q-item new-item">D</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-item">C</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-item">B</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-item front">A</div>
+        &nbsp;
+        <span class="q-end-label" style="color:var(--accent)">&rarr; dequeue</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+        D is the most recently added (back). A is next to be removed (front).
+      </div>
+    </div>
+
+    <h3>Key Properties</h3>
+    <table>
+      <thead><tr><th>Property</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Ordering</td><td>Strictly FIFO &mdash; insertion order always preserved</td></tr>
+        <tr><td>Access pattern</td><td>Only the front element is removable; only the front element is peekable</td></tr>
+        <tr><td>Pointer-based removal</td><td>Front pointer advances on dequeue &mdash; no shifting of elements (O(1))</td></tr>
+        <tr><td>Implementations</td><td>Circular array, linked list, two-stack simulation</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Where Queues Appear</h3>
+    <div class="card-row">
+      <div class="card">
+        <div style="font-weight:600; margin-bottom:6px; color:var(--accent)">Task Scheduling</div>
+        <div style="font-size:13px; color:var(--text-muted)">OS process queues, print spoolers, job queues &mdash; first submitted, first executed.</div>
+      </div>
+      <div class="card">
+        <div style="font-weight:600; margin-bottom:6px; color:var(--accent2)">Buffer Management</div>
+        <div style="font-size:13px; color:var(--text-muted)">Network packet buffers, keyboard input, I/O streams &mdash; data flows in arrival order.</div>
+      </div>
+      <div class="card">
+        <div style="font-weight:600; margin-bottom:6px; color:var(--green)">Breadth-First Search</div>
+        <div style="font-size:13px; color:var(--text-muted)">Graph traversal that processes nodes level by level, using a queue to track the frontier.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE OPERATIONS -->
+  <div class="page" id="page-operations">
+    <h2>Core Operations</h2>
+    <p class="page-subtitle">Pseudocode, line-by-line annotation, and complexity analysis for Enqueue, Dequeue, and Peek.</p>
+
+    <h3>Enqueue &mdash; Add to Back</h3>
+    <pre><span class="kw">function</span> <span class="fn">enqueue</span>(queue, element):
+    <span class="cmt">// Append element to the rear of the queue</span>
+    queue.data[queue.back] &larr; element
+    queue.back &larr; queue.back + <span class="num">1</span>
+    queue.size &larr; queue.size + <span class="num">1</span></pre>
+
+    <table>
+      <thead><tr><th>Line</th><th>Action</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>queue.data[queue.back] &larr; element</code></td><td>Write element at current rear index</td><td>In a circular buffer: use <code>back % capacity</code></td></tr>
+        <tr><td><code>queue.back &larr; queue.back + 1</code></td><td>Advance the rear pointer</td><td>Points to the next free slot</td></tr>
+        <tr><td><code>queue.size &larr; queue.size + 1</code></td><td>Increment size counter</td><td>Used to detect full / empty conditions</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Case</th><th>Time</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Any</td><td><span class="badge badge-green">O(1)</span></td><td>Single write + pointer increment, no traversal</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Dequeue &mdash; Remove from Front</h3>
+    <pre><span class="kw">function</span> <span class="fn">dequeue</span>(queue):
+    <span class="kw">if</span> queue.size == <span class="num">0</span>:
+        <span class="kw">raise</span> <span class="str">UnderflowError</span>(<span class="str">"Queue is empty"</span>)
+    element     &larr; queue.data[queue.front]
+    queue.front &larr; queue.front + <span class="num">1</span>
+    queue.size  &larr; queue.size  - <span class="num">1</span>
+    <span class="kw">return</span> element</pre>
+
+    <table>
+      <thead><tr><th>Line</th><th>Action</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>if queue.size == 0</code></td><td>Guard against underflow</td><td>Must check before accessing data</td></tr>
+        <tr><td><code>element &larr; queue.data[queue.front]</code></td><td>Read the front element</td><td>Does not shift the array &mdash; just reads the pointer</td></tr>
+        <tr><td><code>queue.front &larr; queue.front + 1</code></td><td>Advance the front pointer</td><td>Element is logically removed; no actual deletion</td></tr>
+        <tr><td><code>return element</code></td><td>Return the removed value</td><td></td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Case</th><th>Time</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Non-empty</td><td><span class="badge badge-green">O(1)</span></td><td>Single read + pointer increment, no shifting</td></tr>
+        <tr><td>Empty queue</td><td><span class="badge badge-red">Error</span></td><td>Raises UnderflowError immediately</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout amber">
+      <div class="callout-title">Why not O(n)?</div>
+      A naive array implementation would shift all elements left on dequeue, giving O(n). The pointer approach avoids this: the front pointer simply advances, and the slot is logically vacated. A circular buffer reuses those slots so memory is not wasted.
+    </div>
+
+    <h3>Peek / Front &mdash; View Without Removing</h3>
+    <pre><span class="kw">function</span> <span class="fn">peek</span>(queue):
+    <span class="kw">if</span> queue.size == <span class="num">0</span>:
+        <span class="kw">raise</span> <span class="str">UnderflowError</span>(<span class="str">"Queue is empty"</span>)
+    <span class="kw">return</span> queue.data[queue.front]  <span class="cmt">// front pointer NOT modified</span></pre>
+
+    <table>
+      <thead><tr><th>Line</th><th>Action</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>if queue.size == 0</code></td><td>Guard against underflow</td><td>Identical check to dequeue</td></tr>
+        <tr><td><code>return queue.data[queue.front]</code></td><td>Read front element</td><td>No pointer is modified &mdash; queue state unchanged</td></tr>
+      </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Case</th><th>Time</th><th>Key difference from Dequeue</th></tr></thead>
+      <tbody>
+        <tr><td>Non-empty</td><td><span class="badge badge-green">O(1)</span></td><td>Read only &mdash; <code>front</code> pointer is NOT advanced</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Operation Summary</h3>
+    <table>
+      <thead><tr><th>Operation</th><th>Modifies Queue</th><th>Time</th><th>Error Condition</th></tr></thead>
+      <tbody>
+        <tr><td><code>enqueue(x)</code></td><td><span class="badge badge-green">Yes</span></td><td>O(1)</td><td>Queue full (bounded only)</td></tr>
+        <tr><td><code>dequeue()</code></td><td><span class="badge badge-green">Yes</span></td><td>O(1)</td><td>Empty &rarr; UnderflowError</td></tr>
+        <tr><td><code>peek()</code></td><td><span class="badge badge-red">No</span></td><td>O(1)</td><td>Empty &rarr; UnderflowError</td></tr>
+        <tr><td><code>size()</code></td><td><span class="badge badge-red">No</span></td><td>O(1)</td><td>&mdash;</td></tr>
+        <tr><td><code>isEmpty()</code></td><td><span class="badge badge-red">No</span></td><td>O(1)</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EXAMPLE 1 -->
+  <div class="page" id="page-ex1">
+    <h2>Example 1 &mdash; Enqueue &amp; Dequeue</h2>
+    <p class="page-subtitle">Step through a sequence of enqueue and dequeue operations, tracking the full queue state at each step.</p>
+
+    <div class="callout">
+      <div class="callout-title">Operation Sequence</div>
+      enqueue(10) &rarr; enqueue(20) &rarr; enqueue(30) &rarr; dequeue() &rarr; dequeue() &rarr; enqueue(40) &rarr; dequeue()
+    </div>
+
+    <div class="queue-wrap">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="font-size:12px; color:var(--text-muted); font-weight:600;">QUEUE STATE (back &rarr; ... &rarr; front)</span>
+        <span id="ex1-size-label" style="font-size:12px; color:var(--text-muted);">Size: 0</span>
+      </div>
+      <div id="ex1-queue" class="queue-display">
+        <div class="q-empty">Queue is empty</div>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+        <span style="color:var(--green)">Green</span> = newly added &nbsp;|&nbsp;
+        <span style="color:var(--accent)">Blue</span> = front (next to dequeue)
+      </div>
+    </div>
+
+    <div class="step-desc" id="ex1-desc">Press <strong>Next Step</strong> to begin the walkthrough.</div>
+
+    <div class="step-controls">
+      <button class="step-btn" onclick="ex1Prev()" id="ex1-prev-btn" disabled>Prev</button>
+      <button class="step-btn primary" onclick="ex1Next()" id="ex1-next-btn">Next Step</button>
+      <span class="step-counter" id="ex1-counter">Step 0 / 7</span>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 2 -->
+  <div class="page" id="page-ex2">
+    <h2>Example 2 &mdash; Task Scheduling</h2>
+    <p class="page-subtitle">A CPU scheduler receives jobs in arrival order and processes them strictly FIFO, regardless of job size.</p>
+
+    <div class="callout green">
+      <div class="callout-title">Scenario</div>
+      Three tasks arrive in order: Print, Compile, Backup. Each is submitted to the scheduler queue and executed in the order submitted.
+    </div>
+
+    <div class="queue-wrap">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="font-size:12px; color:var(--text-muted); font-weight:600;">SCHEDULER QUEUE (back &rarr; front)</span>
+        <span id="ex2-executing" style="font-size:12px; color:var(--amber); font-weight:600;"></span>
+      </div>
+      <div id="ex2-queue" class="queue-display">
+        <div class="q-empty">Scheduler queue is empty</div>
+      </div>
+    </div>
+
+    <div class="step-desc" id="ex2-desc">Press <strong>Next Step</strong> to submit the first task.</div>
+
+    <div class="step-controls">
+      <button class="step-btn" onclick="ex2Prev()" id="ex2-prev-btn" disabled>Prev</button>
+      <button class="step-btn primary" onclick="ex2Next()" id="ex2-next-btn">Next Step</button>
+      <span class="step-counter" id="ex2-counter">Step 0 / 7</span>
+    </div>
+
+    <h3>Execution Log</h3>
+    <table>
+      <thead><tr><th>Step</th><th>Event</th><th>Queue (back &rarr; front)</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>Initial state</td><td>[ ]</td><td>Empty</td></tr>
+        <tr><td>1</td><td>Submit Print</td><td>[Print]</td><td>Queued</td></tr>
+        <tr><td>2</td><td>Submit Compile</td><td>[Compile, Print]</td><td>Queued</td></tr>
+        <tr><td>3</td><td>Submit Backup</td><td>[Backup, Compile, Print]</td><td>Queued</td></tr>
+        <tr><td>4</td><td>CPU executes next</td><td>[Backup, Compile]</td><td>Print executed</td></tr>
+        <tr><td>5</td><td>CPU executes next</td><td>[Backup]</td><td>Compile executed</td></tr>
+        <tr><td>6</td><td>Submit Deploy</td><td>[Deploy, Backup]</td><td>Queued</td></tr>
+        <tr><td>7</td><td>CPU executes next</td><td>[Deploy]</td><td>Backup executed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EXAMPLE 3 -->
+  <div class="page" id="page-ex3">
+    <h2>Example 3 &mdash; BFS Traversal</h2>
+    <p class="page-subtitle">Breadth-First Search uses a queue to explore a graph level by level, guaranteeing shortest-path order in unweighted graphs.</p>
+
+    <div class="callout">
+      <div class="callout-title">Graph Structure</div>
+      Starting from A: A &rarr; B, C &nbsp;|&nbsp; B &rarr; D, E &nbsp;|&nbsp; C &rarr; F
+    </div>
+
+    <h3>BFS Pseudocode</h3>
+    <pre><span class="kw">function</span> <span class="fn">bfs</span>(graph, start):
+    visited &larr; <span class="fn">Set</span>()
+    queue   &larr; <span class="fn">Queue</span>()
+
+    <span class="fn">enqueue</span>(queue, start)
+    visited.<span class="fn">add</span>(start)
+
+    <span class="kw">while</span> queue <span class="kw">is not</span> empty:
+        node &larr; <span class="fn">dequeue</span>(queue)
+        <span class="fn">process</span>(node)                    <span class="cmt">// visit the node</span>
+
+        <span class="kw">for each</span> neighbor <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:
+                visited.<span class="fn">add</span>(neighbor)
+                <span class="fn">enqueue</span>(queue, neighbor)</pre>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="border-color:var(--amber); background:rgba(243,156,18,0.2)"></div>Currently processing</div>
+      <div class="legend-item"><div class="legend-dot" style="border-color:var(--accent); background:rgba(74,158,255,0.1)"></div>In queue</div>
+      <div class="legend-item"><div class="legend-dot" style="border-color:var(--green); background:rgba(26,188,156,0.2)"></div>Visited</div>
+      <div class="legend-item"><div class="legend-dot" style="border-color:var(--border); background:var(--bg3)"></div>Not yet reached</div>
+    </div>
+
+    <div class="graph-wrap">
+      <svg id="bfs-svg" viewBox="0 0 520 190" style="width:100%; height:auto;">
+        <!-- Edges -->
+        <line id="edge-AB" x1="100" y1="95" x2="230" y2="52" stroke="#333" stroke-width="2"/>
+        <line id="edge-AC" x1="100" y1="95" x2="230" y2="138" stroke="#333" stroke-width="2"/>
+        <line id="edge-BD" x1="250" y1="52" x2="380" y2="28" stroke="#333" stroke-width="2"/>
+        <line id="edge-BE" x1="250" y1="52" x2="380" y2="76" stroke="#333" stroke-width="2"/>
+        <line id="edge-CF" x1="250" y1="138" x2="380" y2="155" stroke="#333" stroke-width="2"/>
+        <!-- Node A -->
+        <circle id="bfsn-A-c" cx="100" cy="95" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-A-t" x="100" y="100" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">A</text>
+        <!-- Node B -->
+        <circle id="bfsn-B-c" cx="250" cy="52" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-B-t" x="250" y="57" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">B</text>
+        <!-- Node C -->
+        <circle id="bfsn-C-c" cx="250" cy="138" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-C-t" x="250" y="143" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">C</text>
+        <!-- Node D -->
+        <circle id="bfsn-D-c" cx="390" cy="28" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-D-t" x="390" y="33" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">D</text>
+        <!-- Node E -->
+        <circle id="bfsn-E-c" cx="390" cy="76" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-E-t" x="390" y="81" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">E</text>
+        <!-- Node F -->
+        <circle id="bfsn-F-c" cx="390" cy="155" r="24" fill="#1e1e1e" stroke="#555" stroke-width="2"/>
+        <text id="bfsn-F-t" x="390" y="160" text-anchor="middle" font-family="monospace" font-size="15" font-weight="bold" fill="#fafafa">F</text>
+      </svg>
+    </div>
+
+    <div class="queue-wrap">
+      <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-bottom:4px;">BFS QUEUE STATE (back &rarr; front)</div>
+      <div id="ex3-queue" class="queue-display">
+        <div class="q-empty">Queue is empty &mdash; press Next Step to start</div>
+      </div>
+    </div>
+
+    <div class="step-desc" id="ex3-desc">Press <strong>Next Step</strong> to begin BFS from node A.</div>
+
+    <div class="step-controls">
+      <button class="step-btn" onclick="ex3Prev()" id="ex3-prev-btn" disabled>Prev</button>
+      <button class="step-btn primary" onclick="ex3Next()" id="ex3-next-btn">Next Step</button>
+      <span class="step-counter" id="ex3-counter">Step 0 / 7</span>
+    </div>
+  </div>
+
+  <!-- SIMULATOR -->
+  <div class="page" id="page-simulator">
+    <h2>Interactive Simulator</h2>
+    <p class="page-subtitle">Build and manipulate a queue manually. Observe how each operation changes queue state in real time.</p>
+
+    <div class="sim-controls">
+      <input class="sim-input" id="sim-input" type="text" placeholder="Enter value..." maxlength="8"/>
+      <button class="sim-btn enqueue" onclick="simEnqueue()">Enqueue</button>
+      <button class="sim-btn dequeue" onclick="simDequeue()">Dequeue</button>
+      <button class="sim-btn peek-btn" onclick="simPeek()">Peek</button>
+      <button class="sim-btn reset" onclick="simReset()">Reset</button>
+    </div>
+
+    <div class="queue-wrap">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="font-size:12px; color:var(--text-muted); font-weight:600;">QUEUE STATE (back &rarr; front)</span>
+        <span id="sim-size-label" style="font-size:12px; color:var(--text-muted);">Size: 0</span>
+      </div>
+      <div id="sim-queue" class="queue-display">
+        <div class="q-empty">Queue is empty &mdash; enqueue an element to begin</div>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+        <span style="color:var(--green)">Green</span> = newly added &nbsp;|&nbsp;
+        <span style="color:var(--accent)">Blue</span> = front (next to dequeue)
+      </div>
+    </div>
+
+    <div class="sim-log" id="sim-log">
+      <span style="color:var(--text-muted); font-style:italic;">Operation log appears here...</span>
+    </div>
+
+    <h3>Queue Properties</h3>
+    <table>
+      <thead><tr><th>Property</th><th>Size</th><th>Front element</th><th>Back element</th><th>Empty?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Current value</td>
+          <td id="sim-val-size">0</td>
+          <td id="sim-val-front">&mdash;</td>
+          <td id="sim-val-back">&mdash;</td>
+          <td id="sim-val-empty">Yes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top:24px;">
+      <div class="callout-title">Keyboard shortcut</div>
+      Press <strong>Enter</strong> in the input field to enqueue quickly.
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── Theme ─────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+  updateBfsSvgColors();
+}
+
+// ─── Sidebar ────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+  if (window.innerWidth <= 700) {
+    sb.classList.toggle('visible');
+  } else {
+    sb.classList.toggle('hidden');
+    main.classList.toggle('expanded');
+  }
+}
+
+// ─── Navigation ─────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if ((l.getAttribute('onclick') || '').includes("'" + id + "'")) l.classList.add('active');
+  });
+  window.scrollTo(0, 0);
+  if (id === 'ex3') { updateBfsSvgColors(); }
+}
+
+// ─── Queue render helper ────────────────────────────────────────────────────
+// items = [{val, cls}], back is index 0, front is last index
+function renderQueueEl(containerId, items) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!items || items.length === 0) {
+    el.innerHTML = '<div class="q-empty">Queue is empty</div>';
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < items.length; i++) {
+    const cls = 'q-item' + (items[i].cls ? ' ' + items[i].cls : '');
+    html += `<div class="${cls}">${items[i].val}</div>`;
+    if (i < items.length - 1) html += '<div class="q-arrow">&#8594;</div>';
+  }
+  el.innerHTML = html;
+}
+
+function makeItems(arr, newBack) {
+  // arr[0] = back, arr[last] = front
+  return arr.map((v, i) => ({
+    val: v,
+    cls: i === arr.length - 1 ? 'front' : (i === 0 && newBack ? 'new-item' : '')
+  }));
+}
+
+// ─── Example 1 — Enqueue & Dequeue ─────────────────────────────────────────
+const ex1Steps = [
+  { arr: [],                  newBack: false, desc: 'Initial state: queue is <strong>empty</strong>. front=0, back=0, size=0.' },
+  { arr: ['10'],              newBack: true,  desc: '<span class="op">enqueue(10)</span> — 10 written at index back=0. back advances to 1. size=1.' },
+  { arr: ['20','10'],         newBack: true,  desc: '<span class="op">enqueue(20)</span> — 20 written at back=1. back advances to 2. size=2. 10 is still at front.' },
+  { arr: ['30','20','10'],    newBack: true,  desc: '<span class="op">enqueue(30)</span> — 30 written at back=2. back advances to 3. size=3.' },
+  { arr: ['30','20'],         newBack: false, desc: '<span class="op">dequeue()</span> &rarr; front element is <strong>10</strong>. front pointer advances 0&rarr;1. size=2. Returns 10.' },
+  { arr: ['30'],              newBack: false, desc: '<span class="op">dequeue()</span> &rarr; front element is <strong>20</strong>. front pointer advances 1&rarr;2. size=1. Returns 20.' },
+  { arr: ['40','30'],         newBack: true,  desc: '<span class="op">enqueue(40)</span> — 40 enters at back. 30 is still at front. size=2.' },
+  { arr: ['40'],              newBack: false, desc: '<span class="op">dequeue()</span> &rarr; front element is <strong>30</strong>. Removed. size=1. Only 40 remains, now at front.' }
+];
+
+let ex1Step = 0;
+
+function renderEx1() {
+  const s = ex1Steps[ex1Step];
+  renderQueueEl('ex1-queue', makeItems(s.arr, s.newBack));
+  const sizeEl = document.getElementById('ex1-size-label');
+  if (sizeEl) sizeEl.textContent = 'Size: ' + s.arr.length;
+  document.getElementById('ex1-desc').innerHTML = s.desc;
+  document.getElementById('ex1-counter').textContent = `Step ${ex1Step} / ${ex1Steps.length - 1}`;
+  document.getElementById('ex1-prev-btn').disabled = ex1Step === 0;
+  document.getElementById('ex1-next-btn').disabled = ex1Step === ex1Steps.length - 1;
+}
+
+function ex1Next() { if (ex1Step < ex1Steps.length - 1) { ex1Step++; renderEx1(); } }
+function ex1Prev() { if (ex1Step > 0) { ex1Step--; renderEx1(); } }
+
+// ─── Example 2 — Task Scheduling ───────────────────────────────────────────
+const ex2Steps = [
+  { arr: [],                            newBack: false, exec: '', desc: 'Scheduler queue is <strong>empty</strong>. No tasks submitted yet.' },
+  { arr: ['Print'],                     newBack: true,  exec: '', desc: '<span class="op">enqueue("Print")</span> — Print task submitted. Queue: [Print]. Front = Print.' },
+  { arr: ['Compile','Print'],           newBack: true,  exec: '', desc: '<span class="op">enqueue("Compile")</span> — Compile arrives. Queue: [Compile, Print]. Print is still at front.' },
+  { arr: ['Backup','Compile','Print'],  newBack: true,  exec: '', desc: '<span class="op">enqueue("Backup")</span> — Backup arrives. Three tasks waiting. Print is still first in line.' },
+  { arr: ['Backup','Compile'],          newBack: false, exec: 'Executing: Print', desc: '<span class="op">dequeue()</span> &rarr; CPU picks <strong>Print</strong> (front). Print executes. Queue: [Backup, Compile].' },
+  { arr: ['Backup'],                    newBack: false, exec: 'Executing: Compile', desc: '<span class="op">dequeue()</span> &rarr; CPU picks <strong>Compile</strong> (front). Compile executes. Queue: [Backup].' },
+  { arr: ['Deploy','Backup'],           newBack: true,  exec: '', desc: '<span class="op">enqueue("Deploy")</span> — Deploy arrives while Backup is still queued. Queue: [Deploy, Backup].' },
+  { arr: ['Deploy'],                    newBack: false, exec: 'Executing: Backup', desc: '<span class="op">dequeue()</span> &rarr; CPU picks <strong>Backup</strong> (front). Backup executes. Deploy is next.' }
+];
+
+let ex2Step = 0;
+
+function renderEx2() {
+  const s = ex2Steps[ex2Step];
+  renderQueueEl('ex2-queue', makeItems(s.arr, s.newBack));
+  document.getElementById('ex2-executing').textContent = s.exec;
+  document.getElementById('ex2-desc').innerHTML = s.desc;
+  document.getElementById('ex2-counter').textContent = `Step ${ex2Step} / ${ex2Steps.length - 1}`;
+  document.getElementById('ex2-prev-btn').disabled = ex2Step === 0;
+  document.getElementById('ex2-next-btn').disabled = ex2Step === ex2Steps.length - 1;
+}
+
+function ex2Next() { if (ex2Step < ex2Steps.length - 1) { ex2Step++; renderEx2(); } }
+function ex2Prev() { if (ex2Step > 0) { ex2Step--; renderEx2(); } }
+
+// ─── Example 3 — BFS ───────────────────────────────────────────────────────
+const bfsSteps = [
+  { queue: [],          visited: [],                     current: null, desc: 'Start: queue is empty. BFS will begin from node <strong>A</strong>.' },
+  { queue: ['A'],       visited: [],                     current: null, desc: '<span class="op">enqueue(A)</span> — A is the start node. Marked visited and added to queue. Queue: [A].' },
+  { queue: ['B','C'],   visited: ['A'],                  current: 'A',  desc: '<span class="op">dequeue()</span> &rarr; Process <strong>A</strong>. Neighbors B, C are unvisited &mdash; enqueue both. Queue: [B, C].' },
+  { queue: ['C','D','E'], visited: ['A','B'],            current: 'B',  desc: '<span class="op">dequeue()</span> &rarr; Process <strong>B</strong>. Neighbors D, E are unvisited &mdash; enqueue both. Queue: [C, D, E].' },
+  { queue: ['D','E','F'], visited: ['A','B','C'],        current: 'C',  desc: '<span class="op">dequeue()</span> &rarr; Process <strong>C</strong>. Neighbor F is unvisited &mdash; enqueue F. Queue: [D, E, F].' },
+  { queue: ['E','F'],   visited: ['A','B','C','D'],      current: 'D',  desc: '<span class="op">dequeue()</span> &rarr; Process <strong>D</strong>. No unvisited neighbors. Queue: [E, F].' },
+  { queue: ['F'],       visited: ['A','B','C','D','E'],  current: 'E',  desc: '<span class="op">dequeue()</span> &rarr; Process <strong>E</strong>. No unvisited neighbors. Queue: [F].' },
+  { queue: [],          visited: ['A','B','C','D','E','F'], current: 'F', desc: '<span class="op">dequeue()</span> &rarr; Process <strong>F</strong>. No unvisited neighbors. Queue empty &mdash; BFS complete. Visit order: A, B, C, D, E, F.' }
+];
+
+let ex3Step = 0;
+const BFS_NODES = ['A','B','C','D','E','F'];
+
+function updateBfsSvgColors() {
+  const s = bfsSteps[ex3Step] || bfsSteps[0];
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  const styles = {
+    default:  { fill: isDark ? '#1e1e1e' : '#e8ecf4', stroke: isDark ? '#555' : '#aab0c8', text: isDark ? '#fafafa' : '#0d1117' },
+    current:  { fill: isDark ? 'rgba(243,156,18,0.2)' : 'rgba(217,119,6,0.12)', stroke: isDark ? '#f39c12' : '#d97706', text: isDark ? '#f39c12' : '#d97706' },
+    visited:  { fill: isDark ? 'rgba(26,188,156,0.2)' : 'rgba(5,150,105,0.12)', stroke: isDark ? '#1abc9c' : '#059669', text: isDark ? '#1abc9c' : '#059669' },
+    queued:   { fill: isDark ? 'rgba(74,158,255,0.12)' : 'rgba(67,97,238,0.1)', stroke: isDark ? '#4a9eff' : '#4361ee', text: isDark ? '#4a9eff' : '#4361ee' }
+  };
+
+  BFS_NODES.forEach(n => {
+    const circle = document.getElementById('bfsn-' + n + '-c');
+    const txt = document.getElementById('bfsn-' + n + '-t');
+    if (!circle || !txt) return;
+    let st;
+    if (n === s.current) st = styles.current;
+    else if (s.visited.includes(n)) st = styles.visited;
+    else if (s.queue.includes(n)) st = styles.queued;
+    else st = styles.default;
+    circle.setAttribute('fill', st.fill);
+    circle.setAttribute('stroke', st.stroke);
+    txt.setAttribute('fill', st.text);
+  });
+
+  // Edge colors
+  const edgeColor = isDark ? '#333' : '#d0d5e8';
+  ['edge-AB','edge-AC','edge-BD','edge-BE','edge-CF'].forEach(id => {
+    const e = document.getElementById(id);
+    if (e) e.setAttribute('stroke', edgeColor);
+  });
+}
+
+function renderEx3() {
+  const s = bfsSteps[ex3Step];
+  // queue: back=index 0, front=last
+  const items = s.queue.map((v, i) => ({ val: v, cls: i === s.queue.length - 1 ? 'front' : '' }));
+  renderQueueEl('ex3-queue', items);
+  document.getElementById('ex3-desc').innerHTML = s.desc;
+  document.getElementById('ex3-counter').textContent = `Step ${ex3Step} / ${bfsSteps.length - 1}`;
+  document.getElementById('ex3-prev-btn').disabled = ex3Step === 0;
+  document.getElementById('ex3-next-btn').disabled = ex3Step === bfsSteps.length - 1;
+  updateBfsSvgColors();
+}
+
+function ex3Next() { if (ex3Step < bfsSteps.length - 1) { ex3Step++; renderEx3(); } }
+function ex3Prev() { if (ex3Step > 0) { ex3Step--; renderEx3(); } }
+
+// ─── Simulator ──────────────────────────────────────────────────────────────
+// simQueue[0] = back, simQueue[last] = front
+let simQueue = [];
+let simHighlight = null; // index to highlight as new
+
+function simRenderQueue() {
+  const items = simQueue.map((v, i) => ({
+    val: v,
+    cls: i === simQueue.length - 1 ? 'front' : (i === 0 && simHighlight === 'back' ? 'new-item' : '')
+  }));
+  renderQueueEl('sim-queue', items);
+
+  const size = simQueue.length;
+  document.getElementById('sim-size-label').textContent = 'Size: ' + size;
+  document.getElementById('sim-val-size').textContent = size;
+  document.getElementById('sim-val-front').textContent = size ? simQueue[size - 1] : '—';
+  document.getElementById('sim-val-back').textContent = size ? simQueue[0] : '—';
+  document.getElementById('sim-val-empty').textContent = size === 0 ? 'Yes' : 'No';
+}
+
+function simLog(html) {
+  const log = document.getElementById('sim-log');
+  const placeholder = log.querySelector('span');
+  if (placeholder) placeholder.remove();
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = html;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+function simEnqueue() {
+  const input = document.getElementById('sim-input');
+  const val = input.value.trim();
+  if (!val) {
+    simLog('<span class="log-op">enqueue</span> <span class="log-err">Error: enter a value first</span>');
+    return;
+  }
+  simQueue.unshift(val); // new element at back (index 0)
+  simHighlight = 'back';
+  simLog(`<span class="log-op">enqueue(${val})</span> <span class="log-ok">OK</span> &mdash; added to back. size=${simQueue.length}`);
+  input.value = '';
+  simRenderQueue();
+  setTimeout(() => { simHighlight = null; simRenderQueue(); }, 1000);
+}
+
+function simDequeue() {
+  if (simQueue.length === 0) {
+    simLog('<span class="log-op">dequeue()</span> <span class="log-err">UnderflowError: queue is empty</span>');
+    return;
+  }
+  const val = simQueue.pop(); // front = last index
+  simHighlight = null;
+  simLog(`<span class="log-op">dequeue()</span> <span class="log-ok">&rarr; "${val}"</span> removed from front. size=${simQueue.length}`);
+  simRenderQueue();
+}
+
+function simPeek() {
+  if (simQueue.length === 0) {
+    simLog('<span class="log-op">peek()</span> <span class="log-err">UnderflowError: queue is empty</span>');
+    return;
+  }
+  const val = simQueue[simQueue.length - 1];
+  simLog(`<span class="log-op">peek()</span> <span class="log-info">&rarr; "${val}"</span> (front, not removed). size=${simQueue.length}`);
+}
+
+function simReset() {
+  simQueue = [];
+  simHighlight = null;
+  document.getElementById('sim-log').innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Operation log appears here...</span>';
+  simRenderQueue();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('sim-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') simEnqueue();
+  });
+  simRenderQueue();
+  renderEx1();
+  renderEx2();
+  renderEx3();
+});
+</script>
+</body>
+</html>
