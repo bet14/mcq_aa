@@ -1,0 +1,787 @@
+{
+  "title": "Stack & Queue — Concepts, Operations, and Reasoning",
+  "subtitle": "62 questions covering LIFO/FIFO mechanics, complexity, why-questions, applications, and implementation variants",
+  "totalQuestions": 62,
+  "questions": [
+    {
+      "question": "What does LIFO stand for, and which data structure follows this principle?",
+      "options": [
+        "Last In First Out — Stack",
+        "Last In First Out — Queue",
+        "Least In First Out — Stack",
+        "Last In First Out — Deque"
+      ],
+      "answerIndex": 0,
+      "explanation": "LIFO means the most recently inserted element is removed first. A stack implements this via push (insert on top) and pop (remove from top). A queue is FIFO, not LIFO. A deque can behave like either but is not solely LIFO.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "LIFO", "definition"]
+    },
+    {
+      "question": "After executing push(1), push(2), push(3), pop(), what is the top element of the stack?",
+      "options": ["1", "2", "3", "The stack is empty"],
+      "answerIndex": 1,
+      "explanation": "push(1)→[1], push(2)→[1,2], push(3)→[1,2,3], pop() removes 3 (the top), leaving [1,2]. The top is now 2.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "push", "pop"]
+    },
+    {
+      "question": "Which operation on a stack returns the top element WITHOUT removing it?",
+      "options": ["pop()", "push()", "peek()", "dequeue()"],
+      "answerIndex": 2,
+      "explanation": "peek() (also called top() in some implementations) reads the top element without modifying the stack. pop() removes it. push() adds an element. dequeue() is a queue operation.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "peek"]
+    },
+    {
+      "question": "What is the time complexity of push() and pop() on a stack implemented with a dynamic array (amortized)?",
+      "options": ["O(n) for both", "O(1) amortized for both", "O(log n) for both", "O(1) for push, O(n) for pop"],
+      "answerIndex": 1,
+      "explanation": "With a dynamic array, occasional resizing costs O(n) but is amortized over n operations, giving O(1) amortized per operation. Both push and pop are O(1) amortized.",
+      "category": "Time & Space Complexity",
+      "level": "Medium",
+      "tags": ["stack", "complexity", "amortized"]
+    },
+    {
+      "question": "Why is a stack used for function call management (the call stack)?",
+      "options": [
+        "Because function calls are served in the order they arrive",
+        "Because the most recently called function must return before its caller can resume",
+        "Because functions with higher priority execute first",
+        "Because the call stack needs random access to any frame"
+      ],
+      "answerIndex": 1,
+      "explanation": "Function calls nest: foo calls bar, bar must return before foo can continue. This last-called-first-returned pattern is exactly LIFO. A queue (FIFO) would return foo before bar, which is incorrect for nested calls. Priority and random access are unrelated to call semantics.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["stack", "call stack", "recursion", "why"]
+    },
+    {
+      "question": "Why is a stack the natural data structure for checking balanced parentheses?",
+      "options": [
+        "Because parentheses must be processed in the order they appear",
+        "Because the most recently opened bracket must be the first one closed",
+        "Because a stack allows random access to any bracket",
+        "Because a stack can store more elements than a queue"
+      ],
+      "answerIndex": 1,
+      "explanation": "When scanning '([{...}])', the innermost bracket opened must close first — a LIFO pattern. Pushing opening brackets and matching against the top on each closing bracket captures this nesting. FIFO would try to close the outermost bracket first, which is wrong.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["stack", "parentheses", "why"]
+    },
+    {
+      "question": "Why does reversing a string or sequence naturally use a stack?",
+      "options": [
+        "Because a stack processes elements in the same order they were inserted",
+        "Because pushing all elements then popping them yields reverse order due to LIFO",
+        "Because a stack can hold more characters than other structures",
+        "Because random access makes reversal faster"
+      ],
+      "answerIndex": 1,
+      "explanation": "Pushing all elements onto a stack, then popping, retrieves them in reverse insertion order because LIFO inverts the sequence. A queue would yield the original order. Random access is not a stack property.",
+      "category": "Why / Reasoning",
+      "level": "Easy",
+      "tags": ["stack", "reversal", "why"]
+    },
+    {
+      "question": "A stack is implemented using a singly linked list with the head as the top. What is the time complexity of push and pop?",
+      "options": ["O(n) and O(1)", "O(1) and O(n)", "O(1) and O(1)", "O(n) and O(n)"],
+      "answerIndex": 2,
+      "explanation": "With the head as the top, push inserts at the head (O(1)) and pop removes the head (O(1)). No traversal is needed. If the tail were used as top instead, both would be O(n) for a singly linked list.",
+      "category": "Stack Fundamentals",
+      "level": "Medium",
+      "tags": ["stack", "linked list", "complexity"]
+    },
+    {
+      "question": "What happens when pop() is called on an empty stack?",
+      "options": [
+        "It returns null silently",
+        "It returns the last element that was pushed",
+        "It causes a stack underflow / exception",
+        "It returns 0 by default"
+      ],
+      "answerIndex": 2,
+      "explanation": "Calling pop() on an empty stack is an underflow condition — the operation is undefined. Implementations either throw an exception or return a sentinel error value, but the correct term is stack underflow. Returning null silently hides bugs.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "underflow", "error"]
+    },
+    {
+      "question": "In an infix-to-postfix conversion algorithm, why is a stack used to hold operators?",
+      "options": [
+        "To process operators in the order they appear without reordering",
+        "To delay outputting operators until operands with lower precedence are seen, respecting precedence via LIFO ordering",
+        "To sort operators by precedence before outputting",
+        "To store both operands and operators together"
+      ],
+      "answerIndex": 1,
+      "explanation": "Operators must wait until their right-hand operands are ready and until operators of lower or equal precedence are encountered. The stack's LIFO property ensures that when a lower-precedence operator arrives, all pending higher-precedence operators are popped in the correct reverse order.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "expression", "why", "precedence"]
+    },
+    {
+      "question": "What is the space complexity of a stack holding n elements?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "A stack stores n elements, so space grows linearly: O(n). O(1) would mean constant memory regardless of n, which is impossible if the elements themselves must be stored.",
+      "category": "Time & Space Complexity",
+      "level": "Easy",
+      "tags": ["stack", "space complexity"]
+    },
+    {
+      "question": "Which of the following correctly describes the state of this stack after: push(5), push(3), push(7), pop(), push(2)?",
+      "options": [
+        "Bottom→[5, 3, 2]←Top",
+        "Bottom→[5, 7, 2]←Top",
+        "Bottom→[3, 5, 2]←Top",
+        "Bottom→[5, 3, 7, 2]←Top"
+      ],
+      "answerIndex": 0,
+      "explanation": "push(5)→[5], push(3)→[5,3], push(7)→[5,3,7], pop() removes 7→[5,3], push(2)→[5,3,2]. The top is 2, bottom is 5.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "trace"]
+    },
+    {
+      "question": "What does FIFO stand for, and which data structure implements it?",
+      "options": [
+        "First In First Out — Stack",
+        "First In First Out — Queue",
+        "Fast Input Fast Output — Queue",
+        "First In First Out — Priority Queue"
+      ],
+      "answerIndex": 1,
+      "explanation": "FIFO means the element inserted earliest is dequeued first. A queue is the canonical FIFO structure. A stack is LIFO. A priority queue orders by priority, not arrival time.",
+      "category": "Queue Fundamentals",
+      "level": "Easy",
+      "tags": ["queue", "FIFO", "definition"]
+    },
+    {
+      "question": "In a queue, where does enqueue insert and dequeue remove?",
+      "options": [
+        "Enqueue at front, dequeue at rear",
+        "Enqueue at rear, dequeue at front",
+        "Both operations happen at the rear",
+        "Both operations happen at the front"
+      ],
+      "answerIndex": 1,
+      "explanation": "A queue inserts (enqueues) at the rear and removes (dequeues) from the front, preserving arrival order. Inserting at front or removing from rear would violate FIFO semantics.",
+      "category": "Queue Fundamentals",
+      "level": "Easy",
+      "tags": ["queue", "enqueue", "dequeue"]
+    },
+    {
+      "question": "After enqueue(A), enqueue(B), enqueue(C), dequeue(), what is the front element?",
+      "options": ["A", "B", "C", "The queue is empty"],
+      "answerIndex": 1,
+      "explanation": "Enqueue A, B, C in order. dequeue() removes A (the front). B becomes the new front.",
+      "category": "Queue Fundamentals",
+      "level": "Easy",
+      "tags": ["queue", "trace"]
+    },
+    {
+      "question": "Why is a queue used in Breadth-First Search (BFS)?",
+      "options": [
+        "Because BFS explores the deepest node first and stacks are too slow",
+        "Because BFS must explore all neighbors at the current level before going deeper, which requires FIFO ordering",
+        "Because a queue allows random access to nodes at any level",
+        "Because BFS uses recursion, which naturally uses a queue"
+      ],
+      "answerIndex": 1,
+      "explanation": "BFS visits nodes level by level. When a node is discovered, its neighbors are added to the rear of the queue and will be processed after all nodes at the current level (already in the queue) are done — exactly FIFO. A stack would give DFS behavior, not BFS.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["queue", "BFS", "why", "graph"]
+    },
+    {
+      "question": "Why is a queue the right structure for a printer spooler?",
+      "options": [
+        "Because the most recently submitted job should print first",
+        "Because jobs must be printed in the order they were submitted (fairness)",
+        "Because print jobs have priorities that must be respected",
+        "Because a queue allows canceling any job in O(1)"
+      ],
+      "answerIndex": 1,
+      "explanation": "A printer spooler is fair: the first job submitted should print first. This is FIFO. A stack (LIFO) would print the most recent job first, starving earlier submissions. Priority queue would only be appropriate if jobs had explicit priorities.",
+      "category": "Why / Reasoning",
+      "level": "Easy",
+      "tags": ["queue", "spooler", "why", "FIFO"]
+    },
+    {
+      "question": "What is the time complexity of enqueue and dequeue on a queue implemented with a doubly linked list?",
+      "options": ["O(n) and O(1)", "O(1) and O(n)", "O(1) and O(1)", "O(log n) and O(log n)"],
+      "answerIndex": 2,
+      "explanation": "With tail pointer for enqueue and head pointer for dequeue, both operations are O(1) — insert at tail, remove at head, each with direct pointer access.",
+      "category": "Time & Space Complexity",
+      "level": "Medium",
+      "tags": ["queue", "linked list", "complexity"]
+    },
+    {
+      "question": "In an array-based queue without circular indexing, what problem arises after many enqueue/dequeue operations?",
+      "options": [
+        "The rear pointer overflows before the array is logically full",
+        "The front pointer catches up to the rear pointer, causing underflow",
+        "Elements are overwritten by new enqueues",
+        "Dequeue becomes O(n) due to shifting"
+      ],
+      "answerIndex": 0,
+      "explanation": "Each dequeue increments the front pointer, leaving empty slots at the beginning. Eventually the rear pointer reaches the array's physical end even though those freed front slots are available, wasting space. A circular array solves this by wrapping the rear pointer.",
+      "category": "Queue Fundamentals",
+      "level": "Hard",
+      "tags": ["queue", "array", "circular"]
+    },
+    {
+      "question": "Why does a circular queue solve the space-waste problem of a linear array queue?",
+      "options": [
+        "Because it doubles the array size when full",
+        "Because rear and front pointers wrap around using modulo, reusing freed slots at the front",
+        "Because it stores elements in sorted order",
+        "Because it uses a linked list internally"
+      ],
+      "answerIndex": 1,
+      "explanation": "In a circular queue, rear = (rear + 1) % capacity and front = (front + 1) % capacity. This wraps the rear pointer back to index 0 when it reaches the end, reusing the freed slots without shifting elements.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["queue", "circular", "why"]
+    },
+    {
+      "question": "How is the 'full' condition detected in a circular queue that wastes one slot?",
+      "options": [
+        "(rear + 1) % capacity == front",
+        "rear == front",
+        "rear == capacity - 1",
+        "front == 0 and rear == capacity - 1"
+      ],
+      "answerIndex": 0,
+      "explanation": "The common trick is to sacrifice one slot: the queue is full when (rear + 1) % capacity == front. If rear == front were used for both full and empty, the two states would be indistinguishable.",
+      "category": "Queue Fundamentals",
+      "level": "Hard",
+      "tags": ["queue", "circular", "full condition"]
+    },
+    {
+      "question": "What is the time complexity of dequeue on a naive array-based queue (no circular indexing, shifting elements)?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Without circular indexing, removing from the front requires shifting all remaining n-1 elements one position left, giving O(n). Circular indexing or a linked list avoids this.",
+      "category": "Time & Space Complexity",
+      "level": "Medium",
+      "tags": ["queue", "array", "complexity"]
+    },
+    {
+      "question": "Which data structure would best model a 'undo/redo' feature in a text editor, and why?",
+      "options": [
+        "Queue — because undo operations are processed in arrival order",
+        "Stack — because the most recent action must be undone first (LIFO)",
+        "Priority Queue — because actions with higher importance are undone first",
+        "Circular Queue — because undo wraps around to the oldest action"
+      ],
+      "answerIndex": 1,
+      "explanation": "Undo reverses the most recent action, then the second most recent, and so on — classic LIFO. A stack naturally models this. A queue would undo the oldest action first, which is wrong for undo semantics.",
+      "category": "Applications & Use Cases",
+      "level": "Medium",
+      "tags": ["stack", "undo", "application"]
+    },
+    {
+      "question": "Which data structure models a 'waiting line at a ticket counter', and why?",
+      "options": [
+        "Stack — because the last person in line is served first",
+        "Queue — because the first person in line is served first (fairness)",
+        "Priority Queue — because people with tickets are served before others",
+        "Deque — because people can join from either end"
+      ],
+      "answerIndex": 1,
+      "explanation": "A ticket counter serves in arrival order — FIFO. A stack would serve the most recent arrival first, which is unfair. A priority queue applies only when explicit priorities exist.",
+      "category": "Applications & Use Cases",
+      "level": "Easy",
+      "tags": ["queue", "application", "FIFO"]
+    },
+    {
+      "question": "DFS on a graph can be implemented iteratively using which structure?",
+      "options": ["Queue", "Stack", "Priority Queue", "Circular Queue"],
+      "answerIndex": 1,
+      "explanation": "Iterative DFS uses a stack: push the start node, then repeatedly pop and push unvisited neighbors. The LIFO property mimics the recursive call stack's behavior, going deep before backtracking. A queue gives BFS.",
+      "category": "Applications & Use Cases",
+      "level": "Medium",
+      "tags": ["stack", "DFS", "graph"]
+    },
+    {
+      "question": "What is the minimum number of stacks needed to implement a queue?",
+      "options": ["1", "2", "3", "4"],
+      "answerIndex": 1,
+      "explanation": "Two stacks suffice: enqueue pushes onto stack1; dequeue pops from stack2. When stack2 is empty, all of stack1 is poured into stack2 (reversing the order), restoring FIFO. One stack cannot achieve FIFO without additional storage.",
+      "category": "Implementation Variants",
+      "level": "Hard",
+      "tags": ["queue", "stack", "implementation"]
+    },
+    {
+      "question": "When implementing a queue using two stacks, what is the amortized time complexity of dequeue?",
+      "options": ["O(n) worst case, O(1) amortized", "O(1) always", "O(log n) amortized", "O(n) always"],
+      "answerIndex": 0,
+      "explanation": "A single dequeue can cost O(n) when stack2 is empty and all n elements must be transferred from stack1. But each element is transferred at most once, so over n operations the total cost is O(n), giving O(1) amortized per dequeue.",
+      "category": "Time & Space Complexity",
+      "level": "Hard",
+      "tags": ["queue", "two stacks", "amortized"]
+    },
+    {
+      "question": "What is the minimum number of queues needed to implement a stack?",
+      "options": ["1", "2", "3", "4"],
+      "answerIndex": 0,
+      "explanation": "One queue is sufficient: to pop, rotate all but the last element to the rear (dequeue and re-enqueue n-1 times), then dequeue the last element. Two queues also work but one is the minimum.",
+      "category": "Implementation Variants",
+      "level": "Hard",
+      "tags": ["stack", "queue", "implementation"]
+    },
+    {
+      "question": "In a 'stack with min' (a stack that supports getMin() in O(1)), why is an auxiliary stack needed?",
+      "options": [
+        "To store all elements in sorted order",
+        "To track the minimum at each level so that when the current min is popped, the previous min is immediately available",
+        "To allow random access to any element",
+        "To reduce the space complexity to O(1)"
+      ],
+      "answerIndex": 1,
+      "explanation": "After popping the current minimum, the next minimum must be known instantly. An auxiliary stack that mirrors the main stack's minimums at each depth provides this: its top always equals the current minimum, and it pops in sync with the main stack.",
+      "category": "Implementation Variants",
+      "level": "Hard",
+      "tags": ["stack", "min stack", "why"]
+    },
+    {
+      "question": "What is the worst-case time complexity of peek() on a stack?",
+      "options": ["O(n)", "O(log n)", "O(1)", "O(n log n)"],
+      "answerIndex": 2,
+      "explanation": "peek() reads the top element via a direct pointer or index — no traversal needed. It is always O(1) regardless of stack size.",
+      "category": "Time & Space Complexity",
+      "level": "Easy",
+      "tags": ["stack", "peek", "complexity"]
+    },
+    {
+      "question": "Which scenario would cause a stack overflow (not to be confused with underflow)?",
+      "options": [
+        "Calling pop() on an empty stack",
+        "Infinite recursion exhausting the call stack's memory",
+        "Calling peek() when the stack has one element",
+        "Pushing more elements than the queue can hold"
+      ],
+      "answerIndex": 1,
+      "explanation": "Stack overflow occurs when the stack's memory is exhausted — most commonly by infinite recursion pushing unlimited frames onto the call stack. Underflow is pop() on empty. peek() on a singleton is valid. Queues are separate from stacks.",
+      "category": "Stack Fundamentals",
+      "level": "Medium",
+      "tags": ["stack", "overflow", "recursion"]
+    },
+    {
+      "question": "Why is a stack preferred over a queue for evaluating postfix (Reverse Polish Notation) expressions?",
+      "options": [
+        "Because operands must be processed in arrival order",
+        "Because when an operator is encountered, the two most recently seen operands must be retrieved immediately",
+        "Because the expression must be sorted before evaluation",
+        "Because a queue provides faster access to the front element"
+      ],
+      "answerIndex": 1,
+      "explanation": "In postfix evaluation, operands are pushed; when an operator is seen, the two operands on top (most recently pushed) are popped and combined. This last-in-first-out retrieval is exactly LIFO. A queue would retrieve operands in insertion order, which would not correctly pair them with operators.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "postfix", "RPN", "why"]
+    },
+    {
+      "question": "Given the postfix expression '3 4 + 2 *', what is the result?",
+      "options": ["10", "14", "11", "18"],
+      "answerIndex": 1,
+      "explanation": "Push 3, push 4. '+' pops 4 and 3, pushes 7. Push 2. '*' pops 2 and 7, pushes 14. Result: 14.",
+      "category": "Stack Fundamentals",
+      "level": "Medium",
+      "tags": ["stack", "postfix", "trace"]
+    },
+    {
+      "question": "A queue is being used to implement a CPU scheduling algorithm where every process gets equal time slices. What scheduling algorithm is this?",
+      "options": ["Shortest Job First", "Round Robin", "Priority Scheduling", "LIFO Scheduling"],
+      "answerIndex": 1,
+      "explanation": "Round Robin dequeues a process, runs it for a time slice, then re-enqueues it if it hasn't finished. The FIFO property ensures all processes are treated fairly in circular order.",
+      "category": "Applications & Use Cases",
+      "level": "Medium",
+      "tags": ["queue", "scheduling", "round robin"]
+    },
+    {
+      "question": "What property distinguishes a deque (double-ended queue) from a standard queue?",
+      "options": [
+        "A deque allows insertion and deletion at both ends",
+        "A deque stores elements in sorted order",
+        "A deque only allows deletion, not insertion",
+        "A deque has O(log n) access for all operations"
+      ],
+      "answerIndex": 0,
+      "explanation": "A deque supports insertFront, insertRear, deleteFront, and deleteRear. A standard queue only allows insertRear and deleteFront. This makes a deque more flexible — it can simulate both stacks and queues.",
+      "category": "Implementation Variants",
+      "level": "Medium",
+      "tags": ["deque", "definition"]
+    },
+    {
+      "question": "Why does a deque generalize both a stack and a queue?",
+      "options": [
+        "Because it stores elements in sorted order like a priority queue",
+        "Because by restricting which ends are used, it can behave as LIFO (stack) or FIFO (queue)",
+        "Because it has O(1) access to any element like an array",
+        "Because it automatically resizes when full"
+      ],
+      "answerIndex": 1,
+      "explanation": "If only insertFront and deleteFront are used, behavior is LIFO (stack). If insertRear and deleteFront are used, behavior is FIFO (queue). The deque's two-end access subsumes both restricted patterns.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["deque", "why", "generalization"]
+    },
+    {
+      "question": "What is the time complexity of the 'Sliding Window Maximum' algorithm that uses a deque?",
+      "options": ["O(n^2)", "O(n log n)", "O(n)", "O(k*n) where k is window size"],
+      "answerIndex": 2,
+      "explanation": "Each element is added to and removed from the deque at most once, giving O(n) total. The deque maintains indices of potentially maximum elements in decreasing order. A naive approach would be O(n*k).",
+      "category": "Implementation Variants",
+      "level": "Hard",
+      "tags": ["deque", "sliding window", "complexity"]
+    },
+    {
+      "question": "How does a priority queue differ from a standard queue?",
+      "options": [
+        "A priority queue removes elements in LIFO order",
+        "A priority queue removes the element with the highest (or lowest) priority regardless of insertion order",
+        "A priority queue only allows insertion, not deletion",
+        "A priority queue uses a stack internally"
+      ],
+      "answerIndex": 1,
+      "explanation": "In a standard queue, dequeue order equals insertion order (FIFO). In a priority queue, the element with the highest priority (e.g., smallest value in a min-heap) is dequeued first, regardless of when it was inserted.",
+      "category": "Implementation Variants",
+      "level": "Medium",
+      "tags": ["priority queue", "definition"]
+    },
+    {
+      "question": "Why is a heap (not a sorted array) typically used to implement a priority queue?",
+      "options": [
+        "Because a heap allows O(1) access to any element",
+        "Because a heap provides O(log n) insert and O(log n) extract-min, whereas a sorted array has O(n) insert",
+        "Because a heap uses less memory than any other structure",
+        "Because a heap supports FIFO ordering natively"
+      ],
+      "answerIndex": 1,
+      "explanation": "A sorted array gives O(1) extract-min but O(n) insert (must maintain order). A heap balances both at O(log n), making it efficient for dynamic workloads where insertions and extractions are interleaved.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["priority queue", "heap", "why", "complexity"]
+    },
+    {
+      "question": "Which statement about a stack's isEmpty() check is correct regarding its time complexity?",
+      "options": [
+        "O(n) because all elements must be counted",
+        "O(1) because only the size counter or top pointer needs to be checked",
+        "O(log n) because the stack must be partially traversed",
+        "O(n) only for linked-list stacks"
+      ],
+      "answerIndex": 1,
+      "explanation": "isEmpty() checks whether size == 0 or top == null — a single comparison regardless of how many elements are stored. This is O(1) for both array and linked-list implementations.",
+      "category": "Time & Space Complexity",
+      "level": "Easy",
+      "tags": ["stack", "isEmpty", "complexity"]
+    },
+    {
+      "question": "What is the key invariant maintained in a monotonic stack?",
+      "options": [
+        "Elements are stored in sorted order at all times",
+        "The stack contains elements in strictly increasing or strictly decreasing order",
+        "The top of the stack always holds the maximum element",
+        "The stack is never allowed to grow beyond O(log n) elements"
+      ],
+      "answerIndex": 1,
+      "explanation": "A monotonic stack pops elements that violate a monotone ordering (increasing or decreasing) before pushing a new element. This is useful for problems like 'next greater element'. It is not necessarily sorted across all elements, only among what remains.",
+      "category": "Stack Fundamentals",
+      "level": "Hard",
+      "tags": ["stack", "monotonic", "invariant"]
+    },
+    {
+      "question": "Why does a monotonic stack solve the 'Next Greater Element' problem in O(n)?",
+      "options": [
+        "Because it sorts all elements before scanning",
+        "Because each element is pushed and popped at most once, so total operations are O(n)",
+        "Because binary search finds the next greater element in O(log n) per query",
+        "Because the stack only holds n/2 elements at any time"
+      ],
+      "answerIndex": 1,
+      "explanation": "Each of the n elements is pushed onto the monotonic stack exactly once and popped at most once. The total number of push and pop operations is at most 2n, giving O(n) overall rather than O(n^2) for the naive nested-loop approach.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "monotonic", "why", "complexity"]
+    },
+    {
+      "question": "In the 'Largest Rectangle in Histogram' problem, why is a stack used?",
+      "options": [
+        "To store bar heights in sorted order",
+        "To efficiently find the nearest shorter bar on each side, enabling rectangle area computation",
+        "To sort bars by height before computing areas",
+        "To store all possible rectangles for later comparison"
+      ],
+      "answerIndex": 1,
+      "explanation": "A monotonic stack tracks bars in increasing height order. When a shorter bar is encountered, it triggers popping taller bars and computing the maximum width for each popped height using the stack's new top as the left boundary. This avoids O(n^2) brute force.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "histogram", "why"]
+    },
+    {
+      "question": "What distinguishes a 'bounded queue' from an 'unbounded queue'?",
+      "options": [
+        "A bounded queue allows dequeue only after it is full",
+        "A bounded queue has a fixed maximum capacity and blocks or throws on overflow",
+        "A bounded queue processes elements in priority order",
+        "A bounded queue uses a stack internally"
+      ],
+      "answerIndex": 1,
+      "explanation": "A bounded (or blocking) queue has a maximum size. When full, enqueue either blocks (in concurrent contexts) or raises an error. An unbounded queue grows dynamically. Bounded queues are critical in producer-consumer scenarios to prevent memory exhaustion.",
+      "category": "Queue Fundamentals",
+      "level": "Medium",
+      "tags": ["queue", "bounded", "definition"]
+    },
+    {
+      "question": "Why is a queue (not a stack) preferred for implementing a web server's request handler?",
+      "options": [
+        "Because the most recently arrived request is the most urgent",
+        "Because fairness requires that earlier requests are handled before later ones",
+        "Because a queue allows the server to skip slow requests",
+        "Because a stack processes requests faster due to LIFO"
+      ],
+      "answerIndex": 1,
+      "explanation": "Web servers should respect arrival order to ensure fairness and predictable latency. FIFO (queue) achieves this. LIFO (stack) would mean the most recently arrived request is always handled first, causing starvation for earlier requests under high load.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["queue", "server", "why", "fairness"]
+    },
+    {
+      "question": "What is the time complexity of searching for a specific element in an unsorted stack?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "A stack provides direct access only to its top element. To find an arbitrary element, all elements must be popped (and typically saved elsewhere), requiring O(n) time. There is no indexed or hashed access.",
+      "category": "Time & Space Complexity",
+      "level": "Medium",
+      "tags": ["stack", "search", "complexity"]
+    },
+    {
+      "question": "After enqueue(10), enqueue(20), dequeue(), enqueue(30), enqueue(40), dequeue(), what elements remain in the queue (front to rear)?",
+      "options": ["[30, 40]", "[20, 30]", "[10, 40]", "[20, 40]"],
+      "answerIndex": 0,
+      "explanation": "enqueue 10→[10], enqueue 20→[10,20], dequeue removes 10→[20], enqueue 30→[20,30], enqueue 40→[20,30,40], dequeue removes 20→[30,40]. Front is 30, rear is 40.",
+      "category": "Queue Fundamentals",
+      "level": "Easy",
+      "tags": ["queue", "trace"]
+    },
+    {
+      "question": "Why is a queue used in level-order traversal of a binary tree?",
+      "options": [
+        "Because nodes at deeper levels have higher priority",
+        "Because each level's nodes are discovered in order, and their children must be processed after all sibling nodes — FIFO ensures this",
+        "Because a queue can store parent-child relationships more efficiently",
+        "Because trees have cycles that a queue handles better than a stack"
+      ],
+      "answerIndex": 1,
+      "explanation": "Level-order visits all nodes at depth d before depth d+1. When a node is dequeued, its children are enqueued at the rear. Because all depth-d nodes were enqueued before depth-(d+1) nodes, FIFO ensures correct level-by-level ordering.",
+      "category": "Why / Reasoning",
+      "level": "Medium",
+      "tags": ["queue", "tree", "BFS", "why"]
+    },
+    {
+      "question": "What is the correct output order if push(1), push(2), push(3) is followed by pop(), pop(), pop()?",
+      "options": ["1, 2, 3", "3, 2, 1", "2, 1, 3", "1, 3, 2"],
+      "answerIndex": 1,
+      "explanation": "Push in order 1, 2, 3 puts 3 on top. pop() yields 3, then 2, then 1. LIFO reverses the insertion order.",
+      "category": "Stack Fundamentals",
+      "level": "Easy",
+      "tags": ["stack", "trace", "LIFO"]
+    },
+    {
+      "question": "A queue is said to be 'empty' when which condition holds (using front and rear indices in a circular array implementation)?",
+      "options": ["front == rear + 1", "rear == front", "front == capacity - 1", "rear == 0"],
+      "answerIndex": 1,
+      "explanation": "In the one-wasted-slot circular array convention, empty is detected by front == rear. Full is (rear + 1) % capacity == front. When front catches up to rear after dequeues, the queue is empty.",
+      "category": "Queue Fundamentals",
+      "level": "Hard",
+      "tags": ["queue", "circular", "empty condition"]
+    },
+    {
+      "question": "Which data structure is most appropriate for implementing the 'back button' in a web browser?",
+      "options": [
+        "Queue — to return to pages in visit order",
+        "Stack — to return to the most recently visited page first",
+        "Priority Queue — to revisit important pages first",
+        "Deque — to navigate both forward and backward simultaneously"
+      ],
+      "answerIndex": 1,
+      "explanation": "The back button should go to the most recently visited page, which is LIFO. A stack of visited URLs allows each 'back' click to pop the latest URL. A deque is used when both back and forward navigation must be supported simultaneously.",
+      "category": "Applications & Use Cases",
+      "level": "Easy",
+      "tags": ["stack", "browser", "application"]
+    },
+    {
+      "question": "When using a stack to detect a cycle in a directed graph via DFS, what additional tracking is needed beyond a 'visited' set?",
+      "options": [
+        "A count of each node's in-degree",
+        "A 'currently in recursion stack' set to distinguish back edges from cross edges",
+        "A sorted list of all nodes",
+        "A second stack to hold parent nodes"
+      ],
+      "answerIndex": 1,
+      "explanation": "A node marked 'visited' may have been fully explored in a prior DFS branch. To detect a cycle, a node in the current recursion path (on the stack) must be distinguished from a node visited in a different branch. The 'rec_stack' set serves this purpose.",
+      "category": "Applications & Use Cases",
+      "level": "Hard",
+      "tags": ["stack", "DFS", "cycle detection", "graph"]
+    },
+    {
+      "question": "What is the output of the following stack operations: push(A), push(B), push(C), peek(), pop(), peek()?",
+      "options": ["C, B, B", "C, C, B", "A, C, B", "B, C, A"],
+      "answerIndex": 1,
+      "explanation": "After push(A,B,C) the stack top is C. peek() returns C without removing it. pop() removes C. peek() now returns B (new top). Sequence: C, C, B.",
+      "category": "Stack Fundamentals",
+      "level": "Medium",
+      "tags": ["stack", "peek", "trace"]
+    },
+    {
+      "question": "Why is it inefficient to implement a stack using a queue (single queue)?",
+      "options": [
+        "Because a queue cannot store the same data types as a stack",
+        "Because either push or pop requires O(n) rotations to bring the correct element to the front",
+        "Because a queue automatically sorts elements, breaking LIFO",
+        "Because peek() is not supported on queues"
+      ],
+      "answerIndex": 1,
+      "explanation": "To simulate LIFO with a queue, push must rotate all existing elements to put the new element at the front (O(n)), or pop must rotate all but one element to bring the last-inserted element to the front (O(n)). Either way, one operation costs O(n).",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "queue", "why", "complexity"]
+    },
+    {
+      "question": "In concurrent programming, why is a lock-free queue preferred over a lock-based queue for high-throughput systems?",
+      "options": [
+        "Because a lock-free queue is always faster for single-threaded programs",
+        "Because locking creates contention and blocks threads, while lock-free algorithms allow progress without waiting",
+        "Because lock-free queues have lower memory usage",
+        "Because lock-free queues are simpler to implement correctly"
+      ],
+      "answerIndex": 1,
+      "explanation": "In high-throughput multi-threaded systems, lock-based queues serialize access: a thread waiting for a lock is blocked, wasting CPU time. Lock-free algorithms use atomic compare-and-swap (CAS) operations so at least one thread always makes progress, improving throughput under contention.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["queue", "concurrency", "lock-free", "why"]
+    },
+    {
+      "question": "What is the best-case time complexity of pop() on a stack implemented as a singly linked list?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 0,
+      "explanation": "pop() removes the head node: save head, advance head to head.next, return saved value. This is always O(1) regardless of the list size — best, average, and worst cases all match.",
+      "category": "Time & Space Complexity",
+      "level": "Easy",
+      "tags": ["stack", "linked list", "complexity"]
+    },
+    {
+      "question": "Which of the following is NOT a valid application of a stack?",
+      "options": [
+        "Evaluating arithmetic expressions",
+        "Backtracking in maze-solving algorithms",
+        "Managing the order of requests in a network router (FIFO scheduling)",
+        "Storing activation records during recursive function calls"
+      ],
+      "answerIndex": 2,
+      "explanation": "Network routers using FIFO scheduling process packets in arrival order — that is a queue application. Arithmetic expression evaluation, backtracking, and function call management all rely on LIFO behavior, making them stack applications.",
+      "category": "Applications & Use Cases",
+      "level": "Medium",
+      "tags": ["stack", "application", "not stack"]
+    },
+    {
+      "question": "If a stack supports push, pop, and getMin, all in O(1), what is the space overhead compared to a plain stack?",
+      "options": ["O(1) extra", "O(log n) extra", "O(n) extra", "No overhead"],
+      "answerIndex": 2,
+      "explanation": "The auxiliary min-stack can grow to O(n) in the worst case (e.g., elements pushed in decreasing order means every push creates a new minimum recorded in the auxiliary stack). The total space doubles at worst.",
+      "category": "Time & Space Complexity",
+      "level": "Hard",
+      "tags": ["stack", "min stack", "space complexity"]
+    },
+    {
+      "question": "A queue implemented using two stacks performs k enqueue and k dequeue operations. What is the total number of element movements?",
+      "options": ["k", "2k", "3k", "4k"],
+      "answerIndex": 1,
+      "explanation": "Each element is pushed onto stack1 once (1 move) and transferred to stack2 once (1 move), for 2 moves total per element. Over k elements: 2k total movements. Dequeuing from stack2 does not count as an additional transfer once elements are there.",
+      "category": "Time & Space Complexity",
+      "level": "Hard",
+      "tags": ["queue", "two stacks", "operations count"]
+    },
+    {
+      "question": "What is the difference between a 'stack frame' and a 'heap allocation' in the context of memory management?",
+      "options": [
+        "Stack frames are allocated on the heap, while heap allocations use the stack",
+        "Stack frames are automatically reclaimed when a function returns (LIFO), while heap allocations persist until explicitly freed",
+        "Stack frames hold global variables, heap allocations hold local variables",
+        "Stack frames are slower to allocate than heap allocations"
+      ],
+      "answerIndex": 1,
+      "explanation": "The call stack uses LIFO: when a function returns, its frame is popped automatically. Heap memory is manually managed (or garbage-collected) — it persists beyond the function that allocated it. Stack allocation is faster but size-limited; heap is flexible but requires explicit management.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "memory", "stack frame", "heap", "why"]
+    },
+    {
+      "question": "For the problem 'generate all valid combinations of n pairs of parentheses', which structure tracks the recursive state most naturally?",
+      "options": [
+        "Queue — to explore combinations breadth-first",
+        "Stack — because backtracking requires undoing choices in reverse order",
+        "Priority Queue — to generate combinations in lexicographic order",
+        "Circular Queue — to cycle through combinations"
+      ],
+      "answerIndex": 1,
+      "explanation": "Backtracking explores a choice, recurses deeper, then undoes the choice before trying the next option. This undo-last-choice behavior is LIFO, naturally matching a stack (or the recursive call stack). A queue would not support undoing choices.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "backtracking", "recursion", "why"]
+    },
+    {
+      "question": "In a queue of n elements, what is the time complexity of accessing the k-th element from the front without removing any elements?",
+      "options": ["O(1)", "O(k)", "O(n)", "O(log n)"],
+      "answerIndex": 1,
+      "explanation": "A queue only provides direct access to the front. To reach the k-th element, k-1 elements must be dequeued (and re-enqueued to preserve the queue). This takes O(k) time. In the worst case k = n, so O(n).",
+      "category": "Time & Space Complexity",
+      "level": "Medium",
+      "tags": ["queue", "access", "complexity"]
+    },
+    {
+      "question": "What problem arises if a producer adds to a bounded queue faster than the consumer removes, and the queue is full?",
+      "options": [
+        "The queue automatically doubles in capacity",
+        "The producer is blocked or receives an overflow error, potentially causing data loss or deadlock",
+        "The consumer skips elements to keep up",
+        "The queue converts to LIFO mode"
+      ],
+      "answerIndex": 1,
+      "explanation": "In a bounded queue used for producer-consumer communication, a full queue blocks the producer (in blocking implementations) or causes enqueue to fail/drop data. If both producer and consumer are waiting on each other, deadlock can occur. This must be handled by backpressure mechanisms.",
+      "category": "Applications & Use Cases",
+      "level": "Hard",
+      "tags": ["queue", "producer-consumer", "bounded", "deadlock"]
+    },
+    {
+      "question": "Which of the following operations is NOT supported in O(1) by a standard stack?",
+      "options": ["push", "pop", "peek", "search for an arbitrary element"],
+      "answerIndex": 3,
+      "explanation": "push, pop, and peek all operate on the top element and are O(1). Searching for an arbitrary element requires traversing the stack (O(n)) since there is no direct access beyond the top.",
+      "category": "Stack Fundamentals",
+      "level": "Medium",
+      "tags": ["stack", "complexity", "operations"]
+    },
+    {
+      "question": "Why is an array-based stack generally faster in practice than a linked-list stack, even though both have O(1) operations?",
+      "options": [
+        "Because arrays support more operations than linked lists",
+        "Because arrays have better cache locality — elements are contiguous in memory, reducing cache misses",
+        "Because arrays are easier to implement",
+        "Because array-based stacks avoid stack overflow errors"
+      ],
+      "answerIndex": 1,
+      "explanation": "O(1) describes asymptotic behavior but not constants. Array elements are stored contiguously, so accessing top is cache-friendly. Linked-list nodes may be scattered in memory, causing cache misses on each push/pop. In practice, cache locality often makes arrays 2-5x faster.",
+      "category": "Why / Reasoning",
+      "level": "Hard",
+      "tags": ["stack", "array", "cache", "why"]
+    }
+  ]
+}

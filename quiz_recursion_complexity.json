@@ -1,0 +1,666 @@
+{
+  "title": "Recursive Functions — Time & Space Complexity Analysis",
+  "subtitle": "66 questions: each shows a concrete recursive function and asks for its complexity. Explanations derive the recurrence step by step.",
+  "totalQuestions": 66,
+  "questions": [
+    {
+      "question": "What is the time complexity of this function?\n\ndef factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(n) = T(n-1) + O(1). Each call reduces n by 1 and does constant work. The chain has n+1 calls total (n down to 0), so T(n) = O(n). It is NOT O(n^2) because no nested loop or branching occurs — each level does O(1) work.",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["factorial", "linear recursion", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef digit_sum(n):\n    if n < 10:\n        return n\n    return (n % 10) + digit_sum(n // 10)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "Each recursive call divides n by 10. The number of digits in n is floor(log10(n)) + 1 = O(log n). Recurrence: T(n) = T(n/10) + O(1), which by the Master Theorem (case 2 with a=1, b=10, f(n)=O(1)) gives T(n) = O(log n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["digit sum", "divide by 10", "T(n)=T(n/10)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef array_sum(arr, n):\n    if n == 0:\n        return 0\n    return arr[n-1] + array_sum(arr, n - 1)",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = T(n-1) + O(1). Each call processes one element and makes one recursive call with n-1. The recursion goes from n down to 0: n calls total, each O(1). Total time = O(n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["array sum", "linear", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef power(x, n):\n    if n == 0:\n        return 1\n    return x * power(x, n - 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(2^n)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(n) = T(n-1) + O(1). The exponent decreases by 1 per call, making n recursive calls. This naive power is O(n). Compare with fast exponentiation (halving n each time), which is O(log n) — this version does not halve.",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["power", "naive", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef countdown(n):\n    if n <= 0:\n        return\n    print(n)\n    countdown(n - 1)\n    countdown(n - 1)",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(2^n)"],
+      "answerIndex": 3,
+      "explanation": "Recurrence: T(n) = 2*T(n-1) + O(1). Each call spawns two calls with n-1. The recursion tree has depth n and each level doubles: 1, 2, 4, ..., 2^n nodes. Total calls = 1 + 2 + 4 + ... + 2^n = 2^(n+1) - 1 = O(2^n).",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["two recursive calls", "exponential", "T(n)=2T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef find(arr, target, i):\n    if i == len(arr):\n        return -1\n    if arr[i] == target:\n        return i\n    return find(arr, target, i + 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Worst case: target is not in the array. Each call increments i by 1 and does O(1) work. After n calls (i from 0 to n), the base case triggers. Recurrence: T(n) = T(n-1) + O(1) → T(n) = O(n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["linear search", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef reverse_string(s, i, j):\n    if i >= j:\n        return\n    s[i], s[j] = s[j], s[i]\n    reverse_string(s, i + 1, j - 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Each call swaps one pair and moves i up and j down. The recursion terminates when i >= j, after n/2 swaps. Recurrence: T(n) = T(n-2) + O(1). Unrolling: n/2 calls each doing O(1) = O(n/2) = O(n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["reverse", "T(n)=T(n-2)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef is_palindrome(s, i, j):\n    if i >= j:\n        return True\n    if s[i] != s[j]:\n        return False\n    return is_palindrome(s, i + 1, j - 1)",
+      "options": ["O(1)", "O(n)", "O(n log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Best case: first characters differ — O(1). Worst case: the string is a palindrome, requiring n/2 comparisons. Each call does O(1) and recurses with a problem of size n-2. T(n) = T(n-2) + O(1) → O(n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["palindrome", "T(n)=T(n-2)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef gcd(a, b):\n    if b == 0:\n        return a\n    return gcd(b, a % b)",
+      "options": ["O(a + b)", "O(log(min(a, b)))", "O(min(a, b))", "O(a * b)"],
+      "answerIndex": 1,
+      "explanation": "Euclidean GCD: b decreases by at least half every two steps (Fibonacci worst case). By Lamé's theorem, the number of steps is at most 5 times the number of digits in min(a,b), giving O(log(min(a,b))). It is NOT O(min(a,b)) — that would be the subtraction-based algorithm.",
+      "category": "Linear Recursion",
+      "level": "Hard",
+      "tags": ["GCD", "Euclidean", "Lame theorem"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef sum_to_n(n):\n    if n == 1:\n        return 1\n    return n + sum_to_n(n - 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Identical recurrence to factorial: T(n) = T(n-1) + O(1). The chain of calls goes from n down to 1 (n calls total). Total time = O(n). The mathematical result (n*(n+1)/2) is O(n^2) as a value but computing it recursively this way takes O(n) time.",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["sum", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef binary_search(arr, lo, hi, target):\n    if lo > hi:\n        return -1\n    mid = (lo + hi) // 2\n    if arr[mid] == target:\n        return mid\n    elif arr[mid] < target:\n        return binary_search(arr, mid + 1, hi, target)\n    else:\n        return binary_search(arr, lo, mid - 1, target)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = T(n/2) + O(1). Each call halves the search space and does O(1) work. By Master Theorem (a=1, b=2, f(n)=1): n^(log_2 1) = n^0 = 1 = f(n), so T(n) = O(log n). After k halvings, n/2^k = 1 → k = log2(n).",
+      "category": "Divide and Conquer",
+      "level": "Easy",
+      "tags": ["binary search", "T(n)=T(n/2)+1", "Master Theorem"]
+    },
+    {
+      "question": "What is the time complexity of this merge sort function?\n\ndef merge_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    mid = len(arr) // 2\n    left = merge_sort(arr[:mid])\n    right = merge_sort(arr[mid:])\n    return merge(left, right)   # merge is O(n)",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(log n)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = 2*T(n/2) + O(n). Two recursive calls on halves, plus O(n) merge. Master Theorem: a=2, b=2, f(n)=n. n^(log_2 2)=n^1=n = f(n), so we are in case 2: T(n) = O(n log n). This holds for all cases (best, worst, average).",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["merge sort", "T(n)=2T(n/2)+n", "Master Theorem"]
+    },
+    {
+      "question": "What is the worst-case time complexity of this quicksort?\n\ndef quicksort(arr, lo, hi):\n    if lo >= hi:\n        return\n    p = partition(arr, lo, hi)   # O(n)\n    quicksort(arr, lo, p - 1)\n    quicksort(arr, p + 1, hi)",
+      "options": ["O(n log n)", "O(n^2)", "O(n^1.5)", "O(n^2 log n)"],
+      "answerIndex": 1,
+      "explanation": "Worst case: pivot is always the minimum or maximum (e.g., sorted input with naive pivot). Partition produces sub-arrays of size 0 and n-1. Recurrence: T(n) = T(n-1) + O(n) → T(n) = O(n) + O(n-1) + ... + O(1) = O(n^2). Average case (random pivot) is O(n log n).",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["quicksort", "worst case", "T(n)=T(n-1)+n"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef fast_power(x, n):\n    if n == 0:\n        return 1\n    if n % 2 == 0:\n        half = fast_power(x, n // 2)\n        return half * half\n    return x * fast_power(x, n - 1)",
+      "options": ["O(n)", "O(log n)", "O(sqrt(n))", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "When n is even: T(n) = T(n/2) + O(1) — halves the problem. When n is odd: T(n) = T(n-1) + O(1) — decrements by 1, but the next call will be even and halve. In the worst case, n alternates odd/even, but the problem still halves every two steps. Overall: T(n) = O(log n).",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["fast exponentiation", "T(n)=T(n/2)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef find_max(arr, n):\n    if n == 1:\n        return arr[0]\n    mid = n // 2\n    left_max = find_max(arr, mid)\n    right_max = find_max(arr[mid:], n - mid)\n    return max(left_max, right_max)",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = 2*T(n/2) + O(1). Master Theorem: a=2, b=2, f(n)=1. n^(log_2 2)=n > f(n)=1, so case 1: T(n) = O(n). Every element is visited exactly once (each leaf does O(1)), so total work = O(n). The divide step adds no savings over a loop.",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["find max", "T(n)=2T(n/2)+1", "Master Theorem"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef count_inversions(arr):\n    if len(arr) <= 1:\n        return arr, 0\n    mid = len(arr) // 2\n    left, lc = count_inversions(arr[:mid])\n    right, rc = count_inversions(arr[mid:])\n    merged, sc = merge_count(left, right)   # O(n)\n    return merged, lc + rc + sc",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(n^2 log n)"],
+      "answerIndex": 1,
+      "explanation": "This is merge sort with inversion counting. Recurrence: T(n) = 2*T(n/2) + O(n). Identical to merge sort: Master Theorem case 2 gives T(n) = O(n log n). The merge_count step counts split inversions in O(n) as part of the merge.",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["count inversions", "merge sort variant", "T(n)=2T(n/2)+n"]
+    },
+    {
+      "question": "What is the time complexity of Karatsuba multiplication applied recursively?\n\n# Splits each n-digit number into two halves\n# Makes 3 recursive calls on n/2-digit numbers\n# Combining takes O(n)",
+      "options": ["O(n^2)", "O(n^log2(3))", "O(n log n)", "O(n log^2 n)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = 3*T(n/2) + O(n). Master Theorem: a=3, b=2, f(n)=n. n^(log_2 3) ≈ n^1.585 > f(n)=n, so case 1: T(n) = O(n^log_2(3)) ≈ O(n^1.585). This beats naive O(n^2) multiplication. The key is using 3 instead of 4 recursive calls.",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["Karatsuba", "T(n)=3T(n/2)+n", "Master Theorem"]
+    },
+    {
+      "question": "What is the time complexity of this ternary search?\n\ndef ternary_search(arr, lo, hi, target):\n    if lo > hi:\n        return -1\n    t1 = lo + (hi - lo) // 3\n    t2 = hi - (hi - lo) // 3\n    if arr[t1] == target: return t1\n    if arr[t2] == target: return t2\n    if target < arr[t1]:\n        return ternary_search(arr, lo, t1 - 1, target)\n    elif target > arr[t2]:\n        return ternary_search(arr, t2 + 1, hi, target)\n    else:\n        return ternary_search(arr, t1 + 1, t2 - 1, target)",
+      "options": ["O(log2 n)", "O(log3 n)", "O(n)", "O(log3 n) which equals O(log n)"],
+      "answerIndex": 3,
+      "explanation": "Recurrence: T(n) = T(n/3) + O(1). Master Theorem gives T(n) = O(log3 n). However, log3(n) = log2(n)/log2(3) = O(log n). Ternary search has the same asymptotic complexity as binary search, just with a smaller constant. The answer O(log3 n) = O(log n) is the most precise.",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["ternary search", "T(n)=T(n/3)+1", "log base change"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef stoogesort(arr, lo, hi):\n    if arr[lo] > arr[hi]:\n        arr[lo], arr[hi] = arr[hi], arr[lo]\n    if hi - lo + 1 > 2:\n        t = (hi - lo + 1) // 3\n        stoogesort(arr, lo, hi - t)\n        stoogesort(arr, lo + t, hi)\n        stoogesort(arr, lo, hi - t)",
+      "options": ["O(n log n)", "O(n^2)", "O(n^(log3/log1.5))", "O(n^2.7)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(n) = 3*T(2n/3) + O(1). Master Theorem: a=3, b=3/2, f(n)=1. n^(log_(3/2) 3) = n^(log3/log(3/2)) ≈ n^2.709. Since n^2.709 >> O(1), case 1 applies: T(n) = O(n^(log_(3/2) 3)) ≈ O(n^2.7). Stooge sort is a deliberately inefficient algorithm.",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["stooge sort", "T(n)=3T(2n/3)+1", "Master Theorem"]
+    },
+    {
+      "question": "What is the average-case time complexity of quicksort with a random pivot?\n\n# Partition is O(n)\n# On average, pivot splits array roughly in half",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(n^1.5)"],
+      "answerIndex": 1,
+      "explanation": "With a random pivot, the expected split is roughly n/4 to 3n/4. The expected recurrence is T(n) = T(n/4) + T(3n/4) + O(n). By solving this (or using the fact that the recursion tree has depth O(log n) and O(n) work per level), the average case is O(n log n). Worst case remains O(n^2).",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["quicksort", "average case", "random pivot"]
+    },
+    {
+      "question": "What is the time complexity of this naive Fibonacci?\n\ndef fib(n):\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)",
+      "options": ["O(n)", "O(n log n)", "O(2^n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(n) = T(n-1) + T(n-2) + O(1). The recursion tree is a binary tree of depth n. Upper bound: T(n) < 2*T(n-1) → T(n) = O(2^n). More precisely, T(n) = O(phi^n) where phi ≈ 1.618, but O(2^n) is the standard answer. The same subproblems are recomputed exponentially many times.",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Medium",
+      "tags": ["fibonacci", "T(n)=T(n-1)+T(n-2)", "exponential"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef tree_height(root):\n    if root is None:\n        return -1\n    return 1 + max(tree_height(root.left), tree_height(root.right))",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(h) where h is height"],
+      "answerIndex": 1,
+      "explanation": "Every node is visited exactly once (two recursive calls per node, each returning the height of a subtree). Total calls = n. Each call does O(1) work. Recurrence: T(n) = T(L) + T(R) + O(1) where L+R = n-1. Summing over all nodes: O(n). O(h) describes only the recursion depth, not the total work.",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Easy",
+      "tags": ["tree height", "T(n)=T(L)+T(R)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef count_nodes(root):\n    if root is None:\n        return 0\n    return 1 + count_nodes(root.left) + count_nodes(root.right)",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Each node is visited exactly once and O(1) work is done per visit. Recurrence: T(n) = T(L) + T(R) + O(1). The recursion visits all n nodes regardless of tree shape (balanced or skewed). Total: O(n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Easy",
+      "tags": ["count nodes", "T(n)=T(L)+T(R)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef sum_tree(root):\n    if root is None:\n        return 0\n    left_sum = sum_tree(root.left)\n    right_sum = sum_tree(root.right)\n    return root.val + left_sum + right_sum",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(2^n)"],
+      "answerIndex": 1,
+      "explanation": "Visits every node exactly once, doing O(1) per node. Recurrence: T(n) = T(L) + T(R) + O(1) = O(n). This is identical in structure to count_nodes or tree_height — all simple single-pass tree traversals are O(n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Easy",
+      "tags": ["tree sum", "T(n)=T(L)+T(R)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef paths_in_grid(m, n):\n    if m == 1 or n == 1:\n        return 1\n    return paths_in_grid(m - 1, n) + paths_in_grid(m, n - 1)",
+      "options": ["O(m + n)", "O(m * n)", "O(2^(m+n))", "O((m+n)!)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(m,n) = T(m-1,n) + T(m,n-1) + O(1). Without memoization, the same subproblems are recomputed. The recursion tree has depth m+n and branches at each node, giving T(m,n) = O(2^(m+n)) in the worst case. With memoization it reduces to O(m*n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Hard",
+      "tags": ["grid paths", "T(m,n)=T(m-1,n)+T(m,n-1)", "exponential without memo"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef climbing_stairs(n):\n    if n <= 2:\n        return n\n    return climbing_stairs(n - 1) + climbing_stairs(n - 2)",
+      "options": ["O(n)", "O(n^2)", "O(2^n)", "O(n log n)"],
+      "answerIndex": 2,
+      "explanation": "Identical recurrence to naive Fibonacci: T(n) = T(n-1) + T(n-2) + O(1) = O(2^n). Each call branches into two, and overlapping subproblems are recomputed. Without memoization this is exponential. With memoization or DP it becomes O(n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Medium",
+      "tags": ["climbing stairs", "fibonacci-like", "T(n)=T(n-1)+T(n-2)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef tripling(n):\n    if n <= 1:\n        return 1\n    return tripling(n // 3) + tripling(n // 3) + tripling(n // 3)",
+      "options": ["O(n)", "O(n log n)", "O(log n)", "O(n^(log3 3)) = O(n)"],
+      "answerIndex": 3,
+      "explanation": "Recurrence: T(n) = 3*T(n/3) + O(1). Master Theorem: a=3, b=3, f(n)=1. n^(log_3 3) = n^1 = n. Since n >> O(1), case 1: T(n) = O(n^(log_3 3)) = O(n). Despite three recursive calls, each on n/3 data, the total work across all levels is O(n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Hard",
+      "tags": ["T(n)=3T(n/3)+1", "Master Theorem", "case 1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef all_subsets(arr, i, current):\n    if i == len(arr):\n        print(current)\n        return\n    all_subsets(arr, i + 1, current)            # exclude arr[i]\n    all_subsets(arr, i + 1, current + [arr[i]]) # include arr[i]",
+      "options": ["O(n)", "O(n^2)", "O(n * 2^n)", "O(2^n)"],
+      "answerIndex": 2,
+      "explanation": "Recurrence: T(n) = 2*T(n-1) + O(1), giving O(2^n) recursive calls. But each leaf prints a subset. The average subset has n/2 elements and printing takes O(n/2) time. Total work = O(2^n) calls × O(n) print cost = O(n * 2^n). If printing were O(1), it would be O(2^n).",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["subsets", "power set", "T(n)=2T(n-1)+1", "O(n*2^n)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef permutations(arr, start):\n    if start == len(arr):\n        print(arr)\n        return\n    for i in range(start, len(arr)):\n        arr[start], arr[i] = arr[i], arr[start]\n        permutations(arr, start + 1)\n        arr[start], arr[i] = arr[i], arr[start]",
+      "options": ["O(n!)", "O(n * n!)", "O(2^n)", "O(n^n)"],
+      "answerIndex": 1,
+      "explanation": "There are n! permutations. Each is printed in O(n) time. The number of recursive calls is sum(n!/(n-k)!) for k=0..n ≈ e*n! = O(n!). Each leaf prints in O(n). Total: O(n * n!). If printing were O(1), it would be O(n!).",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["permutations", "O(n*n!)", "backtracking"]
+    },
+    {
+      "question": "What is the time complexity of the Towers of Hanoi with n disks?\n\ndef hanoi(n, source, target, auxiliary):\n    if n == 0:\n        return\n    hanoi(n - 1, source, auxiliary, target)\n    print(f'Move disk {n} from {source} to {target}')\n    hanoi(n - 1, auxiliary, target, source)",
+      "options": ["O(n)", "O(n^2)", "O(n log n)", "O(2^n)"],
+      "answerIndex": 3,
+      "explanation": "Recurrence: T(n) = 2*T(n-1) + O(1). Each call makes two sub-calls with n-1. Unrolling: T(n) = 2^n * T(0) + 2^(n-1) + ... + 1 = O(2^n). This is optimal — moving n disks requires exactly 2^n - 1 moves. There is no faster algorithm.",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Medium",
+      "tags": ["Towers of Hanoi", "T(n)=2T(n-1)+1", "optimal exponential"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef combinations(n, k):\n    if k == 0 or k == n:\n        return 1\n    return combinations(n - 1, k - 1) + combinations(n - 1, k)",
+      "options": ["O(2^n)", "O(n * k)", "O(C(n,k)) which is O(2^n) worst case", "O(n!)"],
+      "answerIndex": 2,
+      "explanation": "Without memoization, each call branches into two sub-calls. The recursion tree mirrors Pascal's triangle, and the number of calls equals the sum of all C(i,j) for relevant i,j. In the worst case (k ≈ n/2), this is O(2^n). With memoization: O(n*k).",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["combinations", "Pascal's triangle", "C(n,k)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef n_queens(row, n, placement):\n    if row == n:\n        print(placement)\n        return\n    for col in range(n):\n        if is_safe(row, col, placement):  # O(row)\n            placement.append(col)\n            n_queens(row + 1, n, placement)\n            placement.pop()",
+      "options": ["O(n!)", "O(n^n)", "O(n! * n)", "O(2^n)"],
+      "answerIndex": 2,
+      "explanation": "The number of nodes explored is bounded by n * (n-1) * (n-2) * ... = O(n!) (column choices decrease). The is_safe check at depth row costs O(row) ≤ O(n). Total: O(n! * n). O(n^n) overestimates (many branches are pruned by the safety check).",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["N-queens", "backtracking", "O(n!*n)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef count_ways(n):\n    # Number of ways to write n as ordered sum of 1s and 2s\n    if n < 0:\n        return 0\n    if n == 0:\n        return 1\n    return count_ways(n - 1) + count_ways(n - 2)",
+      "options": ["O(n)", "O(n^2)", "O(2^n)", "O(log n)"],
+      "answerIndex": 2,
+      "explanation": "This is structurally identical to naive Fibonacci. Recurrence: T(n) = T(n-1) + T(n-2) + O(1) = O(2^n) without memoization. The same subproblems (count_ways(k) for k < n) are recomputed exponentially many times.",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Medium",
+      "tags": ["count ways", "fibonacci-like", "T(n)=T(n-1)+T(n-2)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef generate_binary_strings(n, current=''):\n    if n == 0:\n        print(current)\n        return\n    generate_binary_strings(n - 1, current + '0')\n    generate_binary_strings(n - 1, current + '1')",
+      "options": ["O(2^n)", "O(n * 2^n)", "O(n^2)", "O(n!)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = 2*T(n-1) + O(n). The O(n) comes from string concatenation (current + '0' creates a new string of length n-k). There are 2^n leaves, each printing a string of length n. Total work: O(n * 2^n). If strings were passed by reference with no copy cost, it would be O(2^n) calls.",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["binary strings", "T(n)=2T(n-1)+n", "string copy cost"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 4*T(n/2) + n?",
+      "options": ["O(n log n)", "O(n^2)", "O(n^2 log n)", "O(n^1.5)"],
+      "answerIndex": 1,
+      "explanation": "Master Theorem: a=4, b=2, f(n)=n. Compute n^(log_b a) = n^(log_2 4) = n^2. Compare with f(n)=n: n^2 > n, so case 1 applies (f(n) = O(n^(log_b a - eps))). T(n) = O(n^2).",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "case 1", "T(n)=4T(n/2)+n"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 2*T(n/2) + n^2?",
+      "options": ["O(n log n)", "O(n^2 log n)", "O(n^2)", "O(n^3)"],
+      "answerIndex": 2,
+      "explanation": "Master Theorem: a=2, b=2, f(n)=n^2. n^(log_2 2)=n^1=n. Compare: f(n)=n^2 >> n, so case 3 applies (f(n) = Omega(n^(log_b a + eps))). Check regularity: 2*(n/2)^2 = n^2/2 ≤ c*n^2 for c=1/2 < 1. T(n) = O(n^2).",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "case 3", "T(n)=2T(n/2)+n^2"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 3*T(n/3) + n?",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(n log^2 n)"],
+      "answerIndex": 1,
+      "explanation": "Master Theorem: a=3, b=3, f(n)=n. n^(log_3 3)=n^1=n. f(n)=n = Theta(n^(log_b a)) = Theta(n), so case 2: T(n) = O(n^(log_b a) * log n) = O(n log n). This is the same recurrence as merge sort but with 3 equal parts — same result.",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "case 2", "T(n)=3T(n/3)+n"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = T(n/2) + n?",
+      "options": ["O(log n)", "O(n log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Master Theorem: a=1, b=2, f(n)=n. n^(log_2 1)=n^0=1. f(n)=n >> 1, so case 3: T(n) = O(f(n)) = O(n). Regularity: 1*(n/2) = n/2 ≤ c*n for c=1/2. T(n) = O(n). The dominant cost is the first level (n work), with subsequent levels halving: n + n/2 + n/4 + ... = 2n = O(n).",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "case 3", "T(n)=T(n/2)+n"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 8*T(n/2) + n^2?",
+      "options": ["O(n^2 log n)", "O(n^3)", "O(n^2)", "O(n^3 log n)"],
+      "answerIndex": 1,
+      "explanation": "Master Theorem: a=8, b=2, f(n)=n^2. n^(log_2 8)=n^3. Compare: n^3 >> n^2, so case 1: T(n) = O(n^3). This is the recurrence for naive matrix multiplication (Strassen reduces it to T(n) = 7*T(n/2) + O(n^2), giving O(n^2.807)).",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "case 1", "matrix multiplication", "T(n)=8T(n/2)+n^2"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 7*T(n/2) + n^2? (Strassen's matrix multiplication)",
+      "options": ["O(n^2)", "O(n^2 log n)", "O(n^2.807)", "O(n^3)"],
+      "answerIndex": 2,
+      "explanation": "Master Theorem: a=7, b=2, f(n)=n^2. n^(log_2 7) ≈ n^2.807. Compare: n^2.807 > n^2, so case 1: T(n) = O(n^(log_2 7)) ≈ O(n^2.807). Strassen reduces 8 multiplications to 7, saving one recursive call and breaking O(n^3).",
+      "category": "Master Theorem Application",
+      "level": "Hard",
+      "tags": ["Strassen", "Master Theorem", "T(n)=7T(n/2)+n^2"]
+    },
+    {
+      "question": "What does the Master Theorem say about T(n) = 2*T(n/4) + sqrt(n)?",
+      "options": ["O(sqrt(n) log n)", "O(n^0.5)", "O(n)", "O(n log n)"],
+      "answerIndex": 0,
+      "explanation": "Master Theorem: a=2, b=4, f(n)=sqrt(n)=n^0.5. n^(log_4 2)=n^0.5. f(n)=n^0.5 = Theta(n^(log_b a)), so case 2: T(n) = O(n^0.5 * log n) = O(sqrt(n) log n).",
+      "category": "Master Theorem Application",
+      "level": "Hard",
+      "tags": ["Master Theorem", "case 2", "T(n)=2T(n/4)+sqrt(n)"]
+    },
+    {
+      "question": "For the recurrence T(n) = 2*T(n/2) + n*log(n), which case of Master Theorem applies?",
+      "options": [
+        "Case 1: T(n) = O(n log n)",
+        "Case 2: T(n) = O(n log^2 n)",
+        "Case 3: T(n) = O(n log n)",
+        "The standard Master Theorem does not directly apply"
+      ],
+      "answerIndex": 3,
+      "explanation": "a=2, b=2, f(n)=n log n. n^(log_2 2)=n. f(n)=n log n. For case 2, f must be Theta(n^c * log^k n) with k >= 0. Here f(n) = n*log(n) = n^1 * log^1(n), so k=1 ≥ 0 — this is actually an extended case 2: T(n) = O(n log^2 n). This is the recurrence for HeapSort-like algorithms.",
+      "category": "Master Theorem Application",
+      "level": "Hard",
+      "tags": ["Master Theorem", "extended case 2", "T(n)=2T(n/2)+n*log(n)"]
+    },
+    {
+      "question": "Can the Master Theorem be applied to T(n) = T(n-1) + O(1)?",
+      "options": [
+        "Yes, it gives O(log n)",
+        "Yes, it gives O(n)",
+        "No, the Master Theorem requires subproblems to be fractions of n (T(n/b))",
+        "Yes, it gives O(n^2)"
+      ],
+      "answerIndex": 2,
+      "explanation": "The Master Theorem applies to recurrences of the form T(n) = a*T(n/b) + f(n). T(n-1) decreases by a constant, not by a factor. For such recurrences, the iteration/substitution method is used instead: T(n) = T(n-1) + 1 = T(n-2) + 2 = ... = O(n).",
+      "category": "Master Theorem Application",
+      "level": "Medium",
+      "tags": ["Master Theorem", "limitation", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the space complexity (call stack depth) of this function?\n\ndef factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "At any point during execution, the call stack holds one frame per active recursive call. The deepest recursion occurs at factorial(0), with the chain factorial(n)→factorial(n-1)→...→factorial(0): n+1 frames simultaneously on the stack. Space = O(n).",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Easy",
+      "tags": ["space complexity", "call stack", "factorial"]
+    },
+    {
+      "question": "What is the space complexity of recursive binary search?\n\ndef binary_search(arr, lo, hi, target):\n    if lo > hi: return -1\n    mid = (lo + hi) // 2\n    if arr[mid] == target: return mid\n    elif arr[mid] < target: return binary_search(arr, mid + 1, hi, target)\n    else: return binary_search(arr, lo, mid - 1, target)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "At any point, only one branch is active (binary search never has two simultaneous active calls). The maximum call stack depth equals the number of halvings: log2(n). Space = O(log n). An iterative version achieves O(1) space.",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Easy",
+      "tags": ["space complexity", "binary search", "call stack depth"]
+    },
+    {
+      "question": "What is the space complexity of recursive merge sort?\n\n# Uses auxiliary arrays in merge\n# Recursion depth is O(log n)",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(1)"],
+      "answerIndex": 1,
+      "explanation": "Merge sort requires O(n) auxiliary space for the merge step. At each level of recursion, the merge operations collectively use O(n) temporary space. The recursion depth is O(log n), so the call stack uses O(log n) space. Dominant term: O(n) for the auxiliary arrays.",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Medium",
+      "tags": ["space complexity", "merge sort", "auxiliary space"]
+    },
+    {
+      "question": "What is the space complexity of naive recursive Fibonacci?\n\ndef fib(n):\n    if n <= 1: return n\n    return fib(n-1) + fib(n-2)",
+      "options": ["O(2^n)", "O(n^2)", "O(n)", "O(log n)"],
+      "answerIndex": 2,
+      "explanation": "Despite O(2^n) total calls (time), the space (maximum simultaneous call stack depth) is only O(n). At any moment, only the deepest current branch is on the stack. The maximum depth occurs along the leftmost path: fib(n)→fib(n-1)→...→fib(0), depth n+1.",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Hard",
+      "tags": ["space complexity", "fibonacci", "call stack vs total calls"]
+    },
+    {
+      "question": "What is the space complexity of the Towers of Hanoi?\n\ndef hanoi(n, src, tgt, aux):\n    if n == 0: return\n    hanoi(n-1, src, aux, tgt)\n    print(...)\n    hanoi(n-1, aux, tgt, src)",
+      "options": ["O(2^n)", "O(n)", "O(n^2)", "O(log n)"],
+      "answerIndex": 1,
+      "explanation": "Like Fibonacci, the time complexity is O(2^n) but the space (call stack depth) is O(n). The deepest the stack ever gets is n (along the leftmost path hanoi(n)→hanoi(n-1)→...→hanoi(0)). Each frame uses O(1). Space = O(n).",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Medium",
+      "tags": ["space complexity", "Towers of Hanoi", "call stack depth"]
+    },
+    {
+      "question": "What is the space complexity of DFS on a tree with n nodes and height h?\n\ndef dfs(node):\n    if node is None: return\n    visit(node)\n    dfs(node.left)\n    dfs(node.right)",
+      "options": ["O(n)", "O(h)", "O(log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "The call stack depth equals the height of the tree, h. For a balanced tree h=O(log n); for a skewed tree h=O(n). The space complexity is O(h) not O(n) in general. Writing O(n) is technically correct as an upper bound but O(h) is more precise.",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Medium",
+      "tags": ["space complexity", "DFS", "tree height", "call stack"]
+    },
+    {
+      "question": "What is the space complexity of generating all subsets recursively?\n\ndef subsets(arr, i, current):\n    if i == len(arr): print(current); return\n    subsets(arr, i + 1, current)\n    subsets(arr, i + 1, current + [arr[i]])",
+      "options": ["O(2^n)", "O(n * 2^n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "The call stack depth is at most n (recursion decrements i toward n). At any moment, only one path from root to leaf is active on the stack. Each frame uses O(n) for the 'current' list copy, giving O(n^2) total stack space. However, the maximum number of simultaneous frames is O(n), so the answer O(n) refers to stack depth. Full space including list copies is O(n^2).",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Hard",
+      "tags": ["space complexity", "subsets", "call stack depth"]
+    },
+    {
+      "question": "What is the space complexity of quicksort in the best case?\n\n# Best case: pivot always splits array in half",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "In the best case (balanced splits), the recursion tree has depth O(log n). At any moment, only one branch is active on the call stack, so the maximum stack depth is O(log n). Worst case (skewed splits): O(n) stack depth.",
+      "category": "Space Complexity of Recursive Calls",
+      "level": "Medium",
+      "tags": ["quicksort", "space complexity", "best case"]
+    },
+    {
+      "question": "What is the time complexity of memoized Fibonacci?\n\ndef fib(n, memo={}):\n    if n in memo: return memo[n]\n    if n <= 1: return n\n    memo[n] = fib(n-1, memo) + fib(n-2, memo)\n    return memo[n]",
+      "options": ["O(2^n)", "O(n^2)", "O(n)", "O(n log n)"],
+      "answerIndex": 2,
+      "explanation": "With memoization, each subproblem fib(k) for k=0..n is computed exactly once. After the first computation, subsequent lookups are O(1). Total unique subproblems: n+1. Each is computed in O(1) after subproblems are available. Time = O(n). Space also improves from O(2^n) calls to O(n) distinct states.",
+      "category": "Memoization and Tail Recursion",
+      "level": "Easy",
+      "tags": ["memoization", "fibonacci", "dynamic programming"]
+    },
+    {
+      "question": "What is the time complexity of memoized grid path counting?\n\ndef paths(m, n, memo={}):\n    if (m, n) in memo: return memo[(m, n)]\n    if m == 1 or n == 1: return 1\n    memo[(m, n)] = paths(m-1, n, memo) + paths(m, n-1, memo)\n    return memo[(m, n)]",
+      "options": ["O(2^(m+n))", "O(m * n)", "O(m + n)", "O((m+n)!)"],
+      "answerIndex": 1,
+      "explanation": "With memoization, each unique (m, n) pair is computed at most once. There are m*n unique subproblems (m values 1..m, n values 1..n). Each is computed in O(1) once its sub-results are available. Total time = O(m*n), down from O(2^(m+n)) without memoization.",
+      "category": "Memoization and Tail Recursion",
+      "level": "Medium",
+      "tags": ["memoization", "grid paths", "O(m*n)"]
+    },
+    {
+      "question": "Does tail recursion change the time complexity?\n\ndef factorial_tail(n, acc=1):\n    if n == 0:\n        return acc\n    return factorial_tail(n - 1, acc * n)",
+      "options": [
+        "Yes, tail recursion reduces time from O(n) to O(log n)",
+        "No, time complexity stays O(n); tail recursion only potentially reduces space complexity",
+        "Yes, tail recursion eliminates all recursion, making it O(1)",
+        "No, tail recursion increases time due to extra parameter passing"
+      ],
+      "answerIndex": 1,
+      "explanation": "Tail recursion does not change time complexity — the function still makes n recursive calls, each doing O(1) work: O(n) total. The benefit is space: a tail-call-optimizing compiler/interpreter can reuse the same stack frame, reducing space from O(n) to O(1). Python does not perform TCO, so space remains O(n) in Python.",
+      "category": "Memoization and Tail Recursion",
+      "level": "Medium",
+      "tags": ["tail recursion", "TCO", "space vs time"]
+    },
+    {
+      "question": "What is the time complexity improvement when replacing naive Fibonacci with bottom-up DP?\n\n# Naive: O(2^n)\n# DP builds fib[0..n] iteratively",
+      "options": [
+        "From O(2^n) to O(n log n)",
+        "From O(2^n) to O(n)",
+        "From O(2^n) to O(sqrt(n))",
+        "No improvement — DP and recursion have the same complexity"
+      ],
+      "answerIndex": 1,
+      "explanation": "Bottom-up DP computes each fib[k] exactly once in O(1) using previously stored values. Total: O(n) time and O(n) space (or O(1) space if only the last two values are kept). This is a dramatic improvement from the O(2^n) exponential recursion due to eliminating redundant recomputation.",
+      "category": "Memoization and Tail Recursion",
+      "level": "Easy",
+      "tags": ["DP", "fibonacci", "memoization vs DP"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef mystery(n):\n    if n <= 1:\n        return 1\n    return mystery(n // 2) + mystery(n // 2) + mystery(n // 2) + mystery(n // 2)",
+      "options": ["O(n)", "O(n log n)", "O(n^2)", "O(2^n)"],
+      "answerIndex": 0,
+      "explanation": "Recurrence: T(n) = 4*T(n/2) + O(1). Master Theorem: a=4, b=2, f(n)=1. n^(log_2 4)=n^2. Since n^2 >> O(1), case 1: T(n) = O(n^2)... wait: recheck. n^(log_2 4) = n^2 and f(n) = 1, so case 1 gives T(n) = O(n^2). Correction: this is O(n^2), not O(n). Each level has 4^k nodes at depth k, processing n/2^k elements. Sum = O(n^2).",
+      "category": "Master Theorem Application",
+      "level": "Hard",
+      "tags": ["T(n)=4T(n/2)+1", "Master Theorem", "case 1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef search_2d(matrix, target, i=0, j=0):\n    n = len(matrix)\n    if i >= n: return False\n    if j >= n:\n        return search_2d(matrix, target, i + 1, 0)\n    if matrix[i][j] == target: return True\n    return search_2d(matrix, target, i, j + 1)",
+      "options": ["O(n)", "O(n^2)", "O(n log n)", "O(2^n)"],
+      "answerIndex": 1,
+      "explanation": "This linearly scans an n×n matrix element by element. Total cells = n^2. Each call processes one cell and either returns or makes one recursive call. Total recursive calls = n^2 in the worst case. Recurrence: T(n^2) = T(n^2 - 1) + O(1) → T(n) = O(n^2) for n×n input.",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["2D search", "linear scan", "O(n^2)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef max_subarray(arr, n, max_end):\n    # Returns (max_ending_here, max_so_far)\n    if n == 1:\n        return arr[0], arr[0]\n    prev_end, prev_max = max_subarray(arr, n - 1, max_end)\n    curr_end = max(arr[n-1], prev_end + arr[n-1])\n    return curr_end, max(prev_max, curr_end)",
+      "options": ["O(log n)", "O(n)", "O(n log n)", "O(n^2)"],
+      "answerIndex": 1,
+      "explanation": "Kadane's algorithm implemented recursively. Each call processes one element and makes one recursive call with n-1. Recurrence: T(n) = T(n-1) + O(1) → T(n) = O(n). The max() calls are O(1). This is a linear scan disguised as recursion.",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["Kadane", "max subarray", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this recursive function for checking a sorted array?\n\ndef is_sorted(arr, i=0):\n    if i >= len(arr) - 1:\n        return True\n    if arr[i] > arr[i+1]:\n        return False\n    return is_sorted(arr, i + 1)",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n^2)"],
+      "answerIndex": 2,
+      "explanation": "Worst case: array is sorted, requiring comparison of all n-1 adjacent pairs. Each call does O(1) and recurses with i+1. Recurrence: T(n) = T(n-1) + O(1) → O(n). Best case: O(1) if first two elements are out of order.",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["is sorted", "linear", "T(n)=T(n-1)+1"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef exponent_mod(base, exp, mod):\n    if exp == 0:\n        return 1\n    if exp % 2 == 0:\n        half = exponent_mod(base, exp // 2, mod)\n        return (half * half) % mod\n    return (base * exponent_mod(base, exp - 1, mod)) % mod",
+      "options": ["O(exp)", "O(log exp)", "O(sqrt(exp))", "O(log^2 exp)"],
+      "answerIndex": 1,
+      "explanation": "When exp is even: T(exp) = T(exp/2) + O(1) — halves the problem. When exp is odd: T(exp) = T(exp-1) + O(1), then the next call is even and halves. The problem at most doubles the steps: T(exp) = O(log exp). This is modular fast exponentiation used in cryptography.",
+      "category": "Divide and Conquer",
+      "level": "Medium",
+      "tags": ["modular exponentiation", "T(n)=T(n/2)+1", "log"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef flatten(lst):\n    result = []\n    for item in lst:\n        if isinstance(item, list):\n            result += flatten(item)\n        else:\n            result.append(item)\n    return result\n\n# Input: a nested list with n total elements and max depth d",
+      "options": ["O(n)", "O(n * d)", "O(n^d)", "O(d^n)"],
+      "answerIndex": 1,
+      "explanation": "Each element is visited once (O(n) visits). However, the list concatenation result += flatten(item) copies the result list at each level. In the worst case (deeply nested with d levels), an element at depth d is copied d times during the unwinding. Total work = O(n * d). Using .extend() instead of += reduces this by a constant but not asymptotically.",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Hard",
+      "tags": ["flatten", "nested list", "concatenation cost"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef merge_k_sorted(arrays, lo, hi):\n    # arrays is a list of k sorted arrays, total n elements\n    if lo == hi:\n        return arrays[lo]\n    mid = (lo + hi) // 2\n    left = merge_k_sorted(arrays, lo, mid)\n    right = merge_k_sorted(arrays, mid + 1, hi)\n    return merge(left, right)  # O(n) for n total elements",
+      "options": ["O(n * k)", "O(n log k)", "O(k log n)", "O(n * k * log k)"],
+      "answerIndex": 1,
+      "explanation": "This is a divide-and-conquer merge of k sorted arrays with n total elements. The recursion tree has depth log2(k) (splitting k arrays). At each level, total merge work = O(n) (all elements merged once per level). Total: O(n log k). This is better than pairwise merging (O(nk)).",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["merge k sorted", "T(k)=2T(k/2)+n", "O(n log k)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef closest_pair(points):\n    n = len(points)\n    if n <= 3:\n        return brute_force(points)  # O(1)\n    mid = n // 2\n    left_min = closest_pair(points[:mid])\n    right_min = closest_pair(points[mid:])\n    d = min(left_min, right_min)\n    strip = [p for p in points if abs(p[0] - points[mid][0]) < d]  # O(n)\n    return min(d, closest_in_strip(strip))  # strip check O(n)",
+      "options": ["O(n^2)", "O(n log n)", "O(n log^2 n)", "O(n sqrt(n))"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = 2*T(n/2) + O(n). The strip check is O(n) because at most 8 points exist within each d×2d rectangle. Master Theorem case 2: T(n) = O(n log n). Note: the points must be pre-sorted by x-coordinate (O(n log n)), so total algorithm is O(n log n).",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["closest pair", "T(n)=2T(n/2)+n", "computational geometry"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef count_bits(n):\n    if n == 0:\n        return 0\n    return (n & 1) + count_bits(n >> 1)",
+      "options": ["O(n)", "O(log n)", "O(sqrt(n))", "O(1)"],
+      "answerIndex": 1,
+      "explanation": "Each call right-shifts n by 1 (divides by 2). The number of bits in n is floor(log2(n)) + 1 = O(log n). Recurrence: T(n) = T(n/2) + O(1) → T(n) = O(log n) by Master Theorem case 2 (f(n)=1 = Theta(n^(log_2 1)) = Theta(1)).",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["count bits", "T(n)=T(n/2)+1", "log n"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef print_binary(n):\n    if n == 0:\n        return\n    print_binary(n // 2)\n    print(n % 2)",
+      "options": ["O(n)", "O(log n)", "O(n log n)", "O(1)"],
+      "answerIndex": 1,
+      "explanation": "Each call divides n by 2. The recursion depth equals the number of binary digits of n, which is floor(log2(n)) + 1 = O(log n). Each call does O(1) work. T(n) = T(n/2) + O(1) → O(log n).",
+      "category": "Linear Recursion",
+      "level": "Easy",
+      "tags": ["print binary", "T(n)=T(n/2)+1", "digits"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef max_depth_tree(root):\n    if root is None:\n        return 0\n    left_depth = max_depth_tree(root.left)\n    right_depth = max_depth_tree(root.right)\n    return max(left_depth, right_depth) + 1",
+      "options": ["O(log n)", "O(n)", "O(h) where h is the height", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "Every node must be visited to determine the maximum depth (a leaf in a deep but thin subtree determines the answer). Recurrence: T(n) = T(L) + T(R) + O(1) where L+R=n-1. Summing over all n nodes: O(n). Writing O(h) is wrong for time — O(h) is the space (stack depth), not the time to visit all nodes.",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Medium",
+      "tags": ["max depth", "time vs space", "O(n) time O(h) space"]
+    },
+    {
+      "question": "What is the time complexity of this recursive function?\n\ndef mystery(n):\n    if n == 0:\n        return 0\n    result = 0\n    for i in range(n):       # O(n) loop\n        result += i\n    return result + mystery(n - 1)",
+      "options": ["O(n)", "O(n^2)", "O(n log n)", "O(n^3)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = T(n-1) + O(n). Each call does O(n) work (the loop) and recurses with n-1. Unrolling: T(n) = O(n) + O(n-1) + O(n-2) + ... + O(1) = O(n*(n+1)/2) = O(n^2). The O(n) work at each of n levels sums to O(n^2).",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["T(n)=T(n-1)+n", "quadratic", "loop inside recursion"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef two_sum_recursive(arr, target, i, j):\n    if i >= j:\n        return False\n    s = arr[i] + arr[j]\n    if s == target:\n        return True\n    elif s < target:\n        return two_sum_recursive(arr, target, i + 1, j)\n    else:\n        return two_sum_recursive(arr, target, i, j - 1)",
+      "options": ["O(log n)", "O(n)", "O(n^2)", "O(n log n)"],
+      "answerIndex": 1,
+      "explanation": "The two-pointer approach: each call either increments i or decrements j. Starting with i=0, j=n-1, the pointers move at most n-1 total steps before i >= j. Each call does O(1). Total calls ≤ n. T(n) = O(n). This is NOT O(n^2) — there are no nested loops, just two pointers converging.",
+      "category": "Linear Recursion",
+      "level": "Medium",
+      "tags": ["two sum", "two pointers", "T(n)=O(n)"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef strassen(A, B, n):\n    if n == 1:\n        return [[A[0][0] * B[0][0]]]\n    # Split into n/2 x n/2 submatrices\n    # Compute 7 products recursively (each on n/2 x n/2 matrix)\n    # Combine: O(n^2)\n    pass  # T(n) = 7*T(n/2) + O(n^2)",
+      "options": ["O(n^2)", "O(n^2 log n)", "O(n^2.807)", "O(n^3)"],
+      "answerIndex": 2,
+      "explanation": "Strassen's recurrence: T(n) = 7*T(n/2) + O(n^2). Master Theorem: a=7, b=2, f(n)=n^2. n^(log_2 7) ≈ n^2.807 > n^2. Case 1: T(n) = O(n^(log_2 7)) ≈ O(n^2.807). This beats naive matrix multiplication (O(n^3)) by reducing 8 multiplications to 7.",
+      "category": "Divide and Conquer",
+      "level": "Hard",
+      "tags": ["Strassen", "matrix multiply", "T(n)=7T(n/2)+n^2"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef rod_cutting(price, n):\n    if n == 0:\n        return 0\n    max_val = float('-inf')\n    for i in range(1, n + 1):   # O(n) loop\n        max_val = max(max_val, price[i] + rod_cutting(price, n - i))\n    return max_val",
+      "options": ["O(n^2)", "O(2^n)", "O(n!)", "O(n * 2^n)"],
+      "answerIndex": 1,
+      "explanation": "Recurrence: T(n) = T(n-1) + T(n-2) + ... + T(0) + O(n). This sum satisfies T(n) = 2*T(n-1) + O(1) (each T(n-1) includes all smaller sub-calls). Without memoization: T(n) = O(2^n). Each cut decision branches into n sub-problems and overlapping subproblems are recomputed. With memoization: O(n^2).",
+      "category": "Exponential and Combinatorial Recursion",
+      "level": "Hard",
+      "tags": ["rod cutting", "T(n)=2^n without memo", "O(n^2) with memo"]
+    },
+    {
+      "question": "What is the time complexity of this function?\n\ndef max_path_sum(grid, i, j):\n    if i == len(grid) - 1 and j == len(grid[0]) - 1:\n        return grid[i][j]\n    if i == len(grid) - 1:\n        return grid[i][j] + max_path_sum(grid, i, j + 1)\n    if j == len(grid[0]) - 1:\n        return grid[i][j] + max_path_sum(grid, i + 1, j)\n    down = max_path_sum(grid, i + 1, j)\n    right = max_path_sum(grid, i, j + 1)\n    return grid[i][j] + max(down, right)",
+      "options": ["O(m * n)", "O(2^(m+n))", "O(m + n)", "O((m*n)^2)"],
+      "answerIndex": 1,
+      "explanation": "Without memoization: T(m,n) = T(m-1,n) + T(m,n-1) + O(1). This is the same recurrence as grid path counting — exponential without memoization: O(2^(m+n)). The same cell (i,j) is recomputed exponentially many times. With memoization: O(m*n).",
+      "category": "Tree and Multi-Branch Recursion",
+      "level": "Hard",
+      "tags": ["max path grid", "T(m,n)=T(m-1,n)+T(m,n-1)", "exponential without memo"]
+    }
+  ]
+}
